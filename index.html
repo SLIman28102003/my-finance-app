@@ -2,14 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- أوامر PWA لجعله تطبيق أيفون حقيقي -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="حساباتي">
     <meta name="theme-color" content="#0f172a">
-    
-    <!-- أيقونة التطبيق في شاشة الأيفون (استعملت اللوغو الأزرق) -->
     <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=SL&background=0f172a&color=38bdf8&size=512">
 
     <title>نظام إدارة الحسابات - سليمان</title>
@@ -18,7 +15,6 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* (اترك باقي الستايل css الخاص بك هنا كما هو بدون تغيير) */
         body { font-family: 'Cairo', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%); background-attachment: fixed; color: #e2e8f0; min-height: 100vh; }
         .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.6) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
@@ -49,6 +45,19 @@
             <input type="password" id="pinInput" class="glass-input w-full rounded-2xl px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
             <button onclick="unlockApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
             <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse">الرمز غير صحيح، حاول مجدداً</p>
+        </div>
+    </div>
+
+    <!-- نافذة كود الخصوصية -->
+    <div id="privacyModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePrivacyModal()"></div>
+        <div class="relative glass-card w-full max-w-xs rounded-2xl shadow-2xl p-6 text-center modal-enter" id="privacyModalContent">
+            <i class="ph-fill ph-eye-slash text-4xl text-sky-400 mb-4"></i>
+            <h3 class="text-lg font-bold text-white mb-2">وضع الخصوصية</h3>
+            <p class="text-xs text-slate-400 mb-6">أدخل كود فك التشفير لعرض الأرصدة</p>
+            <input type="password" id="privacyPinInput" class="glass-input w-full rounded-xl px-4 py-3 text-center text-xl tracking-[0.5em] font-mono mb-4 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') checkPrivacyPin()">
+            <button onclick="checkPrivacyPin()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">كشف الأرقام</button>
+            <p id="privacyError" class="text-red-400 text-xs mt-3 hidden">الرمز غير صحيح</p>
         </div>
     </div>
 
@@ -95,7 +104,9 @@
                     <i class="ph-fill ph-wallet text-9xl"></i>
                 </div>
                 <div class="relative z-10 text-center md:text-right mb-4">
-                    <p class="text-sky-300 text-sm font-semibold mb-1">الرصيد الإجمالي الصافي (كاش في اليد)</p>
+                    <p class="text-sky-300 text-sm font-semibold mb-1 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
+                        الرصيد الإجمالي الصافي (كاش في اليد) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-sky-400 text-lg"></i>
+                    </p>
                     <h3 class="text-5xl font-bold text-white mb-2 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
                     <p class="text-xs text-slate-400" id="balanceSubtitle">يُحسب بناءً على الراتب وعمليات الشهر المكتملة</p>
                 </div>
@@ -116,8 +127,10 @@
                     <i class="ph-fill ph-bank text-9xl"></i>
                 </div>
                 <div class="relative z-10 flex flex-col justify-center h-full">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="text-slate-400 text-sm font-semibold">الراتب الأساسي المعتمد للشهر</p>
+                    <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الراتب">
+                        <p class="text-slate-400 text-sm font-semibold flex items-center gap-1">
+                            الراتب الأساسي المعتمد <i id="privacyIcon2" class="ph-fill ph-eye-slash text-indigo-400 text-lg"></i>
+                        </p>
                         <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-md" id="daysPassedBadge">0 أيام عمل محسوبة</span>
                     </div>
                     <h3 class="text-3xl font-bold text-indigo-300 mb-1" id="activeBaseSalary">0 <span class="text-sm font-normal text-slate-400">د.ج</span></h3>
@@ -165,6 +178,7 @@
                     <div class="relative">
                         <select id="tableTypeSelect" class="glass-input w-full rounded-lg px-3 py-2 text-sm appearance-none cursor-pointer focus:outline-none" onchange="applyFilters()">
                             <option value="all" class="bg-slate-800">عرض جميع العمليات</option>
+                            <option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>
                             <option value="challenge" class="bg-slate-800 text-pink-400 font-bold">التحديات والأهداف</option>
                             <option value="income" class="bg-slate-800">المداخيل (مقبوضة أو ديون لك)</option>
                             <option value="expense" class="bg-slate-800">المصاريف</option>
@@ -228,6 +242,7 @@
                             <option value="company_rule" class="bg-slate-800">قواعد الشركة (مخالفات/مبادرات)</option>
                             <option value="personal" class="bg-slate-800">مالية شخصية (مداخيل/مصاريف/ديون)</option>
                             <option value="salary_update" class="bg-slate-800 font-bold text-indigo-400">تحديث الراتب الأساسي للشهر</option>
+                            <option value="opening_balance" class="bg-slate-800 font-bold text-teal-400">💰 إدخال رصيد افتتاحي (رأس مال)</option>
                             <option value="challenge" class="bg-slate-800 font-bold text-pink-400">🎯 إطلاق تحدي مالي جديد</option>
                         </select>
                         <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -320,6 +335,9 @@
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
+        
+        // متغير الخصوصية الجديد
+        let isPrivacyRevealed = false;
 
         function getActiveSalaryForDate(targetDateObj) {
             let salaryUpdates = allTransactions.filter(t => t.type === 'salary_update');
@@ -341,6 +359,39 @@
             loginBtn.disabled = false;
         }
 
+        // دوال الخصوصية
+        window.togglePrivacy = function() {
+            if (isPrivacyRevealed) {
+                isPrivacyRevealed = false;
+                renderDashboard();
+                showToast("وضع الخصوصية", "تم إخفاء الأرصدة بنجاح", "info");
+            } else {
+                document.getElementById('privacyPinInput').value = '';
+                document.getElementById('privacyError').classList.add('hidden');
+                document.getElementById('privacyModal').classList.remove('hidden');
+                void document.getElementById('privacyModal').offsetWidth; 
+                document.getElementById('privacyModalContent').classList.add('modal-enter-active');
+                setTimeout(() => document.getElementById('privacyPinInput').focus(), 100);
+            }
+        }
+
+        window.closePrivacyModal = function() {
+            document.getElementById('privacyModalContent').classList.remove('modal-enter-active'); 
+            setTimeout(() => document.getElementById('privacyModal').classList.add('hidden'), 300);
+        }
+
+        window.checkPrivacyPin = function() {
+            const pin = document.getElementById('privacyPinInput').value;
+            if (pin.toLowerCase() === 'mmmm') { 
+                isPrivacyRevealed = true;
+                closePrivacyModal();
+                renderDashboard();
+                showToast("تم الفتح", "تم كشف الأرصدة، انقر عليها مجدداً لإخفائها", "success");
+            } else {
+                document.getElementById('privacyError').classList.remove('hidden');
+            }
+        }
+
         async function fetchTransactions() {
             if (!sessionPin) return; 
             const tableBody = document.getElementById('transactionsTableBody');
@@ -352,18 +403,6 @@
                     document.getElementById('loginOverlay').style.opacity = '0';
                     setTimeout(() => document.getElementById('loginOverlay').classList.add('hidden'), 500);
                     allTransactions = result.data;
-                    
-                    // تحديث قائمة الفلاتر لتتضمن الرصيد الافتتاحي
-                    if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) {
-                        const filterSelect = document.getElementById('tableTypeSelect');
-                        filterSelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>`;
-                    }
-                    // تحديث قائمة الإضافة لتتضمن الرصيد الافتتاحي
-                    if (!document.querySelector('#entryType option[value="opening_balance"]')) {
-                        const entrySelect = document.getElementById('entryType');
-                        entrySelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">💰 إدخال رصيد افتتاحي (رأس مال)</option>`;
-                    }
-
                     applyFilters(); 
                 } else {
                     document.getElementById('loginError').classList.remove('hidden');
@@ -530,16 +569,14 @@
                 const tDate = new Date(t.exactTimestamp);
                 const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
                 
-                // إضافة الرصيد الافتتاحي وعمليات الشهر للرصيد العام
                 if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
                     if (t.type !== 'salary_update' && t.type !== 'challenge') {
                         if (t.status === 'قيد الانتظار') {
-                            if (tMonthStr === currentFilterMonth) { // الديون تظهر حسب فلتر الشهر فقط
+                            if (tMonthStr === currentFilterMonth) { 
                                 if (t.amount > 0) pendingReceivables += t.amount;
                                 if (t.amount < 0) pendingDebts += Math.abs(t.amount);
                             }
                         } else {
-                            // إذا كانت العملية رصيد افتتاحي، نجمعها حتى لو لم تكن في نفس الشهر
                             if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
                                 sumOperations += t.amount;
                             }
@@ -574,21 +611,27 @@
             
             let finalBalance = accruedBaseSalary + sumOperations;
 
+            // تحديث أيقونات العين بناءً على حالة الخصوصية
+            const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash';
+            document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-sky-400 text-lg`;
+            document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-indigo-400 text-lg`;
+
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عملية`;
-            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true);
+            
+            // تحديث الأرقام الحساسة مع ميزة الضباب
+            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true, true);
             document.getElementById("accruedBaseSalary").innerText = `${new Intl.NumberFormat('en-DZ').format(accruedBaseSalary)} د.ج`;
             document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
             
-            animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'));
+            animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'), true, true);
             document.getElementById("pendingReceivablesTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingReceivables)} د.ج`;
             document.getElementById("pendingDebtsTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingDebts)} د.ج`;
 
-            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, true);
+            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, false, false);
             document.getElementById("monthOvertimeMinutes").innerText = monthOvertimeMinutes;
-            animateValue("monthDeductions", monthDeductions, null, true);
-            animateValue("monthBonuses", monthBonuses, null, true);
+            animateValue("monthDeductions", monthDeductions, null, false, false);
+            animateValue("monthBonuses", monthBonuses, null, false, false);
 
-            // --- التحدي المالي ---
             let challengeTxns = allTransactions.filter(t => t.type === 'challenge');
             const challengeContainer = document.getElementById('challengeContainer');
             if (challengeTxns.length > 0) {
@@ -723,11 +766,24 @@
             return tr;
         }
 
-        function animateValue(id, end, colorClass = null, hideDZDInSpan = false) {
+        // دالة عرض الأرقام مع دعم الخصوصية
+        function animateValue(id, end, colorClass = null, hideDZDInSpan = false, isSensitive = false) {
             const obj = document.getElementById(id); if (!obj) return;
             const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(end));
             const sign = end < 0 ? '-' : '';
-            obj.innerHTML = hideDZDInSpan ? `<span dir="ltr">${sign}${formatted}</span> <span class="text-sm font-normal text-slate-400">د.ج</span>` : `<span dir="ltr">${sign}${formatted}</span>`;
+            
+            let blurClass = '';
+            let clickHandler = '';
+            
+            if (isSensitive) {
+                blurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
+                clickHandler = `onclick="togglePrivacy()" title="انقر لكشف الرصيد"`;
+            }
+            
+            obj.innerHTML = hideDZDInSpan 
+                ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-sm font-normal text-slate-400">د.ج</span>` 
+                : `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span>`;
+                
             if (colorClass) obj.className = `${obj.className.split(' ').filter(c=>!c.startsWith('text-')).join(' ')} ${colorClass}`;
         }
 
