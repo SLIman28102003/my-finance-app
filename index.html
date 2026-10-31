@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <!-- أوامر PWA لجعله تطبيق أيفون حقيقي -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="حساباتي">
+    <meta name="theme-color" content="#0f172a">
+    
+    <!-- أيقونة التطبيق في شاشة الأيفون (استعملت اللوغو الأزرق) -->
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=SL&background=0f172a&color=38bdf8&size=512">
+
+    <title>نظام إدارة الحسابات - سليمان</title>
+    <meta name="robots" content="noindex, nofollow">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* (اترك باقي الستايل css الخاص بك هنا كما هو بدون تغيير) */
+        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%); background-attachment: fixed; color: #e2e8f0; min-height: 100vh; }
+        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.6) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .glass-input { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: all 0.3s ease; }
+        .glass-input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        tr.glass-row { transition: background-color 0.2s; }
+        tr.glass-row:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .text-neon-green { color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
+        .text-neon-red { color: #f87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
+        .text-neon-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.3); }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden relative">
+
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-xl transition-opacity duration-500">
+        <div class="glass-card w-full max-w-sm rounded-3xl p-8 text-center transform transition-transform duration-500 scale-100" id="loginBox">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-sky-500/20 border border-sky-400/50 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)]">
+                <i class="ph-fill ph-lock-key text-4xl text-sky-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">النظام محمي</h2>
+            <p class="text-sm text-slate-400 mb-8">يرجى إدخال رمز المرور للوصول إلى بياناتك</p>
+            <input type="password" id="pinInput" class="glass-input w-full rounded-2xl px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
+            <button onclick="unlockApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
+            <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse">الرمز غير صحيح، حاول مجدداً</p>
+        </div>
+    </div>
+
+    <div class="fixed top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    <div class="fixed bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+    <nav class="glass sticky top-0 z-40 px-6 py-4 mb-8">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <img src="https://ui-avatars.com/api/?name=Slimane&background=0f172a&color=38bdf8&rounded=true&bold=true&size=48" alt="Profile" class="w-12 h-12 rounded-full border-2 border-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.4)] object-cover">
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-slate-900 rounded-full"></div>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wide">نظام إدارة الحسابات</h1>
+                    <p class="text-xs text-slate-400">مرحباً بك، سليمان</p>
+                </div>
+            </div>
+            
+            <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
+                <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية جديدة</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="ph ph-chart-pie-slice text-sky-400"></i> لوحة القيادة
+            </h2>
+            <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
+                <i class="ph ph-calendar-blank text-slate-400"></i>
+                <label for="monthFilter" class="text-sm text-slate-300">ملخص شهر:</label>
+                <input type="month" id="monthFilter" class="glass-input rounded-lg px-3 py-1 text-sm focus:outline-none" onchange="applyFilters()">
+            </div>
+        </div>
+
+        <div id="challengeContainer" class="mb-6 hidden"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden group border-sky-500/30 flex flex-col justify-between">
+                <div class="absolute -left-6 -top-6 text-sky-500/10 group-hover:text-sky-500/20 transition-colors">
+                    <i class="ph-fill ph-wallet text-9xl"></i>
+                </div>
+                <div class="relative z-10 text-center md:text-right mb-4">
+                    <p class="text-sky-300 text-sm font-semibold mb-1">الرصيد الإجمالي الصافي (كاش في اليد)</p>
+                    <h3 class="text-5xl font-bold text-white mb-2 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
+                    <p class="text-xs text-slate-400" id="balanceSubtitle">يُحسب بناءً على الراتب وعمليات الشهر المكتملة</p>
+                </div>
+                <div class="relative z-10 mt-2 pt-3 border-t border-sky-500/20 flex flex-col gap-2 bg-black/20 p-2 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-orange-300 flex items-center gap-1"><i class="ph ph-hand-coins"></i> أموال عند الغير (قيد التحصيل):</span>
+                        <span class="text-sm font-bold text-orange-400" id="pendingReceivablesTotal" dir="ltr">0 د.ج</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-white/5 pt-2">
+                        <span class="text-xs text-red-300 flex items-center gap-1"><i class="ph ph-warning"></i> ديون عليك (قيد الانتظار):</span>
+                        <span class="text-sm font-bold text-red-400" id="pendingDebtsTotal" dir="ltr">0 د.ج</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden group">
+                <div class="absolute -left-6 -top-6 text-indigo-500/10 group-hover:text-indigo-500/20 transition-colors">
+                    <i class="ph-fill ph-bank text-9xl"></i>
+                </div>
+                <div class="relative z-10 flex flex-col justify-center h-full">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-slate-400 text-sm font-semibold">الراتب الأساسي المعتمد للشهر</p>
+                        <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-md" id="daysPassedBadge">0 أيام عمل محسوبة</span>
+                    </div>
+                    <h3 class="text-3xl font-bold text-indigo-300 mb-1" id="activeBaseSalary">0 <span class="text-sm font-normal text-slate-400">د.ج</span></h3>
+                    <div class="flex justify-between items-center mt-2 border-t border-white/5 pt-2">
+                        <span class="text-xs text-slate-400">الراتب المكتسب (التراكمي):</span>
+                        <span class="text-sm font-bold text-white" id="accruedBaseSalary" dir="ltr">0 د.ج</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
+                <p class="text-slate-400 text-xs font-semibold mb-1">أرباح الوقت الإضافي</p>
+                <h3 class="text-xl font-bold text-neon-green mb-1" id="monthOvertimeMoney">0</h3>
+                <p class="text-[10px] text-slate-500"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
+            </div>
+            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
+                <p class="text-slate-400 text-xs font-semibold mb-1">إجمالي الخصومات والتأخرات</p>
+                <h3 class="text-xl font-bold text-neon-red mb-1" id="monthDeductions">0</h3>
+            </div>
+            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
+                <p class="text-slate-400 text-xs font-semibold mb-1">المبادرات والمكافآت</p>
+                <h3 class="text-xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-2xl overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph ph-list-dashes text-sky-400"></i> سجل العمليات</h3>
+                <span class="text-xs bg-sky-500/20 text-sky-300 px-3 py-1 rounded-full border border-sky-500/30 whitespace-nowrap" id="recordCountBadge">0 عملية</span>
+            </div>
+            
+            <div class="px-6 py-4 border-b border-white/5 bg-black/20 flex flex-col lg:flex-row gap-4 items-end">
+                <div class="w-full lg:w-auto">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">من تاريخ</label>
+                    <input type="date" id="tableStartDate" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none" onchange="applyFilters()">
+                </div>
+                <div class="w-full lg:w-auto">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">إلى تاريخ</label>
+                    <input type="date" id="tableEndDate" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none" onchange="applyFilters()">
+                </div>
+                <div class="w-full lg:flex-1">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">نوع العملية</label>
+                    <div class="relative">
+                        <select id="tableTypeSelect" class="glass-input w-full rounded-lg px-3 py-2 text-sm appearance-none cursor-pointer focus:outline-none" onchange="applyFilters()">
+                            <option value="all" class="bg-slate-800">عرض جميع العمليات</option>
+                            <option value="challenge" class="bg-slate-800 text-pink-400 font-bold">التحديات والأهداف</option>
+                            <option value="income" class="bg-slate-800">المداخيل (مقبوضة أو ديون لك)</option>
+                            <option value="expense" class="bg-slate-800">المصاريف</option>
+                            <option value="debt" class="bg-slate-800">الديون (عليك)</option>
+                            <option value="salary_update" class="bg-slate-800">تحديثات الراتب</option>
+                            <option value="overtime" class="bg-slate-800">أرباح الوقت الإضافي</option>
+                            <option value="lateness" class="bg-slate-800">التأخرات</option>
+                            <option value="absence" class="bg-slate-800">الغيابات (أيام)</option>
+                            <option value="work_penalty" class="bg-slate-800">مخالفات العمل</option>
+                            <option value="res_penalty" class="bg-slate-800">مخالفات الإقامة</option>
+                            <option value="work_bonus" class="bg-slate-800">مبادرات العمل</option>
+                            <option value="res_bonus" class="bg-slate-800">مبادرات الإقامة</option>
+                        </select>
+                        <i class="ph ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+                <button onclick="resetTableFilters()" class="w-full lg:w-auto px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors text-sm flex items-center justify-center gap-2">
+                    <i class="ph ph-arrows-counter-clockwise"></i> إعادة ضبط
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-black/20 text-slate-300 text-sm">
+                            <th class="py-4 px-6 font-semibold w-1/4">التاريخ والوقت</th>
+                            <th class="py-4 px-6 font-semibold w-1/5">العملية</th>
+                            <th class="py-4 px-6 font-semibold w-1/6 text-left">المبلغ (د.ج)</th>
+                            <th class="py-4 px-6 font-semibold w-1/3">الملاحظات</th>
+                            <th class="py-4 px-6 font-semibold w-24 text-center">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody" class="text-sm text-slate-300 divide-y divide-white/5">
+                        <tr><td colspan="5" class="text-center py-12 text-slate-500">جاري التحقق من الهوية...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <button onclick="openModal()" class="sm:hidden fixed bottom-8 left-6 z-40 w-16 h-16 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-full flex items-center justify-center text-white shadow-[0_10px_25px_rgba(56,189,248,0.5)] border border-white/20 active:scale-90 active:shadow-inner transition-all duration-300 backdrop-blur-md">
+        <i class="ph ph-plus text-3xl font-bold drop-shadow-md"></i>
+    </button>
+
+    <div id="entryModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="relative glass-card w-full max-w-md rounded-2xl shadow-2xl p-6 modal-enter" id="modalContent">
+            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="ph ph-plus-circle text-sky-400"></i> إضافة عملية</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors"><i class="ph ph-x text-2xl"></i></button>
+            </div>
+
+            <form id="addEntryForm" onsubmit="handleFormSubmit(event)">
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">نوع العملية</label>
+                    <div class="relative">
+                        <select id="entryType" onchange="handleTypeChange()" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer">
+                            <option value="overtime" class="bg-slate-800">وقت إضافي (6.5 دج/دقيقة)</option>
+                            <option value="lateness" class="bg-slate-800">تأخر (-50 دج/دقيقة)</option>
+                            <option value="absence" class="bg-slate-800">غياب (يُخصم بالأيام)</option>
+                            <option value="company_rule" class="bg-slate-800">قواعد الشركة (مخالفات/مبادرات)</option>
+                            <option value="personal" class="bg-slate-800">مالية شخصية (مداخيل/مصاريف/ديون)</option>
+                            <option value="salary_update" class="bg-slate-800 font-bold text-indigo-400">تحديث الراتب الأساسي للشهر</option>
+                            <option value="challenge" class="bg-slate-800 font-bold text-pink-400">🎯 إطلاق تحدي مالي جديد</option>
+                        </select>
+                        <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div id="dynamicFields" class="mb-5">
+                    <div id="minutesField">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="minutesLabel">عدد الدقائق</label>
+                        <input type="number" id="minutesInput" min="1" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل العدد..." oninput="calculateAmount()">
+                    </div>
+                    
+                    <div id="daysField" class="hidden">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">عدد أيام الغياب</label>
+                        <input type="number" id="daysInput" min="0.5" step="0.5" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل عدد الأيام..." oninput="calculateAmount()">
+                    </div>
+
+                    <div id="rulesField" class="hidden">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">اختر القاعدة</label>
+                        <div class="relative">
+                            <select id="ruleSelect" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer" onchange="calculateAmount()">
+                                <option value="work_penalty" data-amt="-250" class="bg-slate-800">مخالفة وقت العمل (-250 دج)</option>
+                                <option value="res_penalty" data-amt="-100" class="bg-slate-800">مخالفة في الإقامة (-100 دج)</option>
+                                <option value="work_bonus" data-amt="500" class="bg-slate-800">مبادرة وقت العمل (+500 دج)</option>
+                                <option value="res_bonus" data-amt="200" class="bg-slate-800">مبادرة في الإقامة (+200 دج)</option>
+                            </select>
+                            <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div id="challengeDateField" class="hidden mb-4 bg-pink-500/10 p-4 rounded-xl border border-pink-500/30 flex flex-col gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-pink-300 mb-1"><i class="ph ph-calendar-plus"></i> تاريخ بداية التحدي (انطلاق)</label>
+                            <input type="date" id="challengeStartInput" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-400" onchange="calculateAmount()">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-pink-300 mb-1"><i class="ph ph-calendar-check"></i> تاريخ نهاية التحدي (الهدف الزمني)</label>
+                            <input type="date" id="challengeEndInput" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-400" onchange="calculateAmount()">
+                        </div>
+                    </div>
+
+                    <div id="personalField" class="hidden">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="personalTypeLabel">التصنيف</label>
+                        <div class="flex gap-2 mb-4" id="personalBtnGroup">
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5 active-type" data-val="income" onclick="setPersonalType('income')">مدخول</button>
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5" data-val="expense" onclick="setPersonalType('expense')">مصروف</button>
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5" data-val="debt" onclick="setPersonalType('debt')">دين عليك</button>
+                        </div>
+                        <input type="hidden" id="personalTypeInput" value="income">
+                        
+                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ (د.ج)</label>
+                        <input type="number" id="amountInput" min="1" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
+
+                        <div id="statusField" class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
+                            <label class="block text-xs font-semibold text-slate-400 mb-2" id="statusLabel">حالة المبلغ</label>
+                            <div class="flex gap-2" id="statusButtons">
+                                <button type="button" class="status-btn flex-1 py-1.5 text-sm rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300" data-val="مكتمل" onclick="setStatusVal('مكتمل')">مقبوض في الجيب</button>
+                                <button type="button" class="status-btn flex-1 py-1.5 text-sm rounded-lg border border-white/10 text-slate-400 hover:bg-white/5" data-val="قيد الانتظار" onclick="setStatusVal('قيد الانتظار')">قيد الانتظار</button>
+                            </div>
+                            <input type="hidden" id="statusInput" value="مكتمل">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-slate-300 mb-2" id="noteLabel">الملاحظات والتفاصيل</label>
+                    <textarea id="noteInput" rows="2" class="glass-input w-full rounded-xl px-4 py-3 resize-none" placeholder="اكتب تفاصيل العملية هنا..."></textarea>
+                </div>
+
+                <div class="bg-black/30 rounded-xl p-4 mb-6 flex justify-between items-center border border-white/5" id="previewBox">
+                    <span class="text-sm text-slate-400">القيمة المحسوبة:</span>
+                    <span id="calculatedPreview" class="text-xl font-bold text-white dir-ltr">0 د.ج</span>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-lg transition-all flex justify-center items-center gap-2">
+                    <i class="ph ph-floppy-disk text-xl"></i><span id="submitBtnText">حفظ العملية سحابياً</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50 glass-card px-6 py-4 rounded-xl border-l-4 border-green-500 flex items-center gap-3">
+        <i class="ph-fill ph-check-circle text-green-500 text-2xl"></i>
+        <div><h4 class="text-white font-bold text-sm" id="toastTitle">نجاح</h4><p class="text-slate-300 text-xs" id="toastMsg"></p></div>
+    </div>
+
+    <script>
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
+        let allTransactions = []; 
+        let currentFilterMonth = ""; 
+        let sessionPin = null; 
+
+        function getActiveSalaryForDate(targetDateObj) {
+            let salaryUpdates = allTransactions.filter(t => t.type === 'salary_update');
+            salaryUpdates.sort((a, b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp));
+            let validSalaryUpdate = salaryUpdates.find(t => new Date(t.exactTimestamp) <= targetDateObj);
+            return validSalaryUpdate ? validSalaryUpdate.amount : 0;
+        }
+
+        async function unlockApp() {
+            const pin = document.getElementById('pinInput').value;
+            if(!pin) return;
+            const loginBtn = document.querySelector('#loginBox button');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = `<i class="ph ph-spinner-gap animate-spin text-xl"></i> جاري التحقق...`;
+            loginBtn.disabled = true;
+            sessionPin = pin; 
+            await fetchTransactions();
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
+        }
+
+        async function fetchTransactions() {
+            if (!sessionPin) return; 
+            const tableBody = document.getElementById('transactionsTableBody');
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-sky-400"><i class="ph ph-spinner-gap animate-spin text-4xl mb-3 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]"></i><p class="font-bold">جاري المزامنة مع قاعدة البيانات...</p></td></tr>`;
+            try {
+                let response = await fetch(GAS_WEB_APP_URL + "?pin=" + sessionPin);
+                let result = await response.json();
+                if (result.status === "success") {
+                    document.getElementById('loginOverlay').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loginOverlay').classList.add('hidden'), 500);
+                    allTransactions = result.data;
+                    
+                    // تحديث قائمة الفلاتر لتتضمن الرصيد الافتتاحي
+                    if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) {
+                        const filterSelect = document.getElementById('tableTypeSelect');
+                        filterSelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>`;
+                    }
+                    // تحديث قائمة الإضافة لتتضمن الرصيد الافتتاحي
+                    if (!document.querySelector('#entryType option[value="opening_balance"]')) {
+                        const entrySelect = document.getElementById('entryType');
+                        entrySelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">💰 إدخال رصيد افتتاحي (رأس مال)</option>`;
+                    }
+
+                    applyFilters(); 
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                    sessionPin = null; 
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">تم رفض الوصول، الرمز غير صحيح.</td></tr>`;
+                }
+            } catch (error) {
+                showToast("خطأ", "تأكد من اتصالك بالإنترنت", "error");
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا يمكن الوصول للسيرفر حالياً.</td></tr>`;
+            }
+        }
+
+        window.onload = function() {
+            const today = new Date();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            currentFilterMonth = `${yyyy}-${mm}`;
+            document.getElementById('monthFilter').value = currentFilterMonth;
+            setPersonalType('income');
+        };
+
+        window.handleFormSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const ogContent = btn.innerHTML;
+            btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin text-xl"></i> جاري الحفظ...`;
+            btn.disabled = true;
+
+            const type = document.getElementById('entryType').value;
+            let note = document.getElementById('noteInput').value;
+            let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
+
+            try {
+                if (type === 'opening_balance') {
+                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال رصيد صحيح");
+                    amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = "إضافة";
+                }
+                else if (type === 'challenge') {
+                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                    let startDate = document.getElementById('challengeStartInput').value;
+                    let endDate = document.getElementById('challengeEndInput').value;
+                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
+                    if (!startDate || !endDate) throw new Error("الرجاء تحديد تاريخ بداية ونهاية التحدي");
+                    if (new Date(startDate) > new Date(endDate)) throw new Error("تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية!");
+                    amount = rawAmount; notionTitle = `🎯 تحدي مالي`; notionType = "إضافة";
+                    note = `Start: ${startDate} | End: ${endDate} | ` + note;
+                }
+                else if (type === 'salary_update') {
+                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
+                    amount = rawAmount; notionTitle = `تحديث الراتب`; notionType = "إضافة";
+                }
+                else if (type === 'overtime') {
+                    minutes = parseFloat(document.getElementById('minutesInput').value);
+                    if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
+                    amount = minutes * 6.5; notionTitle = `وقت إضافي (${minutes} دقيقة)`; notionType = "إضافة";
+                } else if (type === 'lateness') {
+                    minutes = parseFloat(document.getElementById('minutesInput').value);
+                    if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
+                    amount = -(minutes * 50); notionTitle = `تأخر (${minutes} دقيقة)`; notionType = "خصم";
+                } else if (type === 'absence') {
+                    days = parseFloat(document.getElementById('daysInput').value);
+                    if (!days || days <= 0) throw new Error("الرجاء إدخال أيام الغياب صحيحة");
+                    const today = new Date();
+                    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                    const currentSal = getActiveSalaryForDate(today);
+                    if(currentSal === 0) throw new Error("لا يوجد راتب أساسي مدون لحساب الغياب! أضف تحديث راتب أولاً.");
+                    const dailyRate = currentSal / daysInMonth;
+                    amount = -Math.round(dailyRate * days); notionTitle = `غياب (${days} أيام)`; notionType = "خصم";
+                } else if (type === 'company_rule') {
+                    const ruleSel = document.getElementById('ruleSelect'); subType = ruleSel.value;
+                    amount = parseFloat(ruleSel.options[ruleSel.selectedIndex].getAttribute('data-amt'));
+                    notionTitle = ruleSel.options[ruleSel.selectedIndex].text.split(' (')[0];
+                    notionType = amount > 0 ? "إضافة" : "خصم";
+                } else if (type === 'personal') {
+                    subType = document.getElementById('personalTypeInput').value;
+                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ صحيح");
+                    amount = (subType === 'expense' || subType === 'debt') ? -rawAmount : rawAmount;
+                    notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
+                    notionType = amount > 0 ? "إضافة" : "خصم";
+                    if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
+                }
+
+                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: Math.abs(amount), notes: note || "-", date: new Date().toISOString(), status: entryStatus };
+                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
+                let result = await response.json();
+                
+                if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
+
+                let realNotionId = result.response.id;
+                let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
+                
+                allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
+                applyFilters(); 
+                showToast("نجاح", "تم الحفظ بنجاح!");
+                closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
+            } catch (err) { showToast("تنبيه", err.message, "error"); } 
+            finally { btn.innerHTML = ogContent; btn.disabled = false; }
+        };
+
+        window.markAsPaid = async function(docId) {
+            let txn = allTransactions.find(t => t.id === docId);
+            if(!txn) return;
+            let confirmMsg = (txn.amount > 0) ? "هل متأكد أنك استلمت هذا المبلغ فعلياً؟" : "هل متأكد أنك سددت هذا الدين فعلياً؟";
+            if(!confirm(confirmMsg)) return;
+            showToast("جاري التحديث...", "يتم الآن تأكيد العملية...", "info");
+            try {
+                let payload = { pin: sessionPin, action: "update_status", page_id: docId };
+                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                let result = await response.json();
+                if (result.status !== "success") throw new Error(result.message || "فشل في تحديث الحالة");
+                txn.status = "مكتمل"; applyFilters(); showToast("نجاح", "تم تحديث العملية وإضافتها للرصيد الصافي!", "success");
+            } catch (err) { showToast("خطأ", err.message, "error"); }
+        }
+
+        window.deleteEntry = async function(docId) {
+            if(!confirm("هل أنت متأكد من حذف هذه العملية نهائياً؟")) return;
+            showToast("جاري الحذف...", "يتم الآن إزالة العملية نهائياً من Notion...", "info");
+            try {
+                let payload = { pin: sessionPin, action: "delete_entry", page_id: docId };
+                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                let result = await response.json();
+                if (result.status !== "success") throw new Error(result.message || "فشل في الحذف");
+                
+                allTransactions = allTransactions.filter(t => t.id !== docId);
+                applyFilters();
+                showToast("نجاح", "تم الحذف نهائياً من السيرفر!", "success");
+            } catch (err) { showToast("خطأ", err.message, "error"); }
+        }
+
+        window.applyFilters = function() { currentFilterMonth = document.getElementById('monthFilter').value; renderDashboard(); }
+        window.resetTableFilters = function() { document.getElementById('tableStartDate').value = ''; document.getElementById('tableEndDate').value = ''; document.getElementById('tableTypeSelect').value = 'all'; applyFilters(); }
+
+        function renderDashboard() {
+            let activeBaseSalary = 0, accruedBaseSalary = 0, sumOperations = 0;
+            let pendingReceivables = 0, pendingDebts = 0;
+            let monthOvertimeMoney = 0, monthOvertimeMinutes = 0, monthDeductions = 0, monthBonuses = 0; 
+            
+            const tableBody = document.getElementById('transactionsTableBody'); tableBody.innerHTML = '';
+            let filteredCount = 0;
+
+            let targetYear = parseInt(currentFilterMonth.split('-')[0]);
+            let targetMonth = parseInt(currentFilterMonth.split('-')[1]);
+            let targetMonthEnd = new Date(targetYear, targetMonth, 0, 23, 59, 59); 
+
+            activeBaseSalary = getActiveSalaryForDate(targetMonthEnd);
+
+            let daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
+            let dailyRate = activeBaseSalary / daysInMonth;
+            let today = new Date(), currentYear = today.getFullYear(), currentRealMonth = today.getMonth() + 1, daysPassed = 0;
+            
+            if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { daysPassed = daysInMonth; } 
+            else if (targetYear === currentYear && targetMonth === currentRealMonth) { daysPassed = today.getDate(); } 
+            
+            accruedBaseSalary = Math.round(dailyRate * daysPassed);
+
+            const tableStartDateVal = document.getElementById('tableStartDate').value;
+            const tableEndDateVal = document.getElementById('tableEndDate').value;
+            const tableTypeVal = document.getElementById('tableTypeSelect').value;
+
+            allTransactions.forEach(t => {
+                const tDate = new Date(t.exactTimestamp);
+                const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+                
+                // إضافة الرصيد الافتتاحي وعمليات الشهر للرصيد العام
+                if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
+                    if (t.type !== 'salary_update' && t.type !== 'challenge') {
+                        if (t.status === 'قيد الانتظار') {
+                            if (tMonthStr === currentFilterMonth) { // الديون تظهر حسب فلتر الشهر فقط
+                                if (t.amount > 0) pendingReceivables += t.amount;
+                                if (t.amount < 0) pendingDebts += Math.abs(t.amount);
+                            }
+                        } else {
+                            // إذا كانت العملية رصيد افتتاحي، نجمعها حتى لو لم تكن في نفس الشهر
+                            if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
+                                sumOperations += t.amount;
+                            }
+                        }
+                    }
+                }
+
+                if (tMonthStr === currentFilterMonth && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
+                    if (t.type === 'overtime') { monthOvertimeMoney += t.amount; monthOvertimeMinutes += (t.minutes || 0); } 
+                    else if (t.type === 'lateness' || (t.amount < 0 && (t.type === 'company_rule' || t.type === 'absence'))) { monthDeductions += Math.abs(t.amount); } 
+                    else if (t.type === 'company_rule' && t.amount > 0) { monthBonuses += t.amount; }
+                }
+
+                let includeInTable = true;
+                if (tableStartDateVal || tableEndDateVal) {
+                    let tTime = tDate.getTime();
+                    let startLimit = tableStartDateVal ? new Date(tableStartDateVal + 'T00:00:00').getTime() : 0;
+                    let endLimit = tableEndDateVal ? new Date(tableEndDateVal + 'T23:59:59').getTime() : Infinity;
+                    if (tTime < startLimit || tTime > endLimit) includeInTable = false;
+                }
+
+                if (includeInTable && tableTypeVal !== 'all') {
+                    let itemType = t.type;
+                    if (t.type === 'personal' || t.type === 'company_rule') itemType = t.subType;
+                    if (itemType !== tableTypeVal) includeInTable = false;
+                }
+
+                if (includeInTable) { filteredCount++; tableBody.appendChild(createTableRow(t)); }
+            });
+
+            if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا توجد عمليات مطابقة للفلاتر المحددة.</td></tr>`;
+            
+            let finalBalance = accruedBaseSalary + sumOperations;
+
+            document.getElementById('recordCountBadge').innerText = `${filteredCount} عملية`;
+            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true);
+            document.getElementById("accruedBaseSalary").innerText = `${new Intl.NumberFormat('en-DZ').format(accruedBaseSalary)} د.ج`;
+            document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
+            
+            animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'));
+            document.getElementById("pendingReceivablesTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingReceivables)} د.ج`;
+            document.getElementById("pendingDebtsTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingDebts)} د.ج`;
+
+            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, true);
+            document.getElementById("monthOvertimeMinutes").innerText = monthOvertimeMinutes;
+            animateValue("monthDeductions", monthDeductions, null, true);
+            animateValue("monthBonuses", monthBonuses, null, true);
+
+            // --- التحدي المالي ---
+            let challengeTxns = allTransactions.filter(t => t.type === 'challenge');
+            const challengeContainer = document.getElementById('challengeContainer');
+            if (challengeTxns.length > 0) {
+                let activeChallenge = challengeTxns.sort((a,b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp))[0];
+                let startMatch = activeChallenge.note.match(/Start:\s*([\d-]+)/);
+                let endMatch = activeChallenge.note.match(/End:\s*([\d-]+)/);
+                let startDateStr = startMatch ? startMatch[1] : null;
+                let endDateStr = endMatch ? endMatch[1] : null;
+                
+                if (startDateStr && endDateStr) {
+                    let startDate = new Date(startDateStr + 'T00:00:00');
+                    let endDate = new Date(endDateStr + 'T23:59:59');
+                    let targetAmount = activeChallenge.amount;
+                    
+                    let chalSal = getActiveSalaryForDate(startDate);
+                    let chalDaysInMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
+                    let chalDailyRate = chalSal / chalDaysInMonth;
+                    
+                    let totalChalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                    let daysSinceChalStart = Math.max(0, Math.ceil((today - startDate) / (1000 * 60 * 60 * 24)));
+                    let passedChalDays = Math.min(daysSinceChalStart, totalChalDays); 
+                    
+                    let chalAccruedSalary = Math.round(chalDailyRate * passedChalDays);
+                    let chalOpsSum = 0;
+                    allTransactions.forEach(t => {
+                        let tDate = new Date(t.exactTimestamp);
+                        let limitDate = today > endDate ? endDate : today; 
+                        if (t.type !== 'salary_update' && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
+                            if (tDate >= startDate && tDate <= limitDate) { chalOpsSum += t.amount; }
+                        }
+                    });
+                    
+                    let currentChallengeBalance = chalAccruedSalary + chalOpsSum;
+                    let progress = Math.max(0, Math.min((currentChallengeBalance / targetAmount) * 100, 100)).toFixed(1);
+                    let daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+                    let progressColor = progress >= 100 ? 'from-emerald-400 to-emerald-500' : (progress > 60 ? 'from-sky-400 to-indigo-500' : 'from-orange-400 to-red-500');
+                    
+                    let timeBadge = '';
+                    if(progress >= 100) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">🎉 مبروك! اكتمل التحدي</span>`; } 
+                    else if (daysRemaining >= 0) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-bold">⏳ باقي ${daysRemaining} يوم</span>`; } 
+                    else { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-bold">⚠️ انتهى الوقت</span>`; }
+
+                    challengeContainer.innerHTML = `
+                        <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                            <div class="absolute -left-4 -top-4 text-pink-500/5 transition-colors pointer-events-none"><i class="ph-fill ph-target text-9xl"></i></div>
+                            <div class="relative z-10">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+                                    <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-rocket text-pink-400 text-2xl"></i> التحدي المالي النشط</h3>
+                                    ${timeBadge}
+                                </div>
+                                <div class="flex justify-between text-sm text-slate-300 mb-2 font-semibold px-1">
+                                    <span>المحقق (في هذه المدة): ${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)} د.ج</span>
+                                    <span>الهدف: ${new Intl.NumberFormat('en-DZ').format(targetAmount)} د.ج</span>
+                                </div>
+                                <div class="w-full bg-slate-800/80 rounded-full h-4 mb-2 border border-white/5 overflow-hidden">
+                                    <div class="bg-gradient-to-r ${progressColor} h-full rounded-full transition-all duration-1000 relative flex items-center justify-end px-2" style="width: ${progress}%">
+                                        ${progress >= 15 ? `<span class="text-[10px] font-bold text-white drop-shadow-md">${progress}%</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-xs px-1 text-slate-400">
+                                    <span class="text-pink-300">${progress < 15 ? `النسبة: ${progress}%` : ''}</span>
+                                    <span>المتبقي للهدف: ${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))} د.ج</span>
+                                </div>
+                                <div class="mt-4 flex justify-end">
+                                    <button onclick="window.deleteEntry('${activeChallenge.id}')" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"><i class="ph ph-trash"></i> إلغاء التحدي</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    challengeContainer.classList.remove('hidden');
+                }
+            } else { challengeContainer.classList.add('hidden'); }
+        }
+
+        function createTableRow(t) {
+            const tr = document.createElement('tr');
+            let isPending = (t.status === 'قيد الانتظار');
+            let rowBorderColor = 'border-white/5', rowBgColor = 'glass-row';
+            
+            if(isPending) {
+                if(t.amount > 0) { rowBorderColor = 'border-l-2 border-orange-500 border-b border-white/5'; rowBgColor = 'bg-orange-500/10'; } 
+                else { rowBorderColor = 'border-l-2 border-red-500 border-b border-white/5'; rowBgColor = 'bg-red-500/10'; }
+            } else if (t.type === 'challenge') { rowBorderColor = 'border-l-2 border-pink-500 border-b border-white/5'; rowBgColor = 'bg-pink-500/5'; }
+            tr.className = `${rowBgColor} ${rowBorderColor}`;
+            
+            const dateObj = new Date(t.exactTimestamp);
+            const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB');
+
+            let typeLabel = '', typeColor = '', icon = '';
+            switch(t.type) {
+                case 'opening_balance': typeLabel = `رصيد افتتاحي`; typeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30'; icon = 'ph-money'; break;
+                case 'challenge': typeLabel = `تحدي مالي`; typeColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; icon = 'ph-target'; break;
+                case 'salary_update': typeLabel = `تحديث الراتب`; typeColor = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'; icon = 'ph-bank'; break;
+                case 'absence': typeLabel = `غياب (${t.days} يوم)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-user-minus'; break;
+                case 'overtime': typeLabel = `إضافي (${t.minutes}د)`; typeColor = 'bg-green-500/20 text-green-400 border-green-500/30'; icon = 'ph-timer'; break;
+                case 'lateness': typeLabel = `تأخر (${t.minutes}د)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-clock-countdown'; break;
+                case 'company_rule':
+                    if (t.subType === 'work_penalty') { typeLabel = 'مخالفة عمل'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-warning-circle'; }
+                    else if (t.subType === 'res_penalty') { typeLabel = 'مخالفة إقامة'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-house-line'; }
+                    else if (t.subType === 'work_bonus') { typeLabel = 'مبادرة عمل'; typeColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'; icon = 'ph-star'; }
+                    else if (t.subType === 'res_bonus') { typeLabel = 'مبادرة إقامة'; typeColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'; icon = 'ph-house-line'; }
+                    break;
+                case 'personal':
+                    if (t.subType === 'income') { typeLabel = 'مدخول'; typeColor = 'bg-sky-500/20 text-sky-400 border-sky-500/30'; icon = 'ph-wallet'; }
+                    else if (t.subType === 'expense') { typeLabel = 'مصروف'; typeColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; icon = 'ph-shopping-cart'; }
+                    else if (t.subType === 'debt') { typeLabel = 'دين'; typeColor = 'bg-purple-500/20 text-purple-400 border-purple-500/30'; icon = 'ph-hand-coins'; }
+                    break;
+            }
+
+            const amtStr = (t.amount > 0 && t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'opening_balance') ? `+${t.amount}` : t.amount;
+            let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-300' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-neon-green' : (t.amount < 0 ? 'text-neon-red' : 'text-slate-300')));
+            if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
+
+            let pendingBadge = '';
+            if (isPending) {
+                let badgeText = t.amount > 0 ? "قيد التحصيل" : "لم يُسدد بعد";
+                let badgeColor = t.amount > 0 ? "text-orange-400" : "text-red-400";
+                pendingBadge = `<span class="block mt-1 text-[10px] ${badgeColor} font-bold"><i class="ph ph-clock"></i> ${badgeText}</span>`;
+            }
+            
+            let actionButtons = '';
+            if (isPending) {
+                let checkTitle = t.amount > 0 ? "تم القبض" : "تم التسديد";
+                actionButtons += `<button onclick="window.markAsPaid('${t.id}')" class="text-green-400 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-green-500/20 mr-1" title="${checkTitle}"><i class="ph-fill ph-check-circle text-2xl drop-shadow-md"></i></button>`;
+            }
+            actionButtons += `<button onclick="window.deleteEntry('${t.id}')" class="text-slate-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10" title="حذف نهائي"><i class="ph ph-trash text-lg"></i></button>`;
+
+            let dispNote = t.note || '-';
+            if (t.type === 'challenge') { dispNote = t.note.split('|').length > 2 ? t.note.split('|')[2].trim() : '-'; }
+
+            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${amtStr}</td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
+            return tr;
+        }
+
+        function animateValue(id, end, colorClass = null, hideDZDInSpan = false) {
+            const obj = document.getElementById(id); if (!obj) return;
+            const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(end));
+            const sign = end < 0 ? '-' : '';
+            obj.innerHTML = hideDZDInSpan ? `<span dir="ltr">${sign}${formatted}</span> <span class="text-sm font-normal text-slate-400">د.ج</span>` : `<span dir="ltr">${sign}${formatted}</span>`;
+            if (colorClass) obj.className = `${obj.className.split(' ').filter(c=>!c.startsWith('text-')).join(' ')} ${colorClass}`;
+        }
+
+        let toastTimeout;
+        function showToast(title, msg, type = "success") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').innerText = title; document.getElementById('toastMsg').innerText = msg;
+            let borderColor = 'border-green-500'; let iconClass = 'ph-check-circle text-green-500';
+            if(type === 'error') { borderColor = 'border-red-500'; iconClass = 'ph-warning-circle text-red-500'; }
+            if(type === 'info') { borderColor = 'border-sky-500'; iconClass = 'ph-info text-sky-500'; }
+            toast.className = `fixed bottom-6 right-6 transform translate-y-0 opacity-100 transition-all duration-300 z-50 glass-card px-6 py-4 rounded-xl border-l-4 flex items-center gap-3 ${borderColor}`;
+            toast.querySelector('i').className = `ph-fill ${iconClass} text-2xl`;
+            clearTimeout(toastTimeout); toastTimeout = setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('translate-y-20', 'opacity-0'); }, 4000);
+        }
+
+        function openModal() { document.getElementById('entryModal').classList.remove('hidden'); void document.getElementById('entryModal').offsetWidth; document.getElementById('modalContent').classList.add('modal-enter-active'); handleTypeChange(); }
+        function closeModal() { document.getElementById('modalContent').classList.remove('modal-enter-active'); setTimeout(() => document.getElementById('entryModal').classList.add('hidden'), 300); }
+
+        function handleTypeChange() {
+            const type = document.getElementById('entryType').value;
+            const minField = document.getElementById('minutesField'), daysField = document.getElementById('daysField'), rulesField = document.getElementById('rulesField'), personalField = document.getElementById('personalField');
+            const challengeDateField = document.getElementById('challengeDateField');
+            
+            minField.classList.add('hidden'); daysField.classList.add('hidden'); rulesField.classList.add('hidden'); personalField.classList.add('hidden'); challengeDateField.classList.add('hidden');
+            document.getElementById('minutesInput').value = ''; document.getElementById('daysInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('challengeStartInput').value = ''; document.getElementById('challengeEndInput').value = '';
+
+            let btnText = "حفظ العملية سحابياً";
+
+            if (type === 'opening_balance') { 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ الافتتاحي (د.ج)'; document.getElementById('statusField').classList.add('hidden');
+            }
+            else if (type === 'overtime' || type === 'lateness') { minField.classList.remove('hidden'); document.getElementById('minutesLabel').innerText = type === 'overtime' ? 'عدد الدقائق الإضافية' : 'عدد دقائق التأخر'; } 
+            else if (type === 'absence') { daysField.classList.remove('hidden'); }
+            else if (type === 'company_rule') { rulesField.classList.remove('hidden'); } 
+            else if (type === 'personal') { 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.remove('hidden'); document.getElementById('personalTypeLabel').classList.remove('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ (د.ج)'; 
+                let pType = document.getElementById('personalTypeInput').value;
+                if(pType === 'expense') { document.getElementById('statusField').classList.add('hidden'); } else { document.getElementById('statusField').classList.remove('hidden'); }
+            }
+            else if (type === 'salary_update') { 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'الراتب الأساسي الجديد (د.ج)'; document.getElementById('statusField').classList.add('hidden'); 
+            }
+            else if (type === 'challenge') {
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ المستهدف (د.ج)'; document.getElementById('statusField').classList.add('hidden');
+                challengeDateField.classList.remove('hidden');
+                btnText = "إطلاق التحدي 🚀";
+            }
+            
+            document.getElementById('submitBtnText').innerText = btnText;
+            calculateAmount();
+        }
+
+        function setPersonalType(val) {
+            document.getElementById('personalTypeInput').value = val;
+            document.querySelectorAll('.personal-type-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500', 'text-sky-300'); b.classList.add('border-white/10', 'text-slate-300'); });
+            const activeBtn = document.querySelector(`.personal-type-btn[data-val="${val}"]`);
+            activeBtn.classList.remove('border-white/10', 'text-slate-300'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-300');
+            
+            const statusField = document.getElementById('statusField');
+            if (val === 'expense') { statusField.classList.add('hidden'); } else {
+                statusField.classList.remove('hidden');
+                if (val === 'income') { document.getElementById('statusLabel').innerText = 'هل تم قبض المبلغ فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'مقبوض في الجيب'; } 
+                else if (val === 'debt') { document.getElementById('statusLabel').innerText = 'هل قمت بتسديد هذا الدين فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'تم التسديد (مكتمل)'; }
+                setStatusVal('مكتمل');
+            }
+            calculateAmount();
+        }
+
+        function setStatusVal(val) {
+            document.getElementById('statusInput').value = val;
+            document.querySelectorAll('.status-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500', 'text-sky-300'); b.classList.add('border-white/10', 'text-slate-400'); });
+            const activeBtn = document.querySelector(`.status-btn[data-val="${val}"]`);
+            activeBtn.classList.remove('border-white/10', 'text-slate-400'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-300');
+        }
+
+        window.calculateAmount = function() {
+            const type = document.getElementById('entryType').value;
+            let finalStr = "0 د.ج", colorClass = "text-white";
+            if (type === 'opening_balance' || type === 'salary_update') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `${amt} د.ج`; colorClass = "text-indigo-400"; }
+            else if (type === 'challenge') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `الهدف: ${amt} د.ج`; colorClass = "text-pink-400"; }
+            else if (type === 'absence') {
+                const days = parseFloat(document.getElementById('daysInput').value) || 0;
+                const today = new Date();
+                const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                const currentSal = getActiveSalaryForDate(today);
+                const dailyRate = currentSal / daysInMonth;
+                const deduction = Math.round(dailyRate * days);
+                finalStr = `-${deduction} د.ج`; colorClass = "text-neon-red";
+            }
+            else if (type === 'overtime') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `+${mins * 6.5} د.ج`; colorClass = "text-neon-green"; } 
+            else if (type === 'lateness') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `-${mins * 50} د.ج`; colorClass = "text-neon-red"; }
+            else if (type === 'company_rule') { const sel = document.getElementById('ruleSelect'); const amt = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-amt')); finalStr = amt > 0 ? `+${amt} د.ج` : `${amt} د.ج`; colorClass = amt > 0 ? "text-neon-green" : "text-neon-red"; }
+            else if (type === 'personal') { const subType = document.getElementById('personalTypeInput').value; const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = subType === 'income' ? `+${amt} د.ج` : `-${amt} د.ج`; colorClass = subType === 'income' ? "text-neon-green" : "text-neon-red"; }
+            const preview = document.getElementById('calculatedPreview'); preview.innerText = finalStr; preview.className = `text-xl font-bold dir-ltr ${colorClass}`;
+        }
+    </script>
+</body>
+</html>
