@@ -105,10 +105,22 @@
                 </div>
                 <div class="relative z-10 text-center md:text-right mb-4">
                     <p class="text-sky-300 text-sm font-semibold mb-1 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
-                        الرصيد الإجمالي الصافي (كاش في اليد) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-sky-400 text-lg"></i>
+                        الرصيد الإجمالي (التقديري بالدينار) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-sky-400 text-lg"></i>
                     </p>
-                    <h3 class="text-5xl font-bold text-white mb-2 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
-                    <p class="text-xs text-slate-400" id="balanceSubtitle">يُحسب بناءً على الراتب وعمليات الشهر المكتملة</p>
+                    <h3 class="text-5xl font-bold text-white mb-3 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
+                    
+                    <!-- تفاصيل المحافظ المتعددة -->
+                    <div class="flex gap-2 flex-wrap justify-center md:justify-end mt-2">
+                        <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                            💵 <span id="cashBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
+                        </span>
+                        <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                            💳 <span id="baridiBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
+                        </span>
+                        <span class="bg-slate-800/80 border border-teal-500/30 px-3 py-1.5 rounded-lg text-xs font-bold text-teal-400 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                            🪙 <span id="redotBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> USDT
+                        </span>
+                    </div>
                 </div>
                 <div class="relative z-10 mt-2 pt-3 border-t border-sky-500/20 flex flex-col gap-2 bg-black/20 p-2 rounded-lg">
                     <div class="flex justify-between items-center">
@@ -135,7 +147,7 @@
                     </div>
                     <h3 class="text-3xl font-bold text-indigo-300 mb-1" id="activeBaseSalary">0 <span class="text-sm font-normal text-slate-400">د.ج</span></h3>
                     <div class="flex justify-between items-center mt-2 border-t border-white/5 pt-2">
-                        <span class="text-xs text-slate-400">الراتب المكتسب (التراكمي):</span>
+                        <span class="text-xs text-slate-400">الراتب المكتسب (يُضاف لـ الكاش):</span>
                         <span class="text-sm font-bold text-white" id="accruedBaseSalary" dir="ltr">0 د.ج</span>
                     </div>
                 </div>
@@ -184,6 +196,7 @@
                             <option value="expense" class="bg-slate-800">المصاريف</option>
                             <option value="debt" class="bg-slate-800">الديون (عليك)</option>
                             <option value="salary_update" class="bg-slate-800">تحديثات الراتب</option>
+                            <option value="exchange" class="bg-slate-800 text-teal-300">تحويل وشراء عملة (USDT)</option>
                             <option value="overtime" class="bg-slate-800">أرباح الوقت الإضافي</option>
                             <option value="lateness" class="bg-slate-800">التأخرات</option>
                             <option value="absence" class="bg-slate-800">الغيابات (أيام)</option>
@@ -206,7 +219,7 @@
                         <tr class="bg-black/20 text-slate-300 text-sm">
                             <th class="py-4 px-6 font-semibold w-1/4">التاريخ والوقت</th>
                             <th class="py-4 px-6 font-semibold w-1/5">العملية</th>
-                            <th class="py-4 px-6 font-semibold w-1/6 text-left">المبلغ (د.ج)</th>
+                            <th class="py-4 px-6 font-semibold w-1/6 text-left">المبلغ</th>
                             <th class="py-4 px-6 font-semibold w-1/3">الملاحظات</th>
                             <th class="py-4 px-6 font-semibold w-24 text-center">إجراء</th>
                         </tr>
@@ -241,11 +254,45 @@
                             <option value="absence" class="bg-slate-800">غياب (يُخصم بالأيام)</option>
                             <option value="company_rule" class="bg-slate-800">قواعد الشركة (مخالفات/مبادرات)</option>
                             <option value="personal" class="bg-slate-800">مالية شخصية (مداخيل/مصاريف/ديون)</option>
+                            <option value="exchange" class="bg-slate-800 text-teal-400 font-bold">🔄 تحويل وشراء عملة (USDT)</option>
                             <option value="salary_update" class="bg-slate-800 font-bold text-indigo-400">تحديث الراتب الأساسي للشهر</option>
                             <option value="opening_balance" class="bg-slate-800 font-bold text-teal-400">💰 إدخال رصيد افتتاحي (رأس مال)</option>
                             <option value="challenge" class="bg-slate-800 font-bold text-pink-400">🎯 إطلاق تحدي مالي جديد</option>
                         </select>
                         <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- حقل اختيار المحفظة العام -->
+                <div class="mb-5" id="walletSelectionField">
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">المحفظة / الحساب المستهدف</label>
+                    <div class="relative">
+                        <select id="walletSelect" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer">
+                            <option value="كاش" class="bg-slate-800">💵 كاش (سيولة في اليد)</option>
+                            <option value="بريدي موب" class="bg-slate-800">💳 بريدي موب</option>
+                            <option value="RedotPay" class="bg-slate-800">🪙 RedotPay (USDT)</option>
+                        </select>
+                        <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <!-- حقول شراء الـ USDT -->
+                <div id="exchangeField" class="hidden mb-4 bg-teal-500/10 p-4 rounded-xl border border-teal-500/30 flex flex-col gap-3">
+                    <label class="block text-sm font-bold text-teal-300 mb-1 border-b border-teal-500/30 pb-2"><i class="ph ph-currency-circle-dollar"></i> تفاصيل شراء الـ USDT لـ RedotPay</label>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">المبلغ المشترى (كم USDT؟)</label>
+                        <input type="number" id="usdtAmountInput" min="0.1" step="0.1" class="glass-input w-full rounded-lg px-3 py-2 focus:border-teal-400" placeholder="مثال: 100" oninput="calculateAmount()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">سعر الصرف (للدولار الواحد)</label>
+                        <input type="number" id="usdtRateInput" min="150" step="0.5" class="glass-input w-full rounded-lg px-3 py-2 focus:border-teal-400" placeholder="مثال: 255" oninput="calculateAmount()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">من أين دفعت الدينار؟</label>
+                        <select id="exchangeSourceSelect" class="glass-input w-full rounded-lg px-3 py-2 appearance-none">
+                            <option value="كاش" class="bg-slate-800">💵 كاش</option>
+                            <option value="بريدي موب" class="bg-slate-800">💳 بريدي موب</option>
+                        </select>
                     </div>
                 </div>
 
@@ -293,8 +340,7 @@
                         </div>
                         <input type="hidden" id="personalTypeInput" value="income">
                         
-                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ (د.ج)</label>
-                        <!-- تمت إزالة خاصية min="1" من هنا للسماح بالأرقام السالبة -->
+                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ</label>
                         <input type="number" id="amountInput" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
 
                         <div id="statusField" class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
@@ -331,7 +377,7 @@
         <div><h4 class="text-white font-bold text-sm" id="toastTitle">نجاح</h4><p class="text-slate-300 text-xs" id="toastMsg"></p></div>
     </div>
 
-    <script>
+<script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
         let allTransactions = []; 
         let currentFilterMonth = ""; 
@@ -381,7 +427,7 @@
 
         window.checkPrivacyPin = function() {
             const pin = document.getElementById('privacyPinInput').value;
-            if (pin.toLowerCase() === 'mmmm') { 
+            if (pin.toLowerCase() === 'klmn') { 
                 isPrivacyRevealed = true;
                 closePrivacyModal();
                 renderDashboard();
@@ -441,15 +487,45 @@
 
             const type = document.getElementById('entryType').value;
             let note = document.getElementById('noteInput').value;
+            let wallet = document.getElementById('walletSelect').value; 
             let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
 
             try {
-                if (type === 'opening_balance') {
+                if (type === 'exchange') {
+                    let usdtAmount = parseFloat(document.getElementById('usdtAmountInput').value);
+                    let usdtRate = parseFloat(document.getElementById('usdtRateInput').value);
+                    let sourceWallet = document.getElementById('exchangeSourceSelect').value;
+                    if (isNaN(usdtAmount) || isNaN(usdtRate) || usdtAmount <= 0 || usdtRate <= 0) throw new Error("تأكد من إدخال مبلغ الـ USDT وسعر الصرف بشكل صحيح");
+                    
+                    let dzdAmount = Math.round(usdtAmount * usdtRate);
+                    
+                    const payloadToGas = { 
+                        pin: sessionPin, 
+                        action: "exchange",
+                        title_out: `شراء USDT (${usdtAmount}$)`,
+                        amount_out: -dzdAmount,
+                        wallet_out: sourceWallet,
+                        title_in: `استلام USDT`,
+                        amount_in: usdtAmount,
+                        notes: `سعر الصرف: ${usdtRate} | ` + note,
+                        date: new Date().toISOString()
+                    };
+                    
+                    let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
+                    let result = await response.json();
+                    if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
+                    
+                    allTransactions.unshift({ id: result.response.id1, type: 'exchange', subType: 'expense', amount: -dzdAmount, wallet: sourceWallet, note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
+                    allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
+                    
+                    applyFilters(); showToast("نجاح", "تم تنفيذ التحويل بنجاح!");
+                    closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
+                    return; 
+                }
+                else if (type === 'opening_balance') {
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); // تم تعديل الشرط ليقبل السوالب
-                    amount = rawAmount; 
-                    notionTitle = `رصيد افتتاحي`; 
-                    notionType = amount >= 0 ? "إضافة" : "خصم";
+                    if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); 
+                    amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = amount >= 0 ? "إضافة" : "خصم";
                 }
                 else if (type === 'challenge') {
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
@@ -491,15 +567,14 @@
                 } else if (type === 'personal') {
                     subType = document.getElementById('personalTypeInput').value;
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); // تم تعديل الشرط ليقبل السوالب
+                    if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); 
                     amount = (subType === 'expense' || subType === 'debt') ? -Math.abs(rawAmount) : rawAmount;
                     notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
                     notionType = amount > 0 ? "إضافة" : "خصم";
                     if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
                 }
 
-                // نرسل الـ amount كما هو (بالسالب إن لزم) بدلاً من Math.abs(amount)
-                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
+                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, wallet: wallet, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
                 let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
                 let result = await response.json();
                 
@@ -508,7 +583,7 @@
                 let realNotionId = result.response.id;
                 let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                 
-                allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
+                allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
                 applyFilters(); 
                 showToast("نجاح", "تم الحفظ بنجاح!");
                 closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
@@ -575,30 +650,46 @@
             const tableStartDateVal = document.getElementById('tableStartDate').value;
             const tableEndDateVal = document.getElementById('tableEndDate').value;
             const tableTypeVal = document.getElementById('tableTypeSelect').value;
+            
+            let balances = { 'كاش': 0, 'بريدي موب': 0, 'RedotPay': 0 };
+            balances['كاش'] += accruedBaseSalary; 
+            
+            // --- التحديث الجديد: استخراج آخر سعر صرف ديناميكي ---
+            let latestExchangeRate = 250; // القيمة الافتراضية
+            let exchangeTransactions = allTransactions.filter(t => t.type === 'exchange' && t.subType === 'income');
+            if (exchangeTransactions.length > 0) {
+                // ترتيب العمليات حسب الأحدث
+                exchangeTransactions.sort((a,b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp));
+                let latestExchange = exchangeTransactions[0];
+                // استخراج السعر من الملاحظة "سعر الصرف: 255"
+                let rateMatch = latestExchange.note.match(/سعر الصرف:\s*([\d.]+)/);
+                if (rateMatch && rateMatch[1]) {
+                    latestExchangeRate = parseFloat(rateMatch[1]);
+                }
+            }
 
             allTransactions.forEach(t => {
                 const tDate = new Date(t.exactTimestamp);
                 const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
                 
-                if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
-                    if (t.type !== 'salary_update' && t.type !== 'challenge') {
-                        if (t.status === 'قيد الانتظار') {
-                            if (tMonthStr === currentFilterMonth) { 
-                                if (t.amount > 0) pendingReceivables += t.amount;
-                                if (t.amount < 0) pendingDebts += Math.abs(t.amount);
-                            }
-                        } else {
-                            if (t.type === 'opening_balance' || tMonthStr === currentFilterMonth) {
-                                sumOperations += t.amount;
-                            }
-                        }
-                    }
+                if (t.type !== 'salary_update' && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
+                    let w = t.wallet || 'كاش';
+                    if (balances[w] !== undefined) balances[w] += t.amount;
+                    else balances['كاش'] += t.amount;
                 }
 
-                if (tMonthStr === currentFilterMonth && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
-                    if (t.type === 'overtime') { monthOvertimeMoney += t.amount; monthOvertimeMinutes += (t.minutes || 0); } 
-                    else if (t.type === 'lateness' || (t.amount < 0 && (t.type === 'company_rule' || t.type === 'absence'))) { monthDeductions += Math.abs(t.amount); } 
-                    else if (t.type === 'company_rule' && t.amount > 0) { monthBonuses += t.amount; }
+                if (tMonthStr === currentFilterMonth) {
+                    if (t.type !== 'salary_update' && t.type !== 'challenge') {
+                        if (t.status === 'قيد الانتظار') {
+                            if (t.amount > 0) pendingReceivables += t.amount;
+                            if (t.amount < 0) pendingDebts += Math.abs(t.amount);
+                        }
+                    }
+                    if (t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
+                        if (t.type === 'overtime') { monthOvertimeMoney += t.amount; monthOvertimeMinutes += (t.minutes || 0); } 
+                        else if (t.type === 'lateness' || (t.amount < 0 && (t.type === 'company_rule' || t.type === 'absence'))) { monthDeductions += Math.abs(t.amount); } 
+                        else if (t.type === 'company_rule' && t.amount > 0) { monthBonuses += t.amount; }
+                    }
                 }
 
                 let includeInTable = true;
@@ -620,7 +711,9 @@
 
             if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا توجد عمليات مطابقة للفلاتر المحددة.</td></tr>`;
             
-            let finalBalance = accruedBaseSalary + sumOperations;
+            // --- التحديث الجديد: استخدام السعر الديناميكي ---
+            let redotPayInDZD = Math.round(balances['RedotPay'] * latestExchangeRate);
+            let finalBalance = balances['كاش'] + balances['بريدي موب'] + redotPayInDZD;
 
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash';
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-sky-400 text-lg`;
@@ -628,8 +721,23 @@
 
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عملية`;
             
+            document.getElementById("cashBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['كاش']);
+            document.getElementById("baridiBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['بريدي موب']);
+            // أضفت تولتيب (Tooltip) يوريك السعر اللي راهي تحسب بيه المنصة
+            document.getElementById("redotBalDisplay").innerHTML = `${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(balances['RedotPay'])} <span class="text-[8px] text-teal-500/50 block -mt-1" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
+            
+            if(isPrivacyRevealed) {
+                document.getElementById("cashBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90');
+                document.getElementById("baridiBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90');
+                document.getElementById("redotBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90');
+            } else {
+                document.getElementById("cashBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90');
+                document.getElementById("baridiBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90');
+                document.getElementById("redotBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90');
+            }
+
             animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true, true);
-            document.getElementById("accruedBaseSalary").innerText = `${new Intl.NumberFormat('en-DZ').format(accruedBaseSalary)} د.ج`;
+            animateValue("accruedBaseSalary", accruedBaseSalary, 'text-white', true, true);
             document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
             
             animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'), true, true);
@@ -737,6 +845,7 @@
                 case 'absence': typeLabel = `غياب (${t.days} يوم)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-user-minus'; break;
                 case 'overtime': typeLabel = `إضافي (${t.minutes}د)`; typeColor = 'bg-green-500/20 text-green-400 border-green-500/30'; icon = 'ph-timer'; break;
                 case 'lateness': typeLabel = `تأخر (${t.minutes}د)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-clock-countdown'; break;
+                case 'exchange': typeLabel = t.amount > 0 ? `استلام USDT` : `شراء USDT`; typeColor = 'bg-teal-500/20 text-teal-300 border-teal-500/30'; icon = 'ph-currency-circle-dollar'; break;
                 case 'company_rule':
                     if (t.subType === 'work_penalty') { typeLabel = 'مخالفة عمل'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-warning-circle'; }
                     else if (t.subType === 'res_penalty') { typeLabel = 'مخالفة إقامة'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-house-line'; }
@@ -750,6 +859,14 @@
                     break;
             }
 
+            let walletIcon = '';
+            if(t.wallet === 'بريدي موب') walletIcon = '<i class="ph-fill ph-credit-card text-indigo-400" title="بريدي موب"></i>';
+            else if(t.wallet === 'RedotPay') walletIcon = '<i class="ph-fill ph-coin text-teal-400" title="RedotPay"></i>';
+            else walletIcon = '<i class="ph-fill ph-money text-green-400" title="كاش"></i>';
+            
+            typeLabel = `<span class="flex items-center gap-1">${typeLabel} <span class="mx-0.5 text-white/20">|</span> ${walletIcon}</span>`;
+
+            const amtCurrency = t.wallet === 'RedotPay' ? 'USDT' : 'د.ج';
             const amtStr = (t.amount > 0 && t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'opening_balance') ? `+${t.amount}` : t.amount;
             let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-300' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-neon-green' : (t.amount < 0 ? 'text-neon-red' : 'text-slate-300')));
             if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
@@ -771,7 +888,7 @@
             let dispNote = t.note || '-';
             if (t.type === 'challenge') { dispNote = t.note.split('|').length > 2 ? t.note.split('|')[2].trim() : '-'; }
 
-            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${amtStr}</td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
+            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${amtStr} <span class="text-[10px] font-normal text-slate-400">${amtCurrency}</span></td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
             return tr;
         }
 
@@ -814,20 +931,29 @@
             const type = document.getElementById('entryType').value;
             const minField = document.getElementById('minutesField'), daysField = document.getElementById('daysField'), rulesField = document.getElementById('rulesField'), personalField = document.getElementById('personalField');
             const challengeDateField = document.getElementById('challengeDateField');
+            const walletField = document.getElementById('walletSelectionField');
+            const exchangeField = document.getElementById('exchangeField');
             
             minField.classList.add('hidden'); daysField.classList.add('hidden'); rulesField.classList.add('hidden'); personalField.classList.add('hidden'); challengeDateField.classList.add('hidden');
+            exchangeField.classList.add('hidden'); walletField.classList.remove('hidden');
+            
             document.getElementById('minutesInput').value = ''; document.getElementById('daysInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('challengeStartInput').value = ''; document.getElementById('challengeEndInput').value = '';
 
             let btnText = "حفظ العملية سحابياً";
 
-            if (type === 'opening_balance') { 
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ الافتتاحي (د.ج)'; document.getElementById('statusField').classList.add('hidden');
+            if (type === 'exchange') {
+                walletField.classList.add('hidden');
+                exchangeField.classList.remove('hidden');
+                btnText = "تنفيذ التحويل 🔄";
+            }
+            else if (type === 'opening_balance') { 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ الافتتاحي (بالدينار أو USDT حسب المحفظة)'; document.getElementById('statusField').classList.add('hidden');
             }
             else if (type === 'overtime' || type === 'lateness') { minField.classList.remove('hidden'); document.getElementById('minutesLabel').innerText = type === 'overtime' ? 'عدد الدقائق الإضافية' : 'عدد دقائق التأخر'; } 
             else if (type === 'absence') { daysField.classList.remove('hidden'); }
             else if (type === 'company_rule') { rulesField.classList.remove('hidden'); } 
             else if (type === 'personal') { 
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.remove('hidden'); document.getElementById('personalTypeLabel').classList.remove('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ (د.ج)'; 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.remove('hidden'); document.getElementById('personalTypeLabel').classList.remove('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ (العملة حسب المحفظة المختارة)'; 
                 let pType = document.getElementById('personalTypeInput').value;
                 if(pType === 'expense') { document.getElementById('statusField').classList.add('hidden'); } else { document.getElementById('statusField').classList.remove('hidden'); }
             }
@@ -835,6 +961,7 @@
                 personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'الراتب الأساسي الجديد (د.ج)'; document.getElementById('statusField').classList.add('hidden'); 
             }
             else if (type === 'challenge') {
+                walletField.classList.add('hidden');
                 personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ المستهدف (د.ج)'; document.getElementById('statusField').classList.add('hidden');
                 challengeDateField.classList.remove('hidden');
                 btnText = "إطلاق التحدي 🚀";
@@ -869,8 +996,15 @@
 
         window.calculateAmount = function() {
             const type = document.getElementById('entryType').value;
-            let finalStr = "0 د.ج", colorClass = "text-white";
-            if (type === 'opening_balance' || type === 'salary_update') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `${amt} د.ج`; colorClass = "text-indigo-400"; }
+            let finalStr = "0", colorClass = "text-white";
+            
+            if (type === 'exchange') {
+                let usdt = parseFloat(document.getElementById('usdtAmountInput').value) || 0;
+                let rate = parseFloat(document.getElementById('usdtRateInput').value) || 0;
+                let totalDzd = Math.round(usdt * rate);
+                finalStr = `سيُخصم ${totalDzd} د.ج`; colorClass = "text-teal-400";
+            }
+            else if (type === 'opening_balance' || type === 'salary_update') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `${amt}`; colorClass = "text-indigo-400"; }
             else if (type === 'challenge') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `الهدف: ${amt} د.ج`; colorClass = "text-pink-400"; }
             else if (type === 'absence') {
                 const days = parseFloat(document.getElementById('daysInput').value) || 0;
@@ -888,13 +1022,14 @@
                 const subType = document.getElementById('personalTypeInput').value; 
                 const amt = parseFloat(document.getElementById('amountInput').value) || 0;
                 if (subType === 'income') {
-                    finalStr = amt >= 0 ? `+${amt} د.ج` : `${amt} د.ج`;
+                    finalStr = amt >= 0 ? `+${amt}` : `${amt}`;
                     colorClass = amt >= 0 ? "text-neon-green" : "text-neon-red";
                 } else {
-                    finalStr = `-${Math.abs(amt)} د.ج`;
+                    finalStr = `-${Math.abs(amt)}`;
                     colorClass = "text-neon-red";
                 }
             }
+            
             const preview = document.getElementById('calculatedPreview'); preview.innerText = finalStr; preview.className = `text-xl font-bold dir-ltr ${colorClass}`;
         }
     </script>
