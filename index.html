@@ -236,7 +236,7 @@
                     <label class="block text-sm font-semibold text-slate-300 mb-2">نوع العملية</label>
                     <div class="relative">
                         <select id="entryType" onchange="handleTypeChange()" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer">
-                            <option value="overtime" class="bg-slate-800">وقت إضافي (6.5)</option>
+                            <option value="overtime" class="bg-slate-800">وقت إضافي (6.5/دقيقة)</option>
                             <option value="lateness" class="bg-slate-800">تأخر (-50 دج/دقيقة)</option>
                             <option value="absence" class="bg-slate-800">غياب (يُخصم بالأيام)</option>
                             <option value="company_rule" class="bg-slate-800">قواعد الشركة (مخالفات/مبادرات)</option>
@@ -294,7 +294,8 @@
                         <input type="hidden" id="personalTypeInput" value="income">
                         
                         <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ (د.ج)</label>
-                        <input type="number" id="amountInput" min="1" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
+                        <!-- تمت إزالة خاصية min="1" من هنا للسماح بالأرقام السالبة -->
+                        <input type="number" id="amountInput" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
 
                         <div id="statusField" class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
                             <label class="block text-xs font-semibold text-slate-400 mb-2" id="statusLabel">حالة المبلغ</label>
@@ -336,7 +337,6 @@
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         
-        // متغير الخصوصية الجديد
         let isPrivacyRevealed = false;
 
         function getActiveSalaryForDate(targetDateObj) {
@@ -359,7 +359,6 @@
             loginBtn.disabled = false;
         }
 
-        // دوال الخصوصية
         window.togglePrivacy = function() {
             if (isPrivacyRevealed) {
                 isPrivacyRevealed = false;
@@ -403,6 +402,15 @@
                     document.getElementById('loginOverlay').style.opacity = '0';
                     setTimeout(() => document.getElementById('loginOverlay').classList.add('hidden'), 500);
                     allTransactions = result.data;
+                    
+                    if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) {
+                        const filterSelect = document.getElementById('tableTypeSelect');
+                        filterSelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>`;
+                    }
+                    if (!document.querySelector('#entryType option[value="opening_balance"]')) {
+                        const entrySelect = document.getElementById('entryType');
+                        entrySelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">💰 إدخال رصيد افتتاحي (رأس مال)</option>`;
+                    }
                     applyFilters(); 
                 } else {
                     document.getElementById('loginError').classList.remove('hidden');
@@ -438,14 +446,16 @@
             try {
                 if (type === 'opening_balance') {
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال رصيد صحيح");
-                    amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = "إضافة";
+                    if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); // تم تعديل الشرط ليقبل السوالب
+                    amount = rawAmount; 
+                    notionTitle = `رصيد افتتاحي`; 
+                    notionType = amount >= 0 ? "إضافة" : "خصم";
                 }
                 else if (type === 'challenge') {
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
                     let startDate = document.getElementById('challengeStartInput').value;
                     let endDate = document.getElementById('challengeEndInput').value;
-                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
+                    if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
                     if (!startDate || !endDate) throw new Error("الرجاء تحديد تاريخ بداية ونهاية التحدي");
                     if (new Date(startDate) > new Date(endDate)) throw new Error("تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية!");
                     amount = rawAmount; notionTitle = `🎯 تحدي مالي`; notionType = "إضافة";
@@ -453,7 +463,7 @@
                 }
                 else if (type === 'salary_update') {
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
+                    if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
                     amount = rawAmount; notionTitle = `تحديث الراتب`; notionType = "إضافة";
                 }
                 else if (type === 'overtime') {
@@ -481,14 +491,15 @@
                 } else if (type === 'personal') {
                     subType = document.getElementById('personalTypeInput').value;
                     let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (!rawAmount || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ صحيح");
-                    amount = (subType === 'expense' || subType === 'debt') ? -rawAmount : rawAmount;
+                    if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); // تم تعديل الشرط ليقبل السوالب
+                    amount = (subType === 'expense' || subType === 'debt') ? -Math.abs(rawAmount) : rawAmount;
                     notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
                     notionType = amount > 0 ? "إضافة" : "خصم";
                     if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
                 }
 
-                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: Math.abs(amount), notes: note || "-", date: new Date().toISOString(), status: entryStatus };
+                // نرسل الـ amount كما هو (بالسالب إن لزم) بدلاً من Math.abs(amount)
+                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
                 let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
                 let result = await response.json();
                 
@@ -611,14 +622,12 @@
             
             let finalBalance = accruedBaseSalary + sumOperations;
 
-            // تحديث أيقونات العين بناءً على حالة الخصوصية
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash';
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-sky-400 text-lg`;
             document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-indigo-400 text-lg`;
 
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عملية`;
             
-            // تحديث الأرقام الحساسة مع ميزة الضباب
             animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true, true);
             document.getElementById("accruedBaseSalary").innerText = `${new Intl.NumberFormat('en-DZ').format(accruedBaseSalary)} د.ج`;
             document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
@@ -766,7 +775,6 @@
             return tr;
         }
 
-        // دالة عرض الأرقام مع دعم الخصوصية
         function animateValue(id, end, colorClass = null, hideDZDInSpan = false, isSensitive = false) {
             const obj = document.getElementById(id); if (!obj) return;
             const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(end));
@@ -876,7 +884,17 @@
             else if (type === 'overtime') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `+${mins * 6.5} د.ج`; colorClass = "text-neon-green"; } 
             else if (type === 'lateness') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `-${mins * 50} د.ج`; colorClass = "text-neon-red"; }
             else if (type === 'company_rule') { const sel = document.getElementById('ruleSelect'); const amt = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-amt')); finalStr = amt > 0 ? `+${amt} د.ج` : `${amt} د.ج`; colorClass = amt > 0 ? "text-neon-green" : "text-neon-red"; }
-            else if (type === 'personal') { const subType = document.getElementById('personalTypeInput').value; const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = subType === 'income' ? `+${amt} د.ج` : `-${amt} د.ج`; colorClass = subType === 'income' ? "text-neon-green" : "text-neon-red"; }
+            else if (type === 'personal') { 
+                const subType = document.getElementById('personalTypeInput').value; 
+                const amt = parseFloat(document.getElementById('amountInput').value) || 0;
+                if (subType === 'income') {
+                    finalStr = amt >= 0 ? `+${amt} د.ج` : `${amt} د.ج`;
+                    colorClass = amt >= 0 ? "text-neon-green" : "text-neon-red";
+                } else {
+                    finalStr = `-${Math.abs(amt)} د.ج`;
+                    colorClass = "text-neon-red";
+                }
+            }
             const preview = document.getElementById('calculatedPreview'); preview.innerText = finalStr; preview.className = `text-xl font-bold dir-ltr ${colorClass}`;
         }
     </script>
