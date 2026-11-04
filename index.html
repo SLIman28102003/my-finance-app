@@ -340,7 +340,7 @@
                         </div>
                         <input type="hidden" id="personalTypeInput" value="income">
                         
-                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ</label>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ (د.ج)</label>
                         <input type="number" id="amountInput" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
 
                         <div id="statusField" class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
@@ -377,7 +377,7 @@
         <div><h4 class="text-white font-bold text-sm" id="toastTitle">نجاح</h4><p class="text-slate-300 text-xs" id="toastMsg"></p></div>
     </div>
 
-<script>
+    <script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
         let allTransactions = []; 
         let currentFilterMonth = ""; 
@@ -427,7 +427,7 @@
 
         window.checkPrivacyPin = function() {
             const pin = document.getElementById('privacyPinInput').value;
-            if (pin.toLowerCase() === 'klmn') { 
+            if (pin.toLowerCase() === 'mmmm') { 
                 isPrivacyRevealed = true;
                 closePrivacyModal();
                 renderDashboard();
@@ -654,14 +654,11 @@
             let balances = { 'كاش': 0, 'بريدي موب': 0, 'RedotPay': 0 };
             balances['كاش'] += accruedBaseSalary; 
             
-            // --- التحديث الجديد: استخراج آخر سعر صرف ديناميكي ---
-            let latestExchangeRate = 250; // القيمة الافتراضية
+            let latestExchangeRate = 250; 
             let exchangeTransactions = allTransactions.filter(t => t.type === 'exchange' && t.subType === 'income');
             if (exchangeTransactions.length > 0) {
-                // ترتيب العمليات حسب الأحدث
                 exchangeTransactions.sort((a,b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp));
                 let latestExchange = exchangeTransactions[0];
-                // استخراج السعر من الملاحظة "سعر الصرف: 255"
                 let rateMatch = latestExchange.note.match(/سعر الصرف:\s*([\d.]+)/);
                 if (rateMatch && rateMatch[1]) {
                     latestExchangeRate = parseFloat(rateMatch[1]);
@@ -711,11 +708,12 @@
 
             if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا توجد عمليات مطابقة للفلاتر المحددة.</td></tr>`;
             
-            // --- التحديث الجديد: استخدام السعر الديناميكي ---
             let redotPayInDZD = Math.round(balances['RedotPay'] * latestExchangeRate);
             let finalBalance = balances['كاش'] + balances['بريدي موب'] + redotPayInDZD;
 
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash';
+            const generalBlurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
+            
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-sky-400 text-lg`;
             document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-indigo-400 text-lg`;
 
@@ -723,7 +721,6 @@
             
             document.getElementById("cashBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['كاش']);
             document.getElementById("baridiBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['بريدي موب']);
-            // أضفت تولتيب (Tooltip) يوريك السعر اللي راهي تحسب بيه المنصة
             document.getElementById("redotBalDisplay").innerHTML = `${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(balances['RedotPay'])} <span class="text-[8px] text-teal-500/50 block -mt-1" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
             
             if(isPrivacyRevealed) {
@@ -741,13 +738,14 @@
             document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
             
             animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'), true, true);
-            document.getElementById("pendingReceivablesTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingReceivables)} د.ج`;
-            document.getElementById("pendingDebtsTotal").innerText = `${new Intl.NumberFormat('en-DZ').format(pendingDebts)} د.ج`;
-
-            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, false, false);
-            document.getElementById("monthOvertimeMinutes").innerText = monthOvertimeMinutes;
-            animateValue("monthDeductions", monthDeductions, null, false, false);
-            animateValue("monthBonuses", monthBonuses, null, false, false);
+            
+            // --- التحديث الجديد: إخفاء جميع الأرقام في المنصة ---
+            animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true);
+            animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true);
+            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, false, true);
+            animateValue("monthDeductions", monthDeductions, null, false, true);
+            animateValue("monthBonuses", monthBonuses, null, false, true);
+            document.getElementById("monthOvertimeMinutes").innerHTML = `<span class="${generalBlurClass}">${monthOvertimeMinutes}</span>`;
 
             let challengeTxns = allTransactions.filter(t => t.type === 'challenge');
             const challengeContainer = document.getElementById('challengeContainer');
@@ -791,6 +789,10 @@
                     else if (daysRemaining >= 0) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-bold">⏳ باقي ${daysRemaining} يوم</span>`; } 
                     else { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-bold">⚠️ انتهى الوقت</span>`; }
 
+                    // --- التحديث الجديد: إخفاء أرقام التحدي ---
+                    const chalBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
+                    const chalClick = `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
+
                     challengeContainer.innerHTML = `
                         <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
                             <div class="absolute -left-4 -top-4 text-pink-500/5 transition-colors pointer-events-none"><i class="ph-fill ph-target text-9xl"></i></div>
@@ -800,17 +802,17 @@
                                     ${timeBadge}
                                 </div>
                                 <div class="flex justify-between text-sm text-slate-300 mb-2 font-semibold px-1">
-                                    <span>المحقق (في هذه المدة): ${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)} د.ج</span>
-                                    <span>الهدف: ${new Intl.NumberFormat('en-DZ').format(targetAmount)} د.ج</span>
+                                    <span>المحقق (في هذه المدة): <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)}</span> د.ج</span>
+                                    <span>الهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(targetAmount)}</span> د.ج</span>
                                 </div>
                                 <div class="w-full bg-slate-800/80 rounded-full h-4 mb-2 border border-white/5 overflow-hidden">
                                     <div class="bg-gradient-to-r ${progressColor} h-full rounded-full transition-all duration-1000 relative flex items-center justify-end px-2" style="width: ${progress}%">
-                                        ${progress >= 15 ? `<span class="text-[10px] font-bold text-white drop-shadow-md">${progress}%</span>` : ''}
+                                        ${progress >= 15 ? `<span class="text-[10px] font-bold text-white drop-shadow-md ${chalBlur}" ${chalClick}>${progress}%</span>` : ''}
                                     </div>
                                 </div>
                                 <div class="flex justify-between text-xs px-1 text-slate-400">
-                                    <span class="text-pink-300">${progress < 15 ? `النسبة: ${progress}%` : ''}</span>
-                                    <span>المتبقي للهدف: ${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))} د.ج</span>
+                                    <span class="text-pink-300">${progress < 15 ? `النسبة: <span class="${chalBlur}" ${chalClick}>${progress}</span>%` : ''}</span>
+                                    <span>المتبقي للهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span>
                                 </div>
                                 <div class="mt-4 flex justify-end">
                                     <button onclick="window.deleteEntry('${activeChallenge.id}')" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"><i class="ph ph-trash"></i> إلغاء التحدي</button>
@@ -871,6 +873,11 @@
             let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-300' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-neon-green' : (t.amount < 0 ? 'text-neon-red' : 'text-slate-300')));
             if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
 
+            // --- التحديث الجديد: إخفاء أرقام جدول العمليات ---
+            let tableBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
+            let tableClick = isPrivacyRevealed ? '' : `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
+            let formattedAmtStr = `<span class="inline-block ${tableBlur}" ${tableClick} dir="ltr">${amtStr}</span> <span class="text-[10px] font-normal text-slate-400">${amtCurrency}</span>`;
+
             let pendingBadge = '';
             if (isPending) {
                 let badgeText = t.amount > 0 ? "قيد التحصيل" : "لم يُسدد بعد";
@@ -888,7 +895,7 @@
             let dispNote = t.note || '-';
             if (t.type === 'challenge') { dispNote = t.note.split('|').length > 2 ? t.note.split('|')[2].trim() : '-'; }
 
-            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${amtStr} <span class="text-[10px] font-normal text-slate-400">${amtCurrency}</span></td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
+            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${formattedAmtStr}</td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
             return tr;
         }
 
