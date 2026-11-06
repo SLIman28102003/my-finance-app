@@ -43,7 +43,7 @@
             <h2 class="text-2xl font-bold text-white mb-2">النظام محمي</h2>
             <p class="text-sm text-slate-400 mb-8">يرجى إدخال رمز المرور للوصول إلى بياناتك</p>
             <input type="password" id="pinInput" class="glass-input w-full rounded-2xl px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
-            <button onclick="unlockApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
+            <button onclick="unlockApp()" id="loginBtnAction" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
             <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse">الرمز غير صحيح، حاول مجدداً</p>
         </div>
     </div>
@@ -77,9 +77,15 @@
                 </div>
             </div>
             
-            <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
-                <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية جديدة</span>
-            </button>
+            <div class="flex items-center gap-3">
+                <!-- زر التحكم بالصوت الخرافي -->
+                <button onclick="toggleSound()" id="soundToggleBtn" class="glass border border-white/5 p-2.5 rounded-full text-slate-500 hover:text-white transition-all active:scale-95" title="تشغيل/إيقاف صوت الصرافة">
+                    <i class="ph-fill ph-speaker-slash text-xl"></i>
+                </button>
+                <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
+                    <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية</span>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -109,7 +115,6 @@
                     </p>
                     <h3 class="text-5xl font-bold text-white mb-3 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
                     
-                    <!-- تفاصيل المحافظ المتعددة -->
                     <div class="flex gap-2 flex-wrap justify-center md:justify-end mt-2">
                         <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
                             💵 <span id="cashBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
@@ -263,7 +268,6 @@
                     </div>
                 </div>
 
-                <!-- حقل اختيار المحفظة العام -->
                 <div class="mb-5" id="walletSelectionField">
                     <label class="block text-sm font-semibold text-slate-300 mb-2">المحفظة / الحساب المستهدف</label>
                     <div class="relative">
@@ -276,7 +280,6 @@
                     </div>
                 </div>
 
-                <!-- حقول شراء الـ USDT -->
                 <div id="exchangeField" class="hidden mb-4 bg-teal-500/10 p-4 rounded-xl border border-teal-500/30 flex flex-col gap-3">
                     <label class="block text-sm font-bold text-teal-300 mb-1 border-b border-teal-500/30 pb-2"><i class="ph ph-currency-circle-dollar"></i> تفاصيل شراء الـ USDT لـ RedotPay</label>
                     <div>
@@ -382,8 +385,109 @@
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
-        
         let isPrivacyRevealed = false;
+        
+        // 🌟 إعدادات الصوت (Cha-Ching) 💸
+        let isSoundEnabled = false; // يبدأ صامتاً لتفادي المواقف المحرجة
+        const uiSound = new Audio("https://actions.google.com/sounds/v1/foley/cash_register_purchase.ogg");
+
+        window.toggleSound = function() {
+            isSoundEnabled = !isSoundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            if (isSoundEnabled) {
+                btn.innerHTML = `<i class="ph-fill ph-speaker-high text-xl text-sky-400 drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]"></i>`;
+                btn.classList.add('border-sky-500/30', 'bg-sky-500/10');
+                showToast("تنبيهات الصوت", "تم تفعيل صوت الصرافة 🔊", "info");
+                uiSound.volume = 0.3; // تيست خفيف
+                uiSound.currentTime = 0;
+                uiSound.play().catch(e => console.log('Audio init err:', e));
+            } else {
+                btn.innerHTML = `<i class="ph-fill ph-speaker-slash text-xl text-slate-500"></i>`;
+                btn.classList.remove('border-sky-500/30', 'bg-sky-500/10');
+                showToast("تنبيهات الصوت", "تم كتم الصوت 🔇", "info");
+            }
+        }
+
+        // 🌟 محرك الأنيميشن الخرافي: "خزان السيولة" 🌊
+        async function liquidAction(btn, actionFunction, loadingText = "", isIconOnly = false) {
+            const originalHTML = btn.innerHTML;
+            btn.style.position = 'relative';
+            btn.style.overflow = 'hidden';
+            btn.disabled = true;
+            
+            if (isIconOnly) {
+                btn.innerHTML = `
+                    <div class="absolute inset-0 bg-slate-900/60 z-0"></div>
+                    <div class="liquid-bg absolute inset-0 bg-gradient-to-r from-sky-400 to-indigo-500 z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
+                    <div class="relative z-10 flex justify-center items-center w-full h-full text-white">
+                        <i class="ph ph-spinner-gap animate-spin text-lg drop-shadow-md"></i>
+                    </div>
+                `;
+            } else {
+                btn.innerHTML = `
+                    <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
+                    <div class="liquid-bg absolute inset-0 bg-gradient-to-r from-teal-400 to-sky-500 z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
+                    <div class="relative z-10 flex justify-center items-center gap-3 drop-shadow-md w-full h-full">
+                        <span class="pct-text font-mono font-bold text-white text-lg">0%</span>
+                        <span class="text-white font-bold">${loadingText}</span>
+                    </div>
+                `;
+            }
+            
+            const liquidBg = btn.querySelector('.liquid-bg');
+            const pctText = btn.querySelector('.pct-text');
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (progress < 92) {
+                    progress += Math.floor(Math.random() * 12) + 4;
+                    if (progress > 92) progress = 92;
+                    liquidBg.style.width = `${progress}%`;
+                    if (!isIconOnly && pctText) pctText.innerText = `${progress}%`;
+                }
+            }, 250);
+
+            try {
+                const actionResult = await actionFunction(); 
+                
+                clearInterval(progressInterval);
+                liquidBg.style.width = `100%`;
+                
+                // 💸 إطلاق الصوت إذا كانت العملية إيجابية وتم تفعيل الصوت
+                if (actionResult === 'PLAY_SOUND' && isSoundEnabled) {
+                    uiSound.volume = 1.0;
+                    uiSound.currentTime = 0;
+                    uiSound.play().catch(e => console.log('Audio blocked', e));
+                }
+
+                if (isIconOnly) {
+                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-600 z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-lg text-white drop-shadow-md"></i>`;
+                } else {
+                    if(pctText) pctText.innerText = `100%`;
+                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-600 z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-2xl text-white drop-shadow-md"></i><span class="text-white font-bold drop-shadow-md">تمت العملية بنجاح!</span>`;
+                }
+                await new Promise(r => setTimeout(r, 1200)); 
+            } catch (error) {
+                clearInterval(progressInterval);
+                liquidBg.style.width = `100%`;
+                if (isIconOnly) {
+                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-warning-circle text-lg text-white drop-shadow-md"></i>`;
+                } else {
+                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-red-600 to-orange-500 z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-warning-circle text-2xl text-white drop-shadow-md"></i><span class="text-white font-bold drop-shadow-md">حدث خطأ!</span>`;
+                }
+                await new Promise(r => setTimeout(r, 1500));
+                throw error; 
+            } finally {
+                if (document.body.contains(btn)) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            }
+        }
 
         function getActiveSalaryForDate(targetDateObj) {
             let salaryUpdates = allTransactions.filter(t => t.type === 'salary_update');
@@ -395,14 +499,16 @@
         async function unlockApp() {
             const pin = document.getElementById('pinInput').value;
             if(!pin) return;
-            const loginBtn = document.querySelector('#loginBox button');
-            const originalText = loginBtn.innerHTML;
-            loginBtn.innerHTML = `<i class="ph ph-spinner-gap animate-spin text-xl"></i> جاري التحقق...`;
-            loginBtn.disabled = true;
-            sessionPin = pin; 
-            await fetchTransactions();
-            loginBtn.innerHTML = originalText;
-            loginBtn.disabled = false;
+            const loginBtn = document.getElementById('loginBtnAction');
+            
+            try {
+                await liquidAction(loginBtn, async () => {
+                    sessionPin = pin; 
+                    let isSuccess = await fetchTransactions();
+                    if (!isSuccess) throw new Error("الرمز غير صحيح");
+                    return 'NO_SOUND';
+                }, "جاري الاتصال بالسيرفر...");
+            } catch (err) { }
         }
 
         window.togglePrivacy = function() {
@@ -438,7 +544,7 @@
         }
 
         async function fetchTransactions() {
-            if (!sessionPin) return; 
+            if (!sessionPin) return false; 
             const tableBody = document.getElementById('transactionsTableBody');
             tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-sky-400"><i class="ph ph-spinner-gap animate-spin text-4xl mb-3 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]"></i><p class="font-bold">جاري المزامنة مع قاعدة البيانات...</p></td></tr>`;
             try {
@@ -458,14 +564,17 @@
                         entrySelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">💰 إدخال رصيد افتتاحي (رأس مال)</option>`;
                     }
                     applyFilters(); 
+                    return true;
                 } else {
                     document.getElementById('loginError').classList.remove('hidden');
                     sessionPin = null; 
                     tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">تم رفض الوصول، الرمز غير صحيح.</td></tr>`;
+                    return false;
                 }
             } catch (error) {
                 showToast("خطأ", "تأكد من اتصالك بالإنترنت", "error");
                 tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا يمكن الوصول للسيرفر حالياً.</td></tr>`;
+                return false;
             }
         }
 
@@ -481,141 +590,139 @@
         window.handleFormSubmit = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            const ogContent = btn.innerHTML;
-            btn.innerHTML = `<i class="ph ph-spinner-gap animate-spin text-xl"></i> جاري الحفظ...`;
-            btn.disabled = true;
-
-            const type = document.getElementById('entryType').value;
-            let note = document.getElementById('noteInput').value;
-            let wallet = document.getElementById('walletSelect').value; 
-            let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
-
+            
             try {
-                if (type === 'exchange') {
-                    let usdtAmount = parseFloat(document.getElementById('usdtAmountInput').value);
-                    let usdtRate = parseFloat(document.getElementById('usdtRateInput').value);
-                    let sourceWallet = document.getElementById('exchangeSourceSelect').value;
-                    if (isNaN(usdtAmount) || isNaN(usdtRate) || usdtAmount <= 0 || usdtRate <= 0) throw new Error("تأكد من إدخال مبلغ الـ USDT وسعر الصرف بشكل صحيح");
-                    
-                    let dzdAmount = Math.round(usdtAmount * usdtRate);
-                    
-                    const payloadToGas = { 
-                        pin: sessionPin, 
-                        action: "exchange",
-                        title_out: `شراء USDT (${usdtAmount}$)`,
-                        amount_out: -dzdAmount,
-                        wallet_out: sourceWallet,
-                        title_in: `استلام USDT`,
-                        amount_in: usdtAmount,
-                        notes: `سعر الصرف: ${usdtRate} | ` + note,
-                        date: new Date().toISOString()
-                    };
-                    
+                await liquidAction(btn, async () => {
+                    const type = document.getElementById('entryType').value;
+                    let note = document.getElementById('noteInput').value;
+                    let wallet = document.getElementById('walletSelect').value; 
+                    let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
+
+                    if (type === 'exchange') {
+                        let usdtAmount = parseFloat(document.getElementById('usdtAmountInput').value);
+                        let usdtRate = parseFloat(document.getElementById('usdtRateInput').value);
+                        let sourceWallet = document.getElementById('exchangeSourceSelect').value;
+                        if (isNaN(usdtAmount) || isNaN(usdtRate) || usdtAmount <= 0 || usdtRate <= 0) throw new Error("تأكد من إدخال مبلغ الـ USDT وسعر الصرف بشكل صحيح");
+                        
+                        let dzdAmount = Math.round(usdtAmount * usdtRate);
+                        
+                        const payloadToGas = { pin: sessionPin, action: "exchange", title_out: `شراء USDT (${usdtAmount}$)`, amount_out: -dzdAmount, wallet_out: sourceWallet, title_in: `استلام USDT`, amount_in: usdtAmount, notes: `سعر الصرف: ${usdtRate} | ` + note, date: new Date().toISOString() };
+                        let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
+                        let result = await response.json();
+                        if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
+                        
+                        allTransactions.unshift({ id: result.response.id1, type: 'exchange', subType: 'expense', amount: -dzdAmount, wallet: sourceWallet, note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
+                        allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
+                        return 'NO_SOUND'; 
+                    }
+                    else if (type === 'opening_balance') {
+                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); 
+                        amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = amount >= 0 ? "إضافة" : "خصم";
+                    }
+                    else if (type === 'challenge') {
+                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        let startDate = document.getElementById('challengeStartInput').value;
+                        let endDate = document.getElementById('challengeEndInput').value;
+                        if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
+                        if (!startDate || !endDate) throw new Error("الرجاء تحديد تاريخ بداية ونهاية التحدي");
+                        if (new Date(startDate) > new Date(endDate)) throw new Error("تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية!");
+                        amount = rawAmount; notionTitle = `🎯 تحدي مالي`; notionType = "إضافة";
+                        note = `Start: ${startDate} | End: ${endDate} | ` + note;
+                    }
+                    else if (type === 'salary_update') {
+                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
+                        amount = rawAmount; notionTitle = `تحديث الراتب`; notionType = "إضافة";
+                    }
+                    else if (type === 'overtime') {
+                        minutes = parseFloat(document.getElementById('minutesInput').value);
+                        if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
+                        amount = minutes * 6.5; notionTitle = `وقت إضافي (${minutes} دقيقة)`; notionType = "إضافة";
+                    } else if (type === 'lateness') {
+                        minutes = parseFloat(document.getElementById('minutesInput').value);
+                        if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
+                        amount = -(minutes * 50); notionTitle = `تأخر (${minutes} دقيقة)`; notionType = "خصم";
+                    } else if (type === 'absence') {
+                        days = parseFloat(document.getElementById('daysInput').value);
+                        if (!days || days <= 0) throw new Error("الرجاء إدخال أيام الغياب صحيحة");
+                        const today = new Date();
+                        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                        const currentSal = getActiveSalaryForDate(today);
+                        if(currentSal === 0) throw new Error("لا يوجد راتب أساسي مدون لحساب الغياب! أضف تحديث راتب أولاً.");
+                        const dailyRate = currentSal / daysInMonth;
+                        amount = -Math.round(dailyRate * days); notionTitle = `غياب (${days} أيام)`; notionType = "خصم";
+                    } else if (type === 'company_rule') {
+                        const ruleSel = document.getElementById('ruleSelect'); subType = ruleSel.value;
+                        amount = parseFloat(ruleSel.options[ruleSel.selectedIndex].getAttribute('data-amt'));
+                        notionTitle = ruleSel.options[ruleSel.selectedIndex].text.split(' (')[0];
+                        notionType = amount > 0 ? "إضافة" : "خصم";
+                    } else if (type === 'personal') {
+                        subType = document.getElementById('personalTypeInput').value;
+                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); 
+                        amount = (subType === 'expense' || subType === 'debt') ? -Math.abs(rawAmount) : rawAmount;
+                        notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
+                        notionType = amount > 0 ? "إضافة" : "خصم";
+                        if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
+                    }
+
+                    const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, wallet: wallet, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
                     let result = await response.json();
+                    
                     if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
-                    
-                    allTransactions.unshift({ id: result.response.id1, type: 'exchange', subType: 'expense', amount: -dzdAmount, wallet: sourceWallet, note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
-                    allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
-                    
-                    applyFilters(); showToast("نجاح", "تم تنفيذ التحويل بنجاح!");
-                    closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
-                    return; 
-                }
-                else if (type === 'opening_balance') {
-                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); 
-                    amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = amount >= 0 ? "إضافة" : "خصم";
-                }
-                else if (type === 'challenge') {
-                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    let startDate = document.getElementById('challengeStartInput').value;
-                    let endDate = document.getElementById('challengeEndInput').value;
-                    if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
-                    if (!startDate || !endDate) throw new Error("الرجاء تحديد تاريخ بداية ونهاية التحدي");
-                    if (new Date(startDate) > new Date(endDate)) throw new Error("تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية!");
-                    amount = rawAmount; notionTitle = `🎯 تحدي مالي`; notionType = "إضافة";
-                    note = `Start: ${startDate} | End: ${endDate} | ` + note;
-                }
-                else if (type === 'salary_update') {
-                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
-                    amount = rawAmount; notionTitle = `تحديث الراتب`; notionType = "إضافة";
-                }
-                else if (type === 'overtime') {
-                    minutes = parseFloat(document.getElementById('minutesInput').value);
-                    if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
-                    amount = minutes * 6.5; notionTitle = `وقت إضافي (${minutes} دقيقة)`; notionType = "إضافة";
-                } else if (type === 'lateness') {
-                    minutes = parseFloat(document.getElementById('minutesInput').value);
-                    if (!minutes || minutes <= 0) throw new Error("الرجاء إدخال دقائق صحيحة");
-                    amount = -(minutes * 50); notionTitle = `تأخر (${minutes} دقيقة)`; notionType = "خصم";
-                } else if (type === 'absence') {
-                    days = parseFloat(document.getElementById('daysInput').value);
-                    if (!days || days <= 0) throw new Error("الرجاء إدخال أيام الغياب صحيحة");
-                    const today = new Date();
-                    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-                    const currentSal = getActiveSalaryForDate(today);
-                    if(currentSal === 0) throw new Error("لا يوجد راتب أساسي مدون لحساب الغياب! أضف تحديث راتب أولاً.");
-                    const dailyRate = currentSal / daysInMonth;
-                    amount = -Math.round(dailyRate * days); notionTitle = `غياب (${days} أيام)`; notionType = "خصم";
-                } else if (type === 'company_rule') {
-                    const ruleSel = document.getElementById('ruleSelect'); subType = ruleSel.value;
-                    amount = parseFloat(ruleSel.options[ruleSel.selectedIndex].getAttribute('data-amt'));
-                    notionTitle = ruleSel.options[ruleSel.selectedIndex].text.split(' (')[0];
-                    notionType = amount > 0 ? "إضافة" : "خصم";
-                } else if (type === 'personal') {
-                    subType = document.getElementById('personalTypeInput').value;
-                    let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                    if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); 
-                    amount = (subType === 'expense' || subType === 'debt') ? -Math.abs(rawAmount) : rawAmount;
-                    notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
-                    notionType = amount > 0 ? "إضافة" : "خصم";
-                    if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
-                }
 
-                const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, wallet: wallet, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
-                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
-                let result = await response.json();
+                    let realNotionId = result.response.id;
+                    let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
+                    
+                    allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
+                    
+                    if (amount > 0 && type !== 'exchange') return 'PLAY_SOUND';
+                    return 'NO_SOUND';
+                }, "جاري تشفير وحفظ العملية...");
                 
-                if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
-
-                let realNotionId = result.response.id;
-                let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
-                
-                allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
                 applyFilters(); 
                 showToast("نجاح", "تم الحفظ بنجاح!");
                 closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
-            } catch (err) { showToast("تنبيه", err.message, "error"); } 
-            finally { btn.innerHTML = ogContent; btn.disabled = false; }
+            } catch (err) { showToast("تنبيه", err.message, "error"); }
         };
 
-        window.markAsPaid = async function(docId) {
+        window.markAsPaid = async function(docId, btnElement) {
             let txn = allTransactions.find(t => t.id === docId);
             if(!txn) return;
             let confirmMsg = (txn.amount > 0) ? "هل متأكد أنك استلمت هذا المبلغ فعلياً؟" : "هل متأكد أنك سددت هذا الدين فعلياً؟";
             if(!confirm(confirmMsg)) return;
-            showToast("جاري التحديث...", "يتم الآن تأكيد العملية...", "info");
+            
             try {
-                let payload = { pin: sessionPin, action: "update_status", page_id: docId };
-                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                let result = await response.json();
-                if (result.status !== "success") throw new Error(result.message || "فشل في تحديث الحالة");
-                txn.status = "مكتمل"; applyFilters(); showToast("نجاح", "تم تحديث العملية وإضافتها للرصيد الصافي!", "success");
+                await liquidAction(btnElement, async () => {
+                    let payload = { pin: sessionPin, action: "update_status", page_id: docId };
+                    let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                    let result = await response.json();
+                    if (result.status !== "success") throw new Error(result.message || "فشل في تحديث الحالة");
+                    txn.status = "مكتمل"; 
+                    if (txn.amount > 0) return 'PLAY_SOUND';
+                    return 'NO_SOUND';
+                }, "", true);
+                
+                applyFilters(); 
+                showToast("نجاح", "تم تحديث العملية وإضافتها للرصيد الصافي!", "success");
             } catch (err) { showToast("خطأ", err.message, "error"); }
         }
 
-        window.deleteEntry = async function(docId) {
+        window.deleteEntry = async function(docId, btnElement) {
             if(!confirm("هل أنت متأكد من حذف هذه العملية نهائياً؟")) return;
-            showToast("جاري الحذف...", "يتم الآن إزالة العملية نهائياً من Notion...", "info");
+            
             try {
-                let payload = { pin: sessionPin, action: "delete_entry", page_id: docId };
-                let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-                let result = await response.json();
-                if (result.status !== "success") throw new Error(result.message || "فشل في الحذف");
+                await liquidAction(btnElement, async () => {
+                    let payload = { pin: sessionPin, action: "delete_entry", page_id: docId };
+                    let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                    let result = await response.json();
+                    if (result.status !== "success") throw new Error(result.message || "فشل في الحذف");
+                    allTransactions = allTransactions.filter(t => t.id !== docId);
+                    return 'NO_SOUND';
+                }, "", true);
                 
-                allTransactions = allTransactions.filter(t => t.id !== docId);
                 applyFilters();
                 showToast("نجاح", "تم الحذف نهائياً من السيرفر!", "success");
             } catch (err) { showToast("خطأ", err.message, "error"); }
@@ -739,7 +846,6 @@
             
             animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'), true, true);
             
-            // --- التحديث الجديد: إخفاء جميع الأرقام في المنصة ---
             animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true);
             animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true);
             animateValue("monthOvertimeMoney", monthOvertimeMoney, null, false, true);
@@ -789,7 +895,6 @@
                     else if (daysRemaining >= 0) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-bold">⏳ باقي ${daysRemaining} يوم</span>`; } 
                     else { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-bold">⚠️ انتهى الوقت</span>`; }
 
-                    // --- التحديث الجديد: إخفاء أرقام التحدي ---
                     const chalBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
                     const chalClick = `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
 
@@ -815,7 +920,7 @@
                                     <span>المتبقي للهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span>
                                 </div>
                                 <div class="mt-4 flex justify-end">
-                                    <button onclick="window.deleteEntry('${activeChallenge.id}')" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"><i class="ph ph-trash"></i> إلغاء التحدي</button>
+                                    <button onclick="window.deleteEntry('${activeChallenge.id}', this)" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 relative overflow-hidden px-2 py-1 rounded"><i class="ph ph-trash"></i> إلغاء التحدي</button>
                                 </div>
                             </div>
                         </div>
@@ -873,7 +978,6 @@
             let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-300' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-neon-green' : (t.amount < 0 ? 'text-neon-red' : 'text-slate-300')));
             if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
 
-            // --- التحديث الجديد: إخفاء أرقام جدول العمليات ---
             let tableBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
             let tableClick = isPrivacyRevealed ? '' : `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
             let formattedAmtStr = `<span class="inline-block ${tableBlur}" ${tableClick} dir="ltr">${amtStr}</span> <span class="text-[10px] font-normal text-slate-400">${amtCurrency}</span>`;
@@ -888,9 +992,9 @@
             let actionButtons = '';
             if (isPending) {
                 let checkTitle = t.amount > 0 ? "تم القبض" : "تم التسديد";
-                actionButtons += `<button onclick="window.markAsPaid('${t.id}')" class="text-green-400 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-green-500/20 mr-1" title="${checkTitle}"><i class="ph-fill ph-check-circle text-2xl drop-shadow-md"></i></button>`;
+                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-green-500/20 mr-1 overflow-hidden" title="${checkTitle}"><i class="ph-fill ph-check-circle text-2xl drop-shadow-md"></i></button>`;
             }
-            actionButtons += `<button onclick="window.deleteEntry('${t.id}')" class="text-slate-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10" title="حذف نهائي"><i class="ph ph-trash text-lg"></i></button>`;
+            actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-slate-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 overflow-hidden" title="حذف نهائي"><i class="ph ph-trash text-lg"></i></button>`;
 
             let dispNote = t.note || '-';
             if (t.type === 'challenge') { dispNote = t.note.split('|').length > 2 ? t.note.split('|')[2].trim() : '-'; }
