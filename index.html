@@ -6,8 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="حساباتي">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=SL&background=0f172a&color=38bdf8&size=512">
+    <meta name="theme-color" content="#000000">
+    <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=SL&background=1c1c1e&color=0a84ff&size=512">
 
     <title>نظام إدارة الحسابات - سليمان</title>
     <meta name="robots" content="noindex, nofollow">
@@ -15,394 +15,585 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0f172a; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%); background-attachment: fixed; color: #e2e8f0; min-height: 100vh; }
-        .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-        .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.6) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-        .glass-input { background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: white; transition: all 0.3s ease; }
-        .glass-input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
-        .modal-enter { opacity: 0; transform: scale(0.95); }
-        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
-        tr.glass-row { transition: background-color 0.2s; }
-        tr.glass-row:hover { background-color: rgba(255, 255, 255, 0.05); }
-        .text-neon-green { color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.3); }
-        .text-neon-red { color: #f87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.3); }
-        .text-neon-cyan { color: #22d3ee; text-shadow: 0 0 10px rgba(34, 211, 238, 0.3); }
+        /* Apple iOS Pro DARK Mode Style Variables */
+        :root {
+            --apple-bg: #000000;
+            --apple-glass-bg: rgba(28, 28, 30, 0.65);
+            --apple-glass-border: rgba(255, 255, 255, 0.08);
+            --apple-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --apple-text-main: #f5f5f7;
+            --apple-text-muted: #a1a1a6;
+            --apple-blue: #0a84ff; /* Dark mode blue */
+            --apple-blue-hover: #007aff;
+            --neon-green: #30d158; /* Dark mode green */
+            --neon-red: #ff453a;   /* Dark mode red */
+        }
+
+        /* MacOS Sonoma Dark Abstract Background */
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: var(--apple-bg);
+            /* Subtle neon glows in the background corners */
+            background-image: radial-gradient(circle at 0% 0%, rgba(10, 132, 255, 0.12) 0, transparent 50%), 
+                              radial-gradient(circle at 100% 100%, rgba(48, 209, 88, 0.05) 0, transparent 50%);
+            background-attachment: fixed; 
+            color: var(--apple-text-main); 
+            min-height: 100vh; 
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Dark Glassmorphism Classes */
+        .glass { 
+            background: var(--apple-glass-bg); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px); 
+            border: 1px solid var(--apple-glass-border); 
+            box-shadow: var(--apple-glass-shadow); 
+        }
+        .glass-card { 
+            background: rgba(28, 28, 30, 0.6); 
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px); 
+            border: 1px solid rgba(255, 255, 255, 0.06); 
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); 
+            border-radius: 24px;
+        }
+        .glass-input { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            color: var(--apple-text-main); 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            border-radius: 12px;
+        }
+        .glass-input:focus { 
+            outline: none; 
+            border-color: var(--apple-blue); 
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .glass-input::placeholder {
+            color: #6e6e73;
+        }
+        
+        /* Dropdown options in dark mode */
+        option {
+            background-color: #1c1c1e;
+            color: #f5f5f7;
+        }
+
+        /* Scrollbar Apple Dark Style */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* Animations */
+        .modal-enter { opacity: 0; transform: scale(0.95) translateY(20px); }
+        .modal-enter-active { opacity: 1; transform: scale(1) translateY(0); transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        tr.glass-row { 
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background-color 0.2s; 
+        }
+        tr.glass-row:hover { background-color: rgba(255, 255, 255, 0.06); }
+
+        /* Text Colors & Glows (Adapted for Dark Background) */
+        .text-apple-main { color: var(--apple-text-main); }
+        .text-apple-muted { color: var(--apple-text-muted); }
+        
+        /* خيار 1: الوهج النيون الساطع - The Glow (للرصيد الإجمالي في الظلام) */
+        .neon-glow-green { 
+            color: var(--neon-green) !important; 
+            text-shadow: 0 0 20px rgba(48, 209, 88, 0.4), 0 0 40px rgba(48, 209, 88, 0.2) !important;
+            font-weight: 800 !important;
+        }
+        .neon-glow-red { 
+            color: var(--neon-red) !important; 
+            text-shadow: 0 0 20px rgba(255, 69, 58, 0.4), 0 0 40px rgba(255, 69, 58, 0.2) !important;
+            font-weight: 800 !important;
+        }
+        .neon-glow-neutral {
+            color: #ffffff !important;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3) !important;
+            font-weight: 800 !important;
+        }
+
+        /* ألوان النصوص العادية للجداول */
+        .text-neon-green { color: var(--neon-green); font-weight: 700; }
+        .text-neon-red { color: var(--neon-red); font-weight: 700; }
+        .text-neon-cyan { color: var(--apple-blue); font-weight: 700; }
+
+        /* أزرار Apple Dark Style */
+        .btn-apple {
+            background: var(--apple-blue);
+            color: white;
+            border-radius: 999px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(10, 132, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-apple:hover {
+            background: var(--apple-blue-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(10, 132, 255, 0.4);
+        }
+        .btn-apple:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3);
+        }
+
+        /* تصميم زر رفع الملفات الداكن */
+        input[type="file"]::file-selector-button {
+            margin-left: 1rem; padding: 0.5rem 1rem; border-radius: 9999px; border: 1px solid rgba(10, 132, 255, 0.3);
+            background-color: rgba(10, 132, 255, 0.15); color: var(--apple-blue); font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        input[type="file"]::file-selector-button:hover { background-color: rgba(10, 132, 255, 0.25); }
+
+        /* Liquid Animation Colors (Apple Dark Version) */
+        .liquid-bg-apple { background: linear-gradient(90deg, #0a84ff, #5e5ce6); }
+        .liquid-bg-success { background: linear-gradient(90deg, #30d158, #34c759); }
+        .liquid-bg-error { background: linear-gradient(90deg, #ff453a, #ff3b30); }
     </style>
 </head>
 <body class="antialiased overflow-x-hidden relative">
 
-    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-xl transition-opacity duration-500">
-        <div class="glass-card w-full max-w-sm rounded-3xl p-8 text-center transform transition-transform duration-500 scale-100" id="loginBox">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-sky-500/20 border border-sky-400/50 flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.3)]">
-                <i class="ph-fill ph-lock-key text-4xl text-sky-400"></i>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-2xl transition-opacity duration-500">
+        <div class="glass-card w-full max-w-sm p-8 text-center transform transition-transform duration-500 scale-100" id="loginBox">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg">
+                <i class="ph-fill ph-lock-key text-4xl" style="color: var(--apple-blue);"></i>
             </div>
-            <h2 class="text-2xl font-bold text-white mb-2">النظام محمي</h2>
-            <p class="text-sm text-slate-400 mb-8">يرجى إدخال رمز المرور للوصول إلى بياناتك</p>
-            <input type="password" id="pinInput" class="glass-input w-full rounded-2xl px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
-            <button onclick="unlockApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
-            <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse">الرمز غير صحيح، حاول مجدداً</p>
+            <h2 class="text-2xl font-bold text-apple-main mb-2">النظام محمي</h2>
+            <p class="text-sm text-apple-muted mb-8">يرجى إدخال رمز المرور للوصول إلى بياناتك</p>
+            <input type="password" id="pinInput" class="glass-input w-full px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
+            <button onclick="unlockApp()" id="loginBtnAction" class="w-full btn-apple py-4 text-lg">دخول</button>
+            <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse font-semibold">الرمز غير صحيح، حاول مجدداً</p>
         </div>
     </div>
 
-    <!-- نافذة كود الخصوصية -->
+    <!-- Privacy Modal -->
     <div id="privacyModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePrivacyModal()"></div>
-        <div class="relative glass-card w-full max-w-xs rounded-2xl shadow-2xl p-6 text-center modal-enter" id="privacyModalContent">
-            <i class="ph-fill ph-eye-slash text-4xl text-sky-400 mb-4"></i>
-            <h3 class="text-lg font-bold text-white mb-2">وضع الخصوصية</h3>
-            <p class="text-xs text-slate-400 mb-6">أدخل كود فك التشفير لعرض الأرصدة</p>
-            <input type="password" id="privacyPinInput" class="glass-input w-full rounded-xl px-4 py-3 text-center text-xl tracking-[0.5em] font-mono mb-4 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') checkPrivacyPin()">
-            <button onclick="checkPrivacyPin()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg">كشف الأرقام</button>
-            <p id="privacyError" class="text-red-400 text-xs mt-3 hidden">الرمز غير صحيح</p>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md" onclick="closePrivacyModal()"></div>
+        <div class="relative glass-card w-full max-w-xs p-6 text-center modal-enter" id="privacyModalContent">
+            <i class="ph-fill ph-eye-slash text-4xl mb-4" style="color: var(--apple-blue);"></i>
+            <h3 class="text-lg font-bold text-apple-main mb-2">وضع الخصوصية</h3>
+            <p class="text-xs text-apple-muted mb-6">أدخل كود فك التشفير لعرض الأرصدة</p>
+            <input type="password" id="privacyPinInput" class="glass-input w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono mb-4" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') checkPrivacyPin()">
+            <button onclick="checkPrivacyPin()" class="w-full btn-apple py-3">كشف الأرقام</button>
+            <p id="privacyError" class="text-red-400 text-xs mt-3 hidden font-semibold">الرمز غير صحيح</p>
         </div>
     </div>
 
-    <div class="fixed top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-    <div class="fixed bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
-
+    <!-- Header / Nav -->
     <nav class="glass sticky top-0 z-40 px-6 py-4 mb-8">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <div class="relative">
-                    <img src="https://ui-avatars.com/api/?name=Slimane&background=0f172a&color=38bdf8&rounded=true&bold=true&size=48" alt="Profile" class="w-12 h-12 rounded-full border-2 border-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.4)] object-cover">
-                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-slate-900 rounded-full"></div>
+                    <img src="https://ui-avatars.com/api/?name=Slimane&background=1c1c1e&color=0a84ff&rounded=true&bold=true&size=48" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white/10 shadow-lg object-cover">
+                    <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1e] rounded-full"></div>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-white tracking-wide">نظام إدارة الحسابات</h1>
-                    <p class="text-xs text-slate-400">مرحباً بك، سليمان</p>
+                    <h1 class="text-xl font-bold text-apple-main tracking-tight">نظام إدارة الحسابات</h1>
+                    <p class="text-xs text-apple-muted font-medium">مرحباً بك، سليمان</p>
                 </div>
             </div>
             
-            <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
-                <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية جديدة</span>
-            </button>
+            <div class="flex items-center gap-3">
+                <button onclick="openModal()" class="hidden sm:flex btn-apple px-6 py-2.5 items-center gap-2">
+                    <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية</span>
+                </button>
+            </div>
         </div>
     </nav>
 
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
         
         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                <i class="ph ph-chart-pie-slice text-sky-400"></i> لوحة القيادة
+            <h2 class="text-2xl font-bold text-apple-main flex items-center gap-2">
+                <i class="ph-fill ph-chart-pie-slice" style="color: var(--apple-blue);"></i> لوحة القيادة
             </h2>
-            <div class="glass px-4 py-2 rounded-xl flex items-center gap-3">
-                <i class="ph ph-calendar-blank text-slate-400"></i>
-                <label for="monthFilter" class="text-sm text-slate-300">ملخص شهر:</label>
-                <input type="month" id="monthFilter" class="glass-input rounded-lg px-3 py-1 text-sm focus:outline-none" onchange="applyFilters()">
+            <div class="glass px-4 py-2 rounded-xl flex items-center gap-3 shadow-md border border-white/10">
+                <i class="ph ph-calendar-blank text-apple-muted"></i>
+                <label for="monthFilter" class="text-sm text-apple-main font-semibold">ملخص شهر:</label>
+                <input type="month" id="monthFilter" class="glass-input rounded-lg px-3 py-1 text-sm bg-black/30 border-none shadow-inner" onchange="applyFilters()">
             </div>
         </div>
 
         <div id="challengeContainer" class="mb-6 hidden"></div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="glass-card rounded-2xl p-6 relative overflow-hidden group border-sky-500/30 flex flex-col justify-between">
-                <div class="absolute -left-6 -top-6 text-sky-500/10 group-hover:text-sky-500/20 transition-colors">
+            <!-- Total Balance Card -->
+            <div class="glass-card p-8 relative overflow-hidden group flex flex-col justify-between">
+                <div class="absolute -left-8 -top-8 text-white/5 group-hover:text-white/10 transition-colors">
                     <i class="ph-fill ph-wallet text-9xl"></i>
                 </div>
                 <div class="relative z-10 text-center md:text-right mb-4">
-                    <p class="text-sky-300 text-sm font-semibold mb-1 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
-                        الرصيد الإجمالي (التقديري بالدينار) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-sky-400 text-lg"></i>
+                    <p class="text-apple-muted text-sm font-semibold mb-2 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
+                        الرصيد الإجمالي (التقديري بالدينار) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-lg" style="color: var(--apple-blue);"></i>
                     </p>
-                    <h3 class="text-5xl font-bold text-white mb-3 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
+                    <h3 class="text-6xl tracking-tight mb-4 neon-glow-neutral" id="totalBalance">0 <span class="text-xl font-semibold opacity-70">د.ج</span></h3>
                     
-                    <!-- تفاصيل المحافظ المتعددة -->
                     <div class="flex gap-2 flex-wrap justify-center md:justify-end mt-2">
-                        <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">
                             💵 <span id="cashBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
                         </span>
-                        <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">
                             💳 <span id="baridiBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
                         </span>
-                        <span class="bg-slate-800/80 border border-teal-500/30 px-3 py-1.5 rounded-lg text-xs font-bold text-teal-400 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
+                        <span class="bg-teal-500/20 border border-teal-500/30 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-400 flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">
                             🪙 <span id="redotBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> USDT
                         </span>
                     </div>
                 </div>
-                <div class="relative z-10 mt-2 pt-3 border-t border-sky-500/20 flex flex-col gap-2 bg-black/20 p-2 rounded-lg">
+                <div class="relative z-10 mt-4 pt-4 border-t border-white/10 flex flex-col gap-3 bg-black/40 p-4 rounded-xl">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs text-orange-300 flex items-center gap-1"><i class="ph ph-hand-coins"></i> أموال عند الغير (قيد التحصيل):</span>
+                        <span class="text-xs font-semibold text-orange-400 flex items-center gap-1"><i class="ph-fill ph-hand-coins"></i> أموال عند الغير (قيد التحصيل):</span>
                         <span class="text-sm font-bold text-orange-400" id="pendingReceivablesTotal" dir="ltr">0 د.ج</span>
                     </div>
                     <div class="flex justify-between items-center border-t border-white/5 pt-2">
-                        <span class="text-xs text-red-300 flex items-center gap-1"><i class="ph ph-warning"></i> ديون عليك (قيد الانتظار):</span>
+                        <span class="text-xs font-semibold text-red-400 flex items-center gap-1"><i class="ph-fill ph-warning"></i> ديون عليك (قيد الانتظار):</span>
                         <span class="text-sm font-bold text-red-400" id="pendingDebtsTotal" dir="ltr">0 د.ج</span>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-card rounded-2xl p-6 relative overflow-hidden group">
-                <div class="absolute -left-6 -top-6 text-indigo-500/10 group-hover:text-indigo-500/20 transition-colors">
+            <!-- Salary Card -->
+            <div class="glass-card p-8 relative overflow-hidden group">
+                <div class="absolute -left-8 -top-8 text-white/5 group-hover:text-white/10 transition-colors">
                     <i class="ph-fill ph-bank text-9xl"></i>
                 </div>
                 <div class="relative z-10 flex flex-col justify-center h-full">
-                    <div class="flex justify-between items-center mb-2 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الراتب">
-                        <p class="text-slate-400 text-sm font-semibold flex items-center gap-1">
-                            الراتب الأساسي المعتمد <i id="privacyIcon2" class="ph-fill ph-eye-slash text-indigo-400 text-lg"></i>
+                    <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الراتب">
+                        <p class="text-apple-muted text-sm font-semibold flex items-center gap-1">
+                            الراتب الأساسي المعتمد <i id="privacyIcon2" class="ph-fill ph-eye-slash text-lg" style="color: var(--apple-blue);"></i>
                         </p>
-                        <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-md" id="daysPassedBadge">0 أيام عمل محسوبة</span>
+                        <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md font-bold border border-indigo-500/30" id="daysPassedBadge">0 أيام عمل محسوبة</span>
                     </div>
-                    <h3 class="text-3xl font-bold text-indigo-300 mb-1" id="activeBaseSalary">0 <span class="text-sm font-normal text-slate-400">د.ج</span></h3>
-                    <div class="flex justify-between items-center mt-2 border-t border-white/5 pt-2">
-                        <span class="text-xs text-slate-400">الراتب المكتسب (يُضاف لـ الكاش):</span>
-                        <span class="text-sm font-bold text-white" id="accruedBaseSalary" dir="ltr">0 د.ج</span>
+                    <h3 class="text-4xl font-bold text-indigo-100 mb-2 tracking-tight" id="activeBaseSalary">0 <span class="text-base font-semibold text-apple-muted">د.ج</span></h3>
+                    <div class="flex justify-between items-center mt-4 border-t border-white/10 pt-4 bg-black/40 p-3 rounded-xl">
+                        <span class="text-xs font-semibold text-apple-main">الراتب المكتسب (يُضاف لـ الكاش):</span>
+                        <span class="text-sm font-bold text-indigo-400" id="accruedBaseSalary" dir="ltr">0 د.ج</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
-                <p class="text-slate-400 text-xs font-semibold mb-1">أرباح الوقت الإضافي</p>
-                <h3 class="text-xl font-bold text-neon-green mb-1" id="monthOvertimeMoney">0</h3>
-                <p class="text-[10px] text-slate-500"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
+            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
+                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">أرباح الوقت الإضافي</p>
+                <h3 class="text-2xl font-bold text-green-400 mb-1" id="monthOvertimeMoney">0</h3>
+                <p class="text-[10px] font-semibold text-apple-muted"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
             </div>
-            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
-                <p class="text-slate-400 text-xs font-semibold mb-1">إجمالي الخصومات والتأخرات</p>
-                <h3 class="text-xl font-bold text-neon-red mb-1" id="monthDeductions">0</h3>
+            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
+                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">إجمالي الخصومات والتأخرات</p>
+                <h3 class="text-2xl font-bold text-red-400 mb-1" id="monthDeductions">0</h3>
             </div>
-            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
-                <p class="text-slate-400 text-xs font-semibold mb-1">المبادرات والمكافآت</p>
-                <h3 class="text-xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
+            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
+                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">المبادرات والمكافآت</p>
+                <h3 class="text-2xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
             </div>
         </div>
 
-        <div class="glass-card rounded-2xl overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph ph-list-dashes text-sky-400"></i> سجل العمليات</h3>
-                <span class="text-xs bg-sky-500/20 text-sky-300 px-3 py-1 rounded-full border border-sky-500/30 whitespace-nowrap" id="recordCountBadge">0 عملية</span>
+        <div class="glass-card overflow-hidden flex flex-col">
+            <div class="px-6 py-5 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h3 class="text-lg font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-list-dashes" style="color: var(--apple-blue);"></i> سجل العمليات</h3>
+                <span class="text-xs bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full border border-sky-500/30 font-bold whitespace-nowrap" id="recordCountBadge">0 عملية</span>
             </div>
             
-            <div class="px-6 py-4 border-b border-white/5 bg-black/20 flex flex-col lg:flex-row gap-4 items-end">
+            <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col lg:flex-row gap-4 items-end">
                 <div class="w-full lg:w-auto">
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">من تاريخ</label>
-                    <input type="date" id="tableStartDate" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none" onchange="applyFilters()">
+                    <label class="block text-xs font-bold text-apple-muted mb-1">من تاريخ</label>
+                    <input type="date" id="tableStartDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters()">
                 </div>
                 <div class="w-full lg:w-auto">
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">إلى تاريخ</label>
-                    <input type="date" id="tableEndDate" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none" onchange="applyFilters()">
+                    <label class="block text-xs font-bold text-apple-muted mb-1">إلى تاريخ</label>
+                    <input type="date" id="tableEndDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters()">
                 </div>
                 <div class="w-full lg:flex-1">
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">نوع العملية</label>
+                    <label class="block text-xs font-bold text-apple-muted mb-1">نوع العملية</label>
                     <div class="relative">
-                        <select id="tableTypeSelect" class="glass-input w-full rounded-lg px-3 py-2 text-sm appearance-none cursor-pointer focus:outline-none" onchange="applyFilters()">
-                            <option value="all" class="bg-slate-800">عرض جميع العمليات</option>
-                            <option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>
-                            <option value="challenge" class="bg-slate-800 text-pink-400 font-bold">التحديات والأهداف</option>
-                            <option value="income" class="bg-slate-800">المداخيل (مقبوضة أو ديون لك)</option>
-                            <option value="expense" class="bg-slate-800">المصاريف</option>
-                            <option value="debt" class="bg-slate-800">الديون (عليك)</option>
-                            <option value="salary_update" class="bg-slate-800">تحديثات الراتب</option>
-                            <option value="exchange" class="bg-slate-800 text-teal-300">تحويل وشراء عملة (USDT)</option>
-                            <option value="overtime" class="bg-slate-800">أرباح الوقت الإضافي</option>
-                            <option value="lateness" class="bg-slate-800">التأخرات</option>
-                            <option value="absence" class="bg-slate-800">الغيابات (أيام)</option>
-                            <option value="work_penalty" class="bg-slate-800">مخالفات العمل</option>
-                            <option value="res_penalty" class="bg-slate-800">مخالفات الإقامة</option>
-                            <option value="work_bonus" class="bg-slate-800">مبادرات العمل</option>
-                            <option value="res_bonus" class="bg-slate-800">مبادرات الإقامة</option>
+                        <select id="tableTypeSelect" class="glass-input w-full px-3 py-2 text-sm appearance-none cursor-pointer" onchange="applyFilters()">
+                            <option value="all">عرض جميع العمليات</option>
+                            <option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>
+                            <option value="challenge" class="text-pink-400 font-bold">التحديات والأهداف</option>
+                            <option value="income">المداخيل (مقبوضة أو ديون لك)</option>
+                            <option value="expense">المصاريف</option>
+                            <option value="debt">الديون (عليك)</option>
+                            <option value="salary_update">تحديثات الراتب</option>
+                            <option value="exchange" class="text-teal-400">تحويل وشراء عملة (USDT)</option>
+                            <option value="overtime">أرباح الوقت الإضافي</option>
+                            <option value="lateness">التأخرات</option>
+                            <option value="absence">الغيابات (أيام)</option>
+                            <option value="work_penalty">مخالفات العمل</option>
+                            <option value="res_penalty">مخالفات الإقامة</option>
+                            <option value="work_bonus">مبادرات العمل</option>
+                            <option value="res_bonus">مبادرات الإقامة</option>
                         </select>
-                        <i class="ph ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <i class="ph ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
                     </div>
                 </div>
-                <button onclick="resetTableFilters()" class="w-full lg:w-auto px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors text-sm flex items-center justify-center gap-2">
-                    <i class="ph ph-arrows-counter-clockwise"></i> إعادة ضبط
+                <button onclick="resetTableFilters()" class="w-full lg:w-auto px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/10 transition-colors text-sm font-semibold flex items-center justify-center gap-2 bg-white/5">
+                    <i class="ph-bold ph-arrows-counter-clockwise"></i> إعادة ضبط
                 </button>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full text-right border-collapse">
+                <table class="w-full text-right border-collapse bg-transparent">
                     <thead>
-                        <tr class="bg-black/20 text-slate-300 text-sm">
-                            <th class="py-4 px-6 font-semibold w-1/4">التاريخ والوقت</th>
-                            <th class="py-4 px-6 font-semibold w-1/5">العملية</th>
-                            <th class="py-4 px-6 font-semibold w-1/6 text-left">المبلغ</th>
-                            <th class="py-4 px-6 font-semibold w-1/3">الملاحظات</th>
-                            <th class="py-4 px-6 font-semibold w-24 text-center">إجراء</th>
+                        <tr class="border-b border-white/10 text-apple-muted text-xs uppercase tracking-wider bg-black/20">
+                            <th class="py-4 px-6 font-bold w-1/4">التاريخ والوقت</th>
+                            <th class="py-4 px-6 font-bold w-1/5">العملية</th>
+                            <th class="py-4 px-6 font-bold w-1/6 text-left">المبلغ</th>
+                            <th class="py-4 px-6 font-bold w-1/3">الملاحظات والإثبات</th>
+                            <th class="py-4 px-6 font-bold w-24 text-center">إجراء</th>
                         </tr>
                     </thead>
-                    <tbody id="transactionsTableBody" class="text-sm text-slate-300 divide-y divide-white/5">
-                        <tr><td colspan="5" class="text-center py-12 text-slate-500">جاري التحقق من الهوية...</td></tr>
+                    <tbody id="transactionsTableBody" class="text-sm text-apple-main">
+                        <tr><td colspan="5" class="text-center py-12 text-apple-muted font-semibold">جاري التحقق من الهوية...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <button onclick="openModal()" class="sm:hidden fixed bottom-8 left-6 z-40 w-16 h-16 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-full flex items-center justify-center text-white shadow-[0_10px_25px_rgba(56,189,248,0.5)] border border-white/20 active:scale-90 active:shadow-inner transition-all duration-300 backdrop-blur-md">
-        <i class="ph ph-plus text-3xl font-bold drop-shadow-md"></i>
+    <button onclick="openModal()" class="sm:hidden fixed bottom-8 left-6 z-40 w-14 h-14 btn-apple rounded-full flex items-center justify-center text-white active:scale-90 transition-all duration-300">
+        <i class="ph-bold ph-plus text-2xl"></i>
     </button>
 
+    <!-- Add Entry Modal -->
     <div id="entryModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="relative glass-card w-full max-w-md rounded-2xl shadow-2xl p-6 modal-enter" id="modalContent">
-            <div class="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
-                <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="ph ph-plus-circle text-sky-400"></i> إضافة عملية</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition-colors"><i class="ph ph-x text-2xl"></i></button>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="relative glass-card w-full max-w-md p-8 modal-enter max-h-[90vh] overflow-y-auto bg-[#1c1c1e]" id="modalContent">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10 sticky top-0 bg-[#1c1c1e]/90 backdrop-blur-md z-10">
+                <h3 class="text-xl font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-plus-circle" style="color: var(--apple-blue);"></i> إضافة عملية</h3>
+                <button type="button" onclick="closeModal()" class="text-apple-muted hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-1.5 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
 
             <form id="addEntryForm" onsubmit="handleFormSubmit(event)">
                 <div class="mb-5">
-                    <label class="block text-sm font-semibold text-slate-300 mb-2">نوع العملية</label>
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">نوع العملية</label>
                     <div class="relative">
-                        <select id="entryType" onchange="handleTypeChange()" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer">
-                            <option value="overtime" class="bg-slate-800">وقت إضافي (6.5)</option>
-                            <option value="lateness" class="bg-slate-800">تأخر (-50 دج/دقيقة)</option>
-                            <option value="absence" class="bg-slate-800">غياب (يُخصم بالأيام)</option>
-                            <option value="company_rule" class="bg-slate-800">قواعد الشركة (مخالفات/مبادرات)</option>
-                            <option value="personal" class="bg-slate-800">مالية شخصية (مداخيل/مصاريف/ديون)</option>
-                            <option value="exchange" class="bg-slate-800 text-teal-400 font-bold">🔄 تحويل وشراء عملة (USDT)</option>
-                            <option value="salary_update" class="bg-slate-800 font-bold text-indigo-400">تحديث الراتب الأساسي للشهر</option>
-                            <option value="opening_balance" class="bg-slate-800 font-bold text-teal-400">💰 إدخال رصيد افتتاحي (رأس مال)</option>
-                            <option value="challenge" class="bg-slate-800 font-bold text-pink-400">🎯 إطلاق تحدي مالي جديد</option>
+                        <select id="entryType" onchange="handleTypeChange()" class="glass-input w-full px-4 py-3.5 appearance-none cursor-pointer font-semibold">
+                            <option value="overtime">وقت إضافي (6.5)</option>
+                            <option value="lateness">تأخر (-50 دج/دقيقة)</option>
+                            <option value="absence">غياب (يُخصم بالأيام)</option>
+                            <option value="company_rule">قواعد الشركة (مخالفات/مبادرات)</option>
+                            <option value="personal">مالية شخصية (مداخيل/مصاريف/ديون)</option>
+                            <option value="exchange" class="text-teal-400">🔄 تحويل وشراء عملة (USDT)</option>
+                            <option value="salary_update" class="text-indigo-400">تحديث الراتب الأساسي للشهر</option>
+                            <option value="opening_balance" class="text-teal-400">💰 إدخال رصيد افتتاحي (رأس مال)</option>
+                            <option value="challenge" class="text-pink-400">🎯 إطلاق تحدي مالي جديد</option>
                         </select>
-                        <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <i class="ph-bold ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
                     </div>
                 </div>
 
                 <div class="mb-5" id="walletSelectionField">
-                    <label class="block text-sm font-semibold text-slate-300 mb-2">المحفظة / الحساب المستهدف</label>
-                    <div class="relative">
-                        <select id="walletSelect" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer">
-                            <option value="كاش" class="bg-slate-800">💵 كاش (سيولة في اليد)</option>
-                            <option value="بريدي موب" class="bg-slate-800">💳 بريدي موب</option>
-                            <option value="RedotPay" class="bg-slate-800">🪙 RedotPay (USDT)</option>
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">المحفظة المستهدفة</label>
+                    <div class="relative flex bg-black/40 rounded-xl p-1 border border-white/10">
+                        <select id="walletSelect" class="w-full bg-transparent border-none px-4 py-3 appearance-none cursor-pointer font-semibold text-apple-main focus:outline-none">
+                            <option value="كاش">💵 كاش (سيولة في اليد)</option>
+                            <option value="بريدي موب">💳 بريدي موب</option>
+                            <option value="RedotPay">🪙 RedotPay (USDT)</option>
                         </select>
-                        <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        <i class="ph-bold ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
                     </div>
                 </div>
 
-                <div id="exchangeField" class="hidden mb-4 bg-teal-500/10 p-4 rounded-xl border border-teal-500/30 flex flex-col gap-3">
-                    <label class="block text-sm font-bold text-teal-300 mb-1 border-b border-teal-500/30 pb-2"><i class="ph ph-currency-circle-dollar"></i> تفاصيل شراء الـ USDT لـ RedotPay</label>
+                <!-- حقول تبادل USDT -->
+                <div id="exchangeField" class="hidden mb-5 bg-teal-500/10 border border-teal-500/30 p-4 rounded-xl flex flex-col gap-4">
+                    <label class="block text-sm font-bold text-teal-400 pb-2 border-b border-teal-500/30"><i class="ph-fill ph-currency-circle-dollar"></i> تفاصيل شراء USDT لـ RedotPay</label>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">المبلغ المشترى (كم USDT؟)</label>
-                        <input type="number" id="usdtAmountInput" min="0.1" step="0.1" class="glass-input w-full rounded-lg px-3 py-2 focus:border-teal-400" placeholder="مثال: 100" oninput="calculateAmount()">
+                        <label class="block text-xs font-bold text-teal-500 mb-1">المبلغ المشترى (USDT)</label>
+                        <input type="text" id="usdtAmountInput" dir="ltr" class="glass-input w-full px-3 py-2.5 font-semibold" placeholder="مثال: 100+25" onblur="evaluateMath(this)" oninput="calculateAmount()">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">سعر الصرف (للدولار الواحد)</label>
-                        <input type="number" id="usdtRateInput" min="150" step="0.5" class="glass-input w-full rounded-lg px-3 py-2 focus:border-teal-400" placeholder="مثال: 255" oninput="calculateAmount()">
+                        <label class="block text-xs font-bold text-teal-500 mb-1">سعر الصرف للدولار</label>
+                        <input type="number" id="usdtRateInput" min="150" step="0.5" class="glass-input w-full px-3 py-2.5 font-semibold" placeholder="مثال: 255" oninput="calculateAmount()">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 mb-1">من أين دفعت الدينار؟</label>
-                        <select id="exchangeSourceSelect" class="glass-input w-full rounded-lg px-3 py-2 appearance-none">
-                            <option value="كاش" class="bg-slate-800">💵 كاش</option>
-                            <option value="بريدي موب" class="bg-slate-800">💳 بريدي موب</option>
-                        </select>
+                        <label class="block text-xs font-bold text-teal-500 mb-1">مصدر الدفع (الدينار)</label>
+                        <div class="relative">
+                            <select id="exchangeSourceSelect" class="glass-input w-full px-3 py-2.5 appearance-none font-semibold">
+                                <option value="كاش">💵 كاش</option>
+                                <option value="بريدي موب">💳 بريدي موب</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-teal-500 pointer-events-none"></i>
+                        </div>
                     </div>
                 </div>
 
                 <div id="dynamicFields" class="mb-5">
                     <div id="minutesField">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="minutesLabel">عدد الدقائق</label>
-                        <input type="number" id="minutesInput" min="1" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل العدد..." oninput="calculateAmount()">
+                        <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider" id="minutesLabel">عدد الدقائق</label>
+                        <input type="number" id="minutesInput" min="1" class="glass-input w-full px-4 py-3.5 font-semibold" placeholder="أدخل العدد..." oninput="calculateAmount()">
                     </div>
                     
                     <div id="daysField" class="hidden">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">عدد أيام الغياب</label>
-                        <input type="number" id="daysInput" min="0.5" step="0.5" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل عدد الأيام..." oninput="calculateAmount()">
+                        <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">عدد أيام الغياب</label>
+                        <input type="number" id="daysInput" min="0.5" step="0.5" class="glass-input w-full px-4 py-3.5 font-semibold" placeholder="أدخل عدد الأيام..." oninput="calculateAmount()">
                     </div>
 
                     <div id="rulesField" class="hidden">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2">اختر القاعدة</label>
+                        <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">اختر القاعدة</label>
                         <div class="relative">
-                            <select id="ruleSelect" class="glass-input w-full rounded-xl px-4 py-3 appearance-none cursor-pointer" onchange="calculateAmount()">
-                                <option value="work_penalty" data-amt="-250" class="bg-slate-800">مخالفة وقت العمل (-250 دج)</option>
-                                <option value="res_penalty" data-amt="-100" class="bg-slate-800">مخالفة في الإقامة (-100 دج)</option>
-                                <option value="work_bonus" data-amt="500" class="bg-slate-800">مبادرة وقت العمل (+500 دج)</option>
-                                <option value="res_bonus" data-amt="200" class="bg-slate-800">مبادرة في الإقامة (+200 دج)</option>
+                            <select id="ruleSelect" class="glass-input w-full px-4 py-3.5 appearance-none cursor-pointer font-semibold" onchange="calculateAmount()">
+                                <option value="work_penalty" data-amt="-250">مخالفة وقت العمل (-250 دج)</option>
+                                <option value="res_penalty" data-amt="-100">مخالفة في الإقامة (-100 دج)</option>
+                                <option value="work_bonus" data-amt="500">مبادرة وقت العمل (+500 دج)</option>
+                                <option value="res_bonus" data-amt="200">مبادرة في الإقامة (+200 دج)</option>
                             </select>
-                            <i class="ph ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i class="ph-bold ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
                         </div>
                     </div>
 
-                    <div id="challengeDateField" class="hidden mb-4 bg-pink-500/10 p-4 rounded-xl border border-pink-500/30 flex flex-col gap-3">
+                    <div id="challengeDateField" class="hidden mb-5 bg-pink-500/10 border border-pink-500/30 p-4 rounded-xl flex flex-col gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-pink-300 mb-1"><i class="ph ph-calendar-plus"></i> تاريخ بداية التحدي (انطلاق)</label>
-                            <input type="date" id="challengeStartInput" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-400" onchange="calculateAmount()">
+                            <label class="block text-xs font-bold text-pink-400 mb-1"><i class="ph-fill ph-calendar-plus"></i> تاريخ بداية التحدي</label>
+                            <input type="date" id="challengeStartInput" class="glass-input w-full px-3 py-2.5 text-sm font-semibold text-apple-main" onchange="calculateAmount()">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-pink-300 mb-1"><i class="ph ph-calendar-check"></i> تاريخ نهاية التحدي (الهدف الزمني)</label>
-                            <input type="date" id="challengeEndInput" class="glass-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-400" onchange="calculateAmount()">
+                            <label class="block text-xs font-bold text-pink-400 mb-1"><i class="ph-fill ph-calendar-check"></i> تاريخ النهاية (الهدف)</label>
+                            <input type="date" id="challengeEndInput" class="glass-input w-full px-3 py-2.5 text-sm font-semibold text-apple-main" onchange="calculateAmount()">
                         </div>
                     </div>
 
                     <div id="personalField" class="hidden">
-                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="personalTypeLabel">التصنيف</label>
-                        <div class="flex gap-2 mb-4" id="personalBtnGroup">
-                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5 active-type" data-val="income" onclick="setPersonalType('income')">مدخول</button>
-                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5" data-val="expense" onclick="setPersonalType('expense')">مصروف</button>
-                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg border border-white/10 text-slate-300 hover:bg-white/5" data-val="debt" onclick="setPersonalType('debt')">دين عليك</button>
+                        <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider" id="personalTypeLabel">التصنيف</label>
+                        <div class="flex bg-black/40 p-1 rounded-xl mb-4 border border-white/5" id="personalBtnGroup">
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg text-sm font-bold transition-all bg-white/10 text-apple-main" data-val="income" onclick="setPersonalType('income')">مدخول</button>
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg text-sm font-bold text-gray-400 transition-all" data-val="expense" onclick="setPersonalType('expense')">مصروف</button>
+                            <button type="button" class="personal-type-btn flex-1 py-2 rounded-lg text-sm font-bold text-gray-400 transition-all" data-val="debt" onclick="setPersonalType('debt')">دين عليك</button>
                         </div>
                         <input type="hidden" id="personalTypeInput" value="income">
                         
-                        <label class="block text-sm font-semibold text-slate-300 mb-2" id="amountLabel">المبلغ (د.ج)</label>
-                        <input type="number" id="amountInput" class="glass-input w-full rounded-xl px-4 py-3" placeholder="أدخل المبلغ..." oninput="calculateAmount()">
+                        <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider" id="amountLabel">المبلغ</label>
+                        <input type="text" id="amountInput" dir="ltr" class="glass-input w-full px-4 py-3.5 font-semibold transition-colors duration-300" placeholder="مثال: 1500+2500+350..." onblur="evaluateMath(this)" oninput="calculateAmount()">
 
-                        <div id="statusField" class="mt-4 bg-black/20 p-3 rounded-xl border border-white/5">
-                            <label class="block text-xs font-semibold text-slate-400 mb-2" id="statusLabel">حالة المبلغ</label>
+                        <div id="statusField" class="mt-4 bg-sky-500/10 p-4 rounded-xl border border-sky-500/20">
+                            <label class="block text-xs font-bold text-apple-main mb-2 text-center" id="statusLabel">حالة المبلغ</label>
                             <div class="flex gap-2" id="statusButtons">
-                                <button type="button" class="status-btn flex-1 py-1.5 text-sm rounded-lg border border-sky-500 bg-sky-500/20 text-sky-300" data-val="مكتمل" onclick="setStatusVal('مكتمل')">مقبوض في الجيب</button>
-                                <button type="button" class="status-btn flex-1 py-1.5 text-sm rounded-lg border border-white/10 text-slate-400 hover:bg-white/5" data-val="قيد الانتظار" onclick="setStatusVal('قيد الانتظار')">قيد الانتظار</button>
+                                <button type="button" class="status-btn flex-1 py-2 text-sm rounded-lg font-bold transition-all bg-sky-500/20 border border-sky-500/30 text-sky-400" data-val="مكتمل" onclick="setStatusVal('مكتمل')">مقبوض</button>
+                                <button type="button" class="status-btn flex-1 py-2 text-sm rounded-lg font-bold transition-all bg-black/40 border border-white/10 text-gray-400" data-val="قيد الانتظار" onclick="setStatusVal('قيد الانتظار')">قيد الانتظار</button>
                             </div>
                             <input type="hidden" id="statusInput" value="مكتمل">
                         </div>
                     </div>
                 </div>
 
+                <div class="mb-5 bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <label class="block text-sm font-bold text-apple-main mb-2"><i class="ph-fill ph-camera" style="color: var(--apple-blue);"></i> إرفاق وصل (تيليجرام)</label>
+                    <input type="file" id="receiptInput" accept="image/*" class="glass-input w-full px-2 py-2 text-sm cursor-pointer file:cursor-pointer">
+                    <p class="text-[10px] text-apple-muted font-medium mt-2 leading-relaxed">سيتم الإرسال سحابياً لبوت الأرشيف.</p>
+                </div>
+
                 <div class="mb-5">
-                    <label class="block text-sm font-semibold text-slate-300 mb-2" id="noteLabel">الملاحظات والتفاصيل</label>
-                    <textarea id="noteInput" rows="2" class="glass-input w-full rounded-xl px-4 py-3 resize-none" placeholder="اكتب تفاصيل العملية هنا..."></textarea>
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider" id="noteLabel">الملاحظات</label>
+                    <textarea id="noteInput" rows="2" class="glass-input w-full px-4 py-3 resize-none font-medium text-sm" placeholder="اكتب التفاصيل هنا..."></textarea>
                 </div>
 
-                <div class="bg-black/30 rounded-xl p-4 mb-6 flex justify-between items-center border border-white/5" id="previewBox">
-                    <span class="text-sm text-slate-400">القيمة المحسوبة:</span>
-                    <span id="calculatedPreview" class="text-xl font-bold text-white dir-ltr">0 د.ج</span>
+                <div class="bg-black/50 rounded-xl p-4 mb-6 flex justify-between items-center border border-white/10" id="previewBox">
+                    <span class="text-xs font-bold text-apple-muted uppercase tracking-wider">القيمة المحسوبة:</span>
+                    <span id="calculatedPreview" class="text-xl font-bold text-apple-main dir-ltr">0 د.ج</span>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-3.5 rounded-xl font-bold shadow-lg transition-all flex justify-center items-center gap-2">
-                    <i class="ph ph-floppy-disk text-xl"></i><span id="submitBtnText">حفظ العملية سحابياً</span>
+                <button type="submit" id="submitBtn" class="w-full btn-apple py-4 text-lg flex justify-center items-center gap-2">
+                    <span id="submitBtnText">حفظ العملية</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 z-50 glass-card px-6 py-4 rounded-xl border-l-4 border-green-500 flex items-center gap-3">
-        <i class="ph-fill ph-check-circle text-green-500 text-2xl"></i>
-        <div><h4 class="text-white font-bold text-sm" id="toastTitle">نجاح</h4><p class="text-slate-300 text-xs" id="toastMsg"></p></div>
+    <!-- Notification Toast Apple Dark Style -->
+    <div id="toast" class="fixed top-6 right-6 md:top-10 md:right-10 transform -translate-y-20 opacity-0 transition-all duration-400 z-50 bg-[#1c1c1e]/90 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4">
+        <div id="toastIconContainer" class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20 border border-green-500/30">
+            <i class="ph-bold ph-check text-green-400 text-xl" id="toastIcon"></i>
+        </div>
+        <div>
+            <h4 class="text-apple-main font-bold text-sm" id="toastTitle">نجاح</h4>
+            <p class="text-apple-muted text-xs font-medium mt-0.5" id="toastMsg"></p>
+        </div>
     </div>
 
     <script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
+        
+        // 🚨 إعدادات بوت تيليجرام 🚨
+        const TG_BOT_TOKEN = "ضع_توكن_البوت_هنا"; 
+        const TG_CHAT_ID = "ضع_ايدي_الدردشة_هنا";   
+
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         let isPrivacyRevealed = false;
+        
+        // تم إلغاء الصوت كلياً كما طلب المستخدم
 
-        // 🌟 محرك الأنيميشن الخرافي: "خزان السيولة" 🌊
+        // 🌟 دالة الآلة الحاسبة الذكية (Smart Math Evaluator)
+        window.evaluateMath = function(input) {
+            let val = input.value.trim();
+            if (!val) return;
+            val = val.replace(/,/g, '.'); 
+            if (/^[0-9+\-*/. ()]+$/.test(val)) {
+                try {
+                    let result = Function('"use strict";return (' + val + ')')();
+                    if (result !== undefined && !isNaN(result) && val !== String(result)) {
+                        input.value = result; 
+                        // وميض أخضر أبل ستايل (متوافق مع الدارك مود)
+                        input.style.backgroundColor = 'rgba(48, 209, 88, 0.15)';
+                        input.style.borderColor = '#30d158';
+                        setTimeout(() => {
+                            input.style.backgroundColor = '';
+                            input.style.borderColor = '';
+                        }, 1000);
+                        calculateAmount();
+                    }
+                } catch (e) {
+                    console.log("معادلة غير مكتملة");
+                }
+            }
+        };
+
+        function getParsedAmount(id) {
+            let val = document.getElementById(id).value.trim();
+            if(!val) return 0;
+            val = val.replace(/,/g, '.');
+            try { 
+                let res = Function('"use strict";return (' + val + ')')();
+                return isNaN(res) ? 0 : res;
+            } catch(e) { 
+                let parsed = parseFloat(val);
+                return isNaN(parsed) ? 0 : parsed;
+            }
+        }
+
+        // Apple Dark Style Liquid Animation
         async function liquidAction(btn, actionFunction, loadingText = "", isIconOnly = false) {
             const originalHTML = btn.innerHTML;
+            const ogClass = btn.className;
             btn.style.position = 'relative';
             btn.style.overflow = 'hidden';
             btn.disabled = true;
             
             if (isIconOnly) {
                 btn.innerHTML = `
-                    <div class="absolute inset-0 bg-slate-900/60 z-0"></div>
-                    <div class="liquid-bg absolute inset-0 bg-gradient-to-r from-sky-400 to-indigo-500 z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
+                    <div class="absolute inset-0 bg-[#1c1c1e] z-0"></div>
+                    <div class="liquid-bg absolute inset-0 liquid-bg-apple z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
                     <div class="relative z-10 flex justify-center items-center w-full h-full text-white">
-                        <i class="ph ph-spinner-gap animate-spin text-lg drop-shadow-md"></i>
+                        <i class="ph-bold ph-spinner-gap animate-spin"></i>
                     </div>
                 `;
             } else {
                 btn.innerHTML = `
-                    <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
-                    <div class="liquid-bg absolute inset-0 bg-gradient-to-r from-teal-400 to-sky-500 z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
-                    <div class="relative z-10 flex justify-center items-center gap-3 drop-shadow-md w-full h-full">
-                        <span class="pct-text font-mono font-bold text-white text-lg">0%</span>
+                    <div class="absolute inset-0 bg-[#1c1c1e] z-0"></div>
+                    <div class="liquid-bg absolute inset-0 liquid-bg-apple z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div>
+                    <div class="relative z-10 flex justify-center items-center gap-3 w-full h-full">
+                        <span class="pct-text font-bold text-white text-lg">0%</span>
                         <span class="text-white font-bold">${loadingText}</span>
                     </div>
                 `;
@@ -414,42 +605,43 @@
             let progress = 0;
             const progressInterval = setInterval(() => {
                 if (progress < 92) {
-                    progress += Math.floor(Math.random() * 12) + 4;
+                    progress += Math.floor(Math.random() * 15) + 5;
                     if (progress > 92) progress = 92;
                     liquidBg.style.width = `${progress}%`;
                     if (!isIconOnly && pctText) pctText.innerText = `${progress}%`;
                 }
-            }, 250);
+            }, 200);
 
             try {
                 await actionFunction(); 
-                
                 clearInterval(progressInterval);
                 liquidBg.style.width = `100%`;
+
                 if (isIconOnly) {
-                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-600 z-0 transition-all duration-300 ease-out";
-                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-lg text-white drop-shadow-md"></i>`;
+                    liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-success z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-check text-white"></i>`;
                 } else {
                     if(pctText) pctText.innerText = `100%`;
-                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-600 z-0 transition-all duration-300 ease-out";
-                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-2xl text-white drop-shadow-md"></i><span class="text-white font-bold drop-shadow-md">تمت العملية بنجاح!</span>`;
+                    liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-success z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-check text-xl text-white"></i><span class="text-white font-bold">بنجاح!</span>`;
                 }
-                await new Promise(r => setTimeout(r, 1200)); // مدة الاستمتاع بالأنيميشن وهو 100%
+                await new Promise(r => setTimeout(r, 800)); 
             } catch (error) {
                 clearInterval(progressInterval);
                 liquidBg.style.width = `100%`;
                 if (isIconOnly) {
-                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-red-500 to-orange-500 z-0 transition-all duration-300 ease-out";
-                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-warning-circle text-lg text-white drop-shadow-md"></i>`;
+                    liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-error z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-x text-white"></i>`;
                 } else {
-                    liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-red-600 to-orange-500 z-0 transition-all duration-300 ease-out";
-                    btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-warning-circle text-2xl text-white drop-shadow-md"></i><span class="text-white font-bold drop-shadow-md">حدث خطأ!</span>`;
+                    liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-error z-0 transition-all duration-300 ease-out";
+                    btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-warning-circle text-xl text-white"></i><span class="text-white font-bold">خطأ!</span>`;
                 }
-                await new Promise(r => setTimeout(r, 1500));
+                await new Promise(r => setTimeout(r, 1200));
                 throw error; 
             } finally {
                 if (document.body.contains(btn)) {
                     btn.innerHTML = originalHTML;
+                    btn.className = ogClass;
                     btn.disabled = false;
                 }
             }
@@ -465,14 +657,14 @@
         async function unlockApp() {
             const pin = document.getElementById('pinInput').value;
             if(!pin) return;
-            const loginBtn = document.querySelector('#loginBox button');
+            const loginBtn = document.getElementById('loginBtnAction');
             
             try {
                 await liquidAction(loginBtn, async () => {
                     sessionPin = pin; 
                     let isSuccess = await fetchTransactions();
                     if (!isSuccess) throw new Error("الرمز غير صحيح");
-                }, "جاري الاتصال بالسيرفر...");
+                }, "جاري الاتصال...");
             } catch (err) { }
         }
 
@@ -480,7 +672,7 @@
             if (isPrivacyRevealed) {
                 isPrivacyRevealed = false;
                 renderDashboard();
-                showToast("وضع الخصوصية", "تم إخفاء الأرصدة بنجاح", "info");
+                showToast("الخصوصية", "تم إخفاء الأرصدة", "info");
             } else {
                 document.getElementById('privacyPinInput').value = '';
                 document.getElementById('privacyError').classList.add('hidden');
@@ -502,7 +694,7 @@
                 isPrivacyRevealed = true;
                 closePrivacyModal();
                 renderDashboard();
-                showToast("تم الفتح", "تم كشف الأرصدة، انقر عليها مجدداً لإخفائها", "success");
+                showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success");
             } else {
                 document.getElementById('privacyError').classList.remove('hidden');
             }
@@ -511,7 +703,7 @@
         async function fetchTransactions() {
             if (!sessionPin) return false; 
             const tableBody = document.getElementById('transactionsTableBody');
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-sky-400"><i class="ph ph-spinner-gap animate-spin text-4xl mb-3 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]"></i><p class="font-bold">جاري المزامنة مع قاعدة البيانات...</p></td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-blue font-bold"><i class="ph-bold ph-spinner-gap animate-spin text-3xl mb-2"></i><p>مزامنة البيانات...</p></td></tr>`;
             try {
                 let response = await fetch(GAS_WEB_APP_URL + "?pin=" + sessionPin);
                 let result = await response.json();
@@ -522,23 +714,23 @@
                     
                     if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) {
                         const filterSelect = document.getElementById('tableTypeSelect');
-                        filterSelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">الأرصدة الافتتاحية</option>`;
+                        filterSelect.innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>`;
                     }
                     if (!document.querySelector('#entryType option[value="opening_balance"]')) {
                         const entrySelect = document.getElementById('entryType');
-                        entrySelect.innerHTML += `<option value="opening_balance" class="bg-slate-800 text-teal-400 font-bold">💰 إدخال رصيد افتتاحي (رأس مال)</option>`;
+                        entrySelect.innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">💰 إدخال رصيد افتتاحي</option>`;
                     }
                     applyFilters(); 
                     return true;
                 } else {
                     document.getElementById('loginError').classList.remove('hidden');
                     sessionPin = null; 
-                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">تم رفض الوصول، الرمز غير صحيح.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted">الرمز غير صحيح.</td></tr>`;
                     return false;
                 }
             } catch (error) {
-                showToast("خطأ", "تأكد من اتصالك بالإنترنت", "error");
-                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا يمكن الوصول للسيرفر حالياً.</td></tr>`;
+                showToast("خطأ اتصال", "تأكد من الإنترنت", "error");
+                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted">لا يمكن الوصول للسيرفر.</td></tr>`;
                 return false;
             }
         }
@@ -561,32 +753,48 @@
                     const type = document.getElementById('entryType').value;
                     let note = document.getElementById('noteInput').value;
                     let wallet = document.getElementById('walletSelect').value; 
+                    let receiptFile = document.getElementById('receiptInput').files[0];
                     let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
 
                     if (type === 'exchange') {
-                        let usdtAmount = parseFloat(document.getElementById('usdtAmountInput').value);
+                        let usdtAmount = getParsedAmount('usdtAmountInput');
                         let usdtRate = parseFloat(document.getElementById('usdtRateInput').value);
                         let sourceWallet = document.getElementById('exchangeSourceSelect').value;
-                        if (isNaN(usdtAmount) || isNaN(usdtRate) || usdtAmount <= 0 || usdtRate <= 0) throw new Error("تأكد من إدخال مبلغ الـ USDT وسعر الصرف بشكل صحيح");
+                        if (isNaN(usdtAmount) || isNaN(usdtRate) || usdtAmount <= 0 || usdtRate <= 0) throw new Error("بيانات USDT غير صحيحة");
                         
                         let dzdAmount = Math.round(usdtAmount * usdtRate);
+                        amount = usdtAmount;
+                        notionTitle = `شراء ${usdtAmount} USDT`;
                         
+                        if (receiptFile) {
+                            if(!TG_BOT_TOKEN || TG_BOT_TOKEN === "ضع_توكن_البوت_هنا") throw new Error("توكن تيليجرام مفقود في الكود");
+                            let tgFormData = new FormData();
+                            tgFormData.append("chat_id", TG_CHAT_ID);
+                            tgFormData.append("photo", receiptFile);
+                            tgFormData.append("caption", `✅ ${notionTitle}\nخصم: ${dzdAmount} د.ج (${sourceWallet})\nسعر الصرف: ${usdtRate}\nملاحظة: ${note}`);
+                            
+                            let tgRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`, { method: "POST", body: tgFormData });
+                            let tgData = await tgRes.json();
+                            if (!tgData.ok) throw new Error("فشل رفع الوصل لتيليجرام");
+                            note = note + " [📎 مرفق]";
+                        }
+
                         const payloadToGas = { pin: sessionPin, action: "exchange", title_out: `شراء USDT (${usdtAmount}$)`, amount_out: -dzdAmount, wallet_out: sourceWallet, title_in: `استلام USDT`, amount_in: usdtAmount, notes: `سعر الصرف: ${usdtRate} | ` + note, date: new Date().toISOString() };
                         let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
                         let result = await response.json();
-                        if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
+                        if (result.status !== "success") throw new Error(result.message || "رفض السيرفر.");
                         
                         allTransactions.unshift({ id: result.response.id1, type: 'exchange', subType: 'expense', amount: -dzdAmount, wallet: sourceWallet, note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
-                        allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
+                        allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate} ` + (receiptFile ? "[📎 مرفق]" : ""), exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
                         return; 
                     }
                     else if (type === 'opening_balance') {
-                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
-                        if (isNaN(rawAmount)) throw new Error("الرجاء إدخال رصيد صحيح"); 
+                        let rawAmount = getParsedAmount('amountInput');
+                        if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال رصيد صحيح"); 
                         amount = rawAmount; notionTitle = `رصيد افتتاحي`; notionType = amount >= 0 ? "إضافة" : "خصم";
                     }
                     else if (type === 'challenge') {
-                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        let rawAmount = getParsedAmount('amountInput');
                         let startDate = document.getElementById('challengeStartInput').value;
                         let endDate = document.getElementById('challengeEndInput').value;
                         if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال مبلغ الهدف بشكل صحيح");
@@ -596,7 +804,7 @@
                         note = `Start: ${startDate} | End: ${endDate} | ` + note;
                     }
                     else if (type === 'salary_update') {
-                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        let rawAmount = getParsedAmount('amountInput');
                         if (isNaN(rawAmount) || rawAmount <= 0) throw new Error("الرجاء إدخال راتب صحيح");
                         amount = rawAmount; notionTitle = `تحديث الراتب`; notionType = "إضافة";
                     }
@@ -614,7 +822,7 @@
                         const today = new Date();
                         const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
                         const currentSal = getActiveSalaryForDate(today);
-                        if(currentSal === 0) throw new Error("لا يوجد راتب أساسي مدون لحساب الغياب! أضف تحديث راتب أولاً.");
+                        if(currentSal === 0) throw new Error("يجب تحديث الراتب الأساسي أولاً!");
                         const dailyRate = currentSal / daysInMonth;
                         amount = -Math.round(dailyRate * days); notionTitle = `غياب (${days} أيام)`; notionType = "خصم";
                     } else if (type === 'company_rule') {
@@ -624,7 +832,7 @@
                         notionType = amount > 0 ? "إضافة" : "خصم";
                     } else if (type === 'personal') {
                         subType = document.getElementById('personalTypeInput').value;
-                        let rawAmount = parseFloat(document.getElementById('amountInput').value);
+                        let rawAmount = getParsedAmount('amountInput');
                         if (isNaN(rawAmount) || rawAmount === 0) throw new Error("الرجاء إدخال مبلغ صحيح"); 
                         amount = (subType === 'expense' || subType === 'debt') ? -Math.abs(rawAmount) : rawAmount;
                         notionTitle = subType === 'income' ? 'مدخول شخصي' : (subType === 'expense' ? 'مصروف شخصي' : 'دين شخصي');
@@ -632,20 +840,33 @@
                         if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
                     }
 
+                    if (receiptFile && type !== 'exchange') {
+                        if(!TG_BOT_TOKEN || TG_BOT_TOKEN === "ضع_توكن_البوت_هنا") throw new Error("توكن تيليجرام مفقود في الكود");
+                        let tgFormData = new FormData();
+                        tgFormData.append("chat_id", TG_CHAT_ID);
+                        tgFormData.append("photo", receiptFile);
+                        tgFormData.append("caption", `✅ ${notionTitle}\nالمبلغ: ${amount} ${wallet === 'RedotPay' ? 'USDT' : 'د.ج'}\nالمحفظة: ${wallet}\nالملاحظة: ${note}`);
+                        
+                        let tgRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`, { method: "POST", body: tgFormData });
+                        let tgData = await tgRes.json();
+                        if (!tgData.ok) throw new Error("فشل رفع الوصل لتيليجرام");
+                        note = note + " [📎 مرفق]";
+                    }
+
                     const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, wallet: wallet, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
                     let result = await response.json();
                     
-                    if (result.status !== "success") throw new Error(result.message || "الرفض من السيرفر.");
+                    if (result.status !== "success") throw new Error(result.message || "رفض السيرفر.");
 
                     let realNotionId = result.response.id;
                     let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                     
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
-                }, "جاري تشفير وحفظ العملية...");
+                }, "جاري الحفظ...");
                 
                 applyFilters(); 
-                showToast("نجاح", "تم الحفظ بنجاح!");
+                showToast("نجاح", "تمت العملية سحابياً");
                 closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
             } catch (err) { showToast("تنبيه", err.message, "error"); }
         };
@@ -653,7 +874,7 @@
         window.markAsPaid = async function(docId, btnElement) {
             let txn = allTransactions.find(t => t.id === docId);
             if(!txn) return;
-            let confirmMsg = (txn.amount > 0) ? "هل متأكد أنك استلمت هذا المبلغ فعلياً؟" : "هل متأكد أنك سددت هذا الدين فعلياً؟";
+            let confirmMsg = (txn.amount > 0) ? "هل متأكد من القبض؟" : "هل متأكد من التسديد؟";
             if(!confirm(confirmMsg)) return;
             
             try {
@@ -661,30 +882,29 @@
                     let payload = { pin: sessionPin, action: "update_status", page_id: docId };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     let result = await response.json();
-                    if (result.status !== "success") throw new Error(result.message || "فشل في تحديث الحالة");
+                    if (result.status !== "success") throw new Error(result.message || "فشل التحديث");
                     txn.status = "مكتمل"; 
                 }, "", true);
                 
                 applyFilters(); 
-                showToast("نجاح", "تم تحديث العملية وإضافتها للرصيد الصافي!", "success");
+                showToast("تحديث", "تم إكمال العملية وإضافتها للرصيد", "success");
             } catch (err) { showToast("خطأ", err.message, "error"); }
         }
 
         window.deleteEntry = async function(docId, btnElement) {
-            if(!confirm("هل أنت متأكد من حذف هذه العملية نهائياً؟")) return;
+            if(!confirm("هل أنت متأكد من الحذف النهائي؟")) return;
             
             try {
                 await liquidAction(btnElement, async () => {
                     let payload = { pin: sessionPin, action: "delete_entry", page_id: docId };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     let result = await response.json();
-                    if (result.status !== "success") throw new Error(result.message || "فشل في الحذف");
-                    
+                    if (result.status !== "success") throw new Error(result.message || "فشل الحذف");
                     allTransactions = allTransactions.filter(t => t.id !== docId);
                 }, "", true);
                 
                 applyFilters();
-                showToast("نجاح", "تم الحذف نهائياً من السيرفر!", "success");
+                showToast("حذف", "تمت إزالة العملية من الأرشيف", "success");
             } catch (err) { showToast("خطأ", err.message, "error"); }
         }
 
@@ -773,7 +993,7 @@
                 if (includeInTable) { filteredCount++; tableBody.appendChild(createTableRow(t)); }
             });
 
-            if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-slate-500">لا توجد عمليات مطابقة للفلاتر المحددة.</td></tr>`;
+            if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted font-semibold">لا توجد عمليات مطابقة للفلاتر المحددة.</td></tr>`;
             
             let redotPayInDZD = Math.round(balances['RedotPay'] * latestExchangeRate);
             let finalBalance = balances['كاش'] + balances['بريدي موب'] + redotPayInDZD;
@@ -781,14 +1001,14 @@
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash';
             const generalBlurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
             
-            document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-sky-400 text-lg`;
-            document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-indigo-400 text-lg`;
+            document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`;
+            document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
 
-            document.getElementById('recordCountBadge').innerText = `${filteredCount} عملية`;
+            document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
             
             document.getElementById("cashBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['كاش']);
             document.getElementById("baridiBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['بريدي موب']);
-            document.getElementById("redotBalDisplay").innerHTML = `${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(balances['RedotPay'])} <span class="text-[8px] text-teal-500/50 block -mt-1" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
+            document.getElementById("redotBalDisplay").innerHTML = `${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(balances['RedotPay'])} <span class="text-[9px] text-teal-400 block -mt-1 opacity-70" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
             
             if(isPrivacyRevealed) {
                 document.getElementById("cashBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90');
@@ -800,11 +1020,15 @@
                 document.getElementById("redotBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90');
             }
 
-            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-300', true, true);
-            animateValue("accruedBaseSalary", accruedBaseSalary, 'text-white', true, true);
+            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-100', true, true);
+            animateValue("accruedBaseSalary", accruedBaseSalary, 'text-indigo-400', true, true);
             document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
             
-            animateValue("totalBalance", finalBalance, finalBalance < 0 ? 'text-neon-red' : (finalBalance > 0 ? 'text-white' : 'text-slate-300'), true, true);
+            // تطبيق الوهج النيون على الرصيد الإجمالي في الدارك مود
+            let totalBalanceColorClass = 'neon-glow-neutral';
+            if (finalBalance > 0) totalBalanceColorClass = 'neon-glow-green';
+            if (finalBalance < 0) totalBalanceColorClass = 'neon-glow-red';
+            animateValue("totalBalance", finalBalance, totalBalanceColorClass, true, true);
             
             animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true);
             animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true);
@@ -848,39 +1072,39 @@
                     let currentChallengeBalance = chalAccruedSalary + chalOpsSum;
                     let progress = Math.max(0, Math.min((currentChallengeBalance / targetAmount) * 100, 100)).toFixed(1);
                     let daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-                    let progressColor = progress >= 100 ? 'from-emerald-400 to-emerald-500' : (progress > 60 ? 'from-sky-400 to-indigo-500' : 'from-orange-400 to-red-500');
+                    let progressColor = progress >= 100 ? 'from-green-500 to-green-400' : (progress > 60 ? 'from-blue-600 to-blue-400' : 'from-orange-500 to-red-500');
                     
                     let timeBadge = '';
-                    if(progress >= 100) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">🎉 مبروك! اكتمل التحدي</span>`; } 
-                    else if (daysRemaining >= 0) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-bold">⏳ باقي ${daysRemaining} يوم</span>`; } 
-                    else { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 font-bold">⚠️ انتهى الوقت</span>`; }
+                    if(progress >= 100) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-400 border border-green-500/30 font-bold shadow-sm">🎉 اكتمل!</span>`; } 
+                    else if (daysRemaining >= 0) { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30 font-bold shadow-sm">⏳ باقي ${daysRemaining} يوم</span>`; } 
+                    else { timeBadge = `<span class="text-xs px-3 py-1 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 font-bold shadow-sm">⚠️ انتهى الوقت</span>`; }
 
                     const chalBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
                     const chalClick = `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
 
                     challengeContainer.innerHTML = `
-                        <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                        <div class="glass-card p-6 relative overflow-hidden">
                             <div class="absolute -left-4 -top-4 text-pink-500/5 transition-colors pointer-events-none"><i class="ph-fill ph-target text-9xl"></i></div>
                             <div class="relative z-10">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                                    <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="ph-fill ph-rocket text-pink-400 text-2xl"></i> التحدي المالي النشط</h3>
+                                    <h3 class="text-lg font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-rocket text-pink-400 text-xl"></i> التحدي المالي النشط</h3>
                                     ${timeBadge}
                                 </div>
-                                <div class="flex justify-between text-sm text-slate-300 mb-2 font-semibold px-1">
-                                    <span>المحقق (في هذه المدة): <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)}</span> د.ج</span>
+                                <div class="flex justify-between text-sm text-apple-main mb-2 font-bold px-1">
+                                    <span>المحقق: <span class="${chalBlur} text-apple-blue" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)}</span> د.ج</span>
                                     <span>الهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(targetAmount)}</span> د.ج</span>
                                 </div>
-                                <div class="w-full bg-slate-800/80 rounded-full h-4 mb-2 border border-white/5 overflow-hidden">
+                                <div class="w-full bg-white/10 rounded-full h-3.5 mb-2 overflow-hidden shadow-inner">
                                     <div class="bg-gradient-to-r ${progressColor} h-full rounded-full transition-all duration-1000 relative flex items-center justify-end px-2" style="width: ${progress}%">
-                                        ${progress >= 15 ? `<span class="text-[10px] font-bold text-white drop-shadow-md ${chalBlur}" ${chalClick}>${progress}%</span>` : ''}
+                                        ${progress >= 15 ? `<span class="text-[9px] font-bold text-white shadow-sm ${chalBlur}" ${chalClick}>${progress}%</span>` : ''}
                                     </div>
                                 </div>
-                                <div class="flex justify-between text-xs px-1 text-slate-400">
-                                    <span class="text-pink-300">${progress < 15 ? `النسبة: <span class="${chalBlur}" ${chalClick}>${progress}</span>%` : ''}</span>
-                                    <span>المتبقي للهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span>
+                                <div class="flex justify-between text-xs px-1 text-apple-muted font-medium">
+                                    <span class="text-pink-400">${progress < 15 ? `النسبة: <span class="${chalBlur}" ${chalClick}>${progress}</span>%` : ''}</span>
+                                    <span>المتبقي: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span>
                                 </div>
                                 <div class="mt-4 flex justify-end">
-                                    <button onclick="window.deleteEntry('${activeChallenge.id}', this)" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 relative overflow-hidden px-2 py-1 rounded"><i class="ph ph-trash"></i> إلغاء التحدي</button>
+                                    <button onclick="window.deleteEntry('${activeChallenge.id}', this)" class="text-xs text-apple-muted hover:text-red-400 font-bold transition-colors flex items-center gap-1 relative overflow-hidden px-2 py-1 rounded bg-white/5 border border-white/10"><i class="ph-bold ph-trash"></i> إلغاء التحدي</button>
                                 </div>
                             </div>
                         </div>
@@ -893,13 +1117,13 @@
         function createTableRow(t) {
             const tr = document.createElement('tr');
             let isPending = (t.status === 'قيد الانتظار');
-            let rowBorderColor = 'border-white/5', rowBgColor = 'glass-row';
+            let rowBgColor = 'glass-row';
             
             if(isPending) {
-                if(t.amount > 0) { rowBorderColor = 'border-l-2 border-orange-500 border-b border-white/5'; rowBgColor = 'bg-orange-500/10'; } 
-                else { rowBorderColor = 'border-l-2 border-red-500 border-b border-white/5'; rowBgColor = 'bg-red-500/10'; }
-            } else if (t.type === 'challenge') { rowBorderColor = 'border-l-2 border-pink-500 border-b border-white/5'; rowBgColor = 'bg-pink-500/5'; }
-            tr.className = `${rowBgColor} ${rowBorderColor}`;
+                if(t.amount > 0) { rowBgColor = 'bg-orange-500/10 border-l-4 border-orange-500'; } 
+                else { rowBgColor = 'bg-red-500/10 border-l-4 border-red-500'; }
+            } else if (t.type === 'challenge') { rowBgColor = 'bg-pink-500/10 border-l-4 border-pink-500'; }
+            tr.className = `${rowBgColor}`;
             
             const dateObj = new Date(t.exactTimestamp);
             const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB');
@@ -909,10 +1133,10 @@
                 case 'opening_balance': typeLabel = `رصيد افتتاحي`; typeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30'; icon = 'ph-money'; break;
                 case 'challenge': typeLabel = `تحدي مالي`; typeColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; icon = 'ph-target'; break;
                 case 'salary_update': typeLabel = `تحديث الراتب`; typeColor = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'; icon = 'ph-bank'; break;
-                case 'absence': typeLabel = `غياب (${t.days} يوم)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-user-minus'; break;
+                case 'absence': typeLabel = `غياب (${t.days} ي)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-user-minus'; break;
                 case 'overtime': typeLabel = `إضافي (${t.minutes}د)`; typeColor = 'bg-green-500/20 text-green-400 border-green-500/30'; icon = 'ph-timer'; break;
                 case 'lateness': typeLabel = `تأخر (${t.minutes}د)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-clock-countdown'; break;
-                case 'exchange': typeLabel = t.amount > 0 ? `استلام USDT` : `شراء USDT`; typeColor = 'bg-teal-500/20 text-teal-300 border-teal-500/30'; icon = 'ph-currency-circle-dollar'; break;
+                case 'exchange': typeLabel = t.amount > 0 ? `استلام USDT` : `شراء USDT`; typeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30'; icon = 'ph-currency-circle-dollar'; break;
                 case 'company_rule':
                     if (t.subType === 'work_penalty') { typeLabel = 'مخالفة عمل'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-warning-circle'; }
                     else if (t.subType === 'res_penalty') { typeLabel = 'مخالفة إقامة'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-house-line'; }
@@ -920,8 +1144,8 @@
                     else if (t.subType === 'res_bonus') { typeLabel = 'مبادرة إقامة'; typeColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'; icon = 'ph-house-line'; }
                     break;
                 case 'personal':
-                    if (t.subType === 'income') { typeLabel = 'مدخول'; typeColor = 'bg-sky-500/20 text-sky-400 border-sky-500/30'; icon = 'ph-wallet'; }
-                    else if (t.subType === 'expense') { typeLabel = 'مصروف'; typeColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; icon = 'ph-shopping-cart'; }
+                    if (t.subType === 'income') { typeLabel = 'مدخول'; typeColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30'; icon = 'ph-wallet'; }
+                    else if (t.subType === 'expense') { typeLabel = 'مصروف'; typeColor = 'bg-white/10 text-gray-300 border-white/20'; icon = 'ph-shopping-cart'; }
                     else if (t.subType === 'debt') { typeLabel = 'دين'; typeColor = 'bg-purple-500/20 text-purple-400 border-purple-500/30'; icon = 'ph-hand-coins'; }
                     break;
             }
@@ -935,31 +1159,34 @@
 
             const amtCurrency = t.wallet === 'RedotPay' ? 'USDT' : 'د.ج';
             const amtStr = (t.amount > 0 && t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'opening_balance') ? `+${t.amount}` : t.amount;
-            let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-300' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-neon-green' : (t.amount < 0 ? 'text-neon-red' : 'text-slate-300')));
+            let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-400' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-green-400' : (t.amount < 0 ? 'text-red-400' : 'text-gray-400')));
             if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
 
             let tableBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
             let tableClick = isPrivacyRevealed ? '' : `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
-            let formattedAmtStr = `<span class="inline-block ${tableBlur}" ${tableClick} dir="ltr">${amtStr}</span> <span class="text-[10px] font-normal text-slate-400">${amtCurrency}</span>`;
+            let formattedAmtStr = `<span class="inline-block ${tableBlur}" ${tableClick} dir="ltr">${amtStr}</span> <span class="text-[10px] font-semibold text-apple-muted">${amtCurrency}</span>`;
 
             let pendingBadge = '';
             if (isPending) {
                 let badgeText = t.amount > 0 ? "قيد التحصيل" : "لم يُسدد بعد";
                 let badgeColor = t.amount > 0 ? "text-orange-400" : "text-red-400";
-                pendingBadge = `<span class="block mt-1 text-[10px] ${badgeColor} font-bold"><i class="ph ph-clock"></i> ${badgeText}</span>`;
+                pendingBadge = `<span class="block mt-1 text-[10px] ${badgeColor} font-bold"><i class="ph-bold ph-clock"></i> ${badgeText}</span>`;
             }
             
             let actionButtons = '';
             if (isPending) {
                 let checkTitle = t.amount > 0 ? "تم القبض" : "تم التسديد";
-                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 transition-colors p-1.5 rounded-lg hover:bg-green-500/20 mr-1 overflow-hidden" title="${checkTitle}"><i class="ph-fill ph-check-circle text-2xl drop-shadow-md"></i></button>`;
+                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 bg-green-500/20 border border-green-500/30 p-1.5 rounded-lg mr-1 overflow-hidden transition-all shadow-sm" title="${checkTitle}"><i class="ph-bold ph-check text-xl"></i></button>`;
             }
-            actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-slate-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 overflow-hidden" title="حذف نهائي"><i class="ph ph-trash text-lg"></i></button>`;
+            actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-red-400 hover:text-red-300 bg-red-500/20 border border-red-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="حذف نهائي"><i class="ph-bold ph-trash text-lg"></i></button>`;
 
             let dispNote = t.note || '-';
+            if (dispNote.includes("[📎 مرفق]")) {
+                dispNote = dispNote.replace("[📎 مرفق]", `<span class="inline-flex items-center gap-1 bg-sky-500/20 border border-sky-500/30 text-sky-400 px-1.5 py-0.5 rounded-md text-[10px] mr-2 font-bold shadow-sm" title="الوصل مرفق في تيليجرام"><i class="ph-bold ph-paperclip"></i> وصل مرفق</span>`);
+            }
             if (t.type === 'challenge') { dispNote = t.note.split('|').length > 2 ? t.note.split('|')[2].trim() : '-'; }
 
-            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-slate-400" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${typeColor}"><i class="ph ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor}" dir="ltr">${formattedAmtStr}</td><td class="py-4 px-6 text-slate-300 text-xs">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
+            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-apple-muted font-semibold" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${typeColor} shadow-sm"><i class="ph-bold ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor} text-base" dir="ltr">${formattedAmtStr}</td><td class="py-4 px-6 text-apple-main text-xs font-medium">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
             return tr;
         }
 
@@ -977,22 +1204,43 @@
             }
             
             obj.innerHTML = hideDZDInSpan 
-                ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-sm font-normal text-slate-400">د.ج</span>` 
+                ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-base font-semibold opacity-70">د.ج</span>` 
                 : `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span>`;
                 
-            if (colorClass) obj.className = `${obj.className.split(' ').filter(c=>!c.startsWith('text-')).join(' ')} ${colorClass}`;
+            if (colorClass) {
+                obj.className = obj.className.replace(/neon-glow-\w+|text-\w+-\d+/g, '').trim();
+                obj.className += ` ${colorClass}`;
+            }
         }
 
         let toastTimeout;
         function showToast(title, msg, type = "success") {
             const toast = document.getElementById('toast');
-            document.getElementById('toastTitle').innerText = title; document.getElementById('toastMsg').innerText = msg;
-            let borderColor = 'border-green-500'; let iconClass = 'ph-check-circle text-green-500';
-            if(type === 'error') { borderColor = 'border-red-500'; iconClass = 'ph-warning-circle text-red-500'; }
-            if(type === 'info') { borderColor = 'border-sky-500'; iconClass = 'ph-info text-sky-500'; }
-            toast.className = `fixed bottom-6 right-6 transform translate-y-0 opacity-100 transition-all duration-300 z-50 glass-card px-6 py-4 rounded-xl border-l-4 flex items-center gap-3 ${borderColor}`;
-            toast.querySelector('i').className = `ph-fill ${iconClass} text-2xl`;
-            clearTimeout(toastTimeout); toastTimeout = setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('translate-y-20', 'opacity-0'); }, 4000);
+            const toastIcon = document.getElementById('toastIcon');
+            const iconContainer = document.getElementById('toastIconContainer');
+            
+            document.getElementById('toastTitle').innerText = title; 
+            document.getElementById('toastMsg').innerText = msg;
+            
+            if(type === 'error') { 
+                iconContainer.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-red-500/20 border border-red-500/30';
+                toastIcon.className = 'ph-bold ph-warning-circle text-red-400 text-xl';
+            } else if(type === 'info') { 
+                iconContainer.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-sky-500/20 border border-sky-500/30';
+                toastIcon.className = 'ph-bold ph-info text-sky-400 text-xl';
+            } else {
+                iconContainer.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20 border border-green-500/30';
+                toastIcon.className = 'ph-bold ph-check text-green-400 text-xl';
+            }
+            
+            toast.classList.remove('-translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            clearTimeout(toastTimeout); 
+            toastTimeout = setTimeout(() => { 
+                toast.classList.remove('translate-y-0', 'opacity-100'); 
+                toast.classList.add('-translate-y-20', 'opacity-0'); 
+            }, 3000);
         }
 
         function openModal() { document.getElementById('entryModal').classList.remove('hidden'); void document.getElementById('entryModal').offsetWidth; document.getElementById('modalContent').classList.add('modal-enter-active'); handleTypeChange(); }
@@ -1009,8 +1257,9 @@
             exchangeField.classList.add('hidden'); walletField.classList.remove('hidden');
             
             document.getElementById('minutesInput').value = ''; document.getElementById('daysInput').value = ''; document.getElementById('amountInput').value = ''; document.getElementById('challengeStartInput').value = ''; document.getElementById('challengeEndInput').value = '';
+            document.getElementById('receiptInput').value = ''; 
 
-            let btnText = "حفظ العملية سحابياً";
+            let btnText = "حفظ العملية";
 
             if (type === 'exchange') {
                 walletField.classList.add('hidden');
@@ -1018,22 +1267,22 @@
                 btnText = "تنفيذ التحويل 🔄";
             }
             else if (type === 'opening_balance') { 
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ الافتتاحي (بالدينار أو USDT حسب المحفظة)'; document.getElementById('statusField').classList.add('hidden');
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ الافتتاحي'; document.getElementById('statusField').classList.add('hidden');
             }
             else if (type === 'overtime' || type === 'lateness') { minField.classList.remove('hidden'); document.getElementById('minutesLabel').innerText = type === 'overtime' ? 'عدد الدقائق الإضافية' : 'عدد دقائق التأخر'; } 
             else if (type === 'absence') { daysField.classList.remove('hidden'); }
             else if (type === 'company_rule') { rulesField.classList.remove('hidden'); } 
             else if (type === 'personal') { 
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.remove('hidden'); document.getElementById('personalTypeLabel').classList.remove('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ (العملة حسب المحفظة المختارة)'; 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.remove('hidden'); document.getElementById('personalTypeLabel').classList.remove('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ'; 
                 let pType = document.getElementById('personalTypeInput').value;
                 if(pType === 'expense') { document.getElementById('statusField').classList.add('hidden'); } else { document.getElementById('statusField').classList.remove('hidden'); }
             }
             else if (type === 'salary_update') { 
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'الراتب الأساسي الجديد (د.ج)'; document.getElementById('statusField').classList.add('hidden'); 
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'الراتب الأساسي الجديد'; document.getElementById('statusField').classList.add('hidden'); 
             }
             else if (type === 'challenge') {
                 walletField.classList.add('hidden');
-                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ المستهدف (د.ج)'; document.getElementById('statusField').classList.add('hidden');
+                personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ المستهدف'; document.getElementById('statusField').classList.add('hidden');
                 challengeDateField.classList.remove('hidden');
                 btnText = "إطلاق التحدي 🚀";
             }
@@ -1044,15 +1293,15 @@
 
         function setPersonalType(val) {
             document.getElementById('personalTypeInput').value = val;
-            document.querySelectorAll('.personal-type-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500', 'text-sky-300'); b.classList.add('border-white/10', 'text-slate-300'); });
+            document.querySelectorAll('.personal-type-btn').forEach(b => { b.classList.remove('bg-white/10', 'text-apple-main'); b.classList.add('text-gray-400'); });
             const activeBtn = document.querySelector(`.personal-type-btn[data-val="${val}"]`);
-            activeBtn.classList.remove('border-white/10', 'text-slate-300'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-300');
+            activeBtn.classList.remove('text-gray-400'); activeBtn.classList.add('bg-white/10', 'text-apple-main');
             
             const statusField = document.getElementById('statusField');
             if (val === 'expense') { statusField.classList.add('hidden'); } else {
                 statusField.classList.remove('hidden');
-                if (val === 'income') { document.getElementById('statusLabel').innerText = 'هل تم قبض المبلغ فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'مقبوض في الجيب'; } 
-                else if (val === 'debt') { document.getElementById('statusLabel').innerText = 'هل قمت بتسديد هذا الدين فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'تم التسديد (مكتمل)'; }
+                if (val === 'income') { document.getElementById('statusLabel').innerText = 'هل تم قبض المبلغ فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'مقبوض'; } 
+                else if (val === 'debt') { document.getElementById('statusLabel').innerText = 'هل سددت هذا الدين؟'; document.querySelectorAll('.status-btn')[0].innerText = 'تم التسديد'; }
                 setStatusVal('مكتمل');
             }
             calculateAmount();
@@ -1060,23 +1309,23 @@
 
         function setStatusVal(val) {
             document.getElementById('statusInput').value = val;
-            document.querySelectorAll('.status-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500', 'text-sky-300'); b.classList.add('border-white/10', 'text-slate-400'); });
+            document.querySelectorAll('.status-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500/30', 'text-sky-400'); b.classList.add('bg-black/40', 'border-white/10', 'text-gray-400'); });
             const activeBtn = document.querySelector(`.status-btn[data-val="${val}"]`);
-            activeBtn.classList.remove('border-white/10', 'text-slate-400'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-300');
+            activeBtn.classList.remove('bg-black/40', 'border-white/10', 'text-gray-400'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500/30', 'text-sky-400');
         }
 
         window.calculateAmount = function() {
             const type = document.getElementById('entryType').value;
-            let finalStr = "0", colorClass = "text-white";
+            let finalStr = "0", colorClass = "text-apple-main";
             
             if (type === 'exchange') {
-                let usdt = parseFloat(document.getElementById('usdtAmountInput').value) || 0;
+                let usdt = getParsedAmount('usdtAmountInput');
                 let rate = parseFloat(document.getElementById('usdtRateInput').value) || 0;
                 let totalDzd = Math.round(usdt * rate);
                 finalStr = `سيُخصم ${totalDzd} د.ج`; colorClass = "text-teal-400";
             }
-            else if (type === 'opening_balance' || type === 'salary_update') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `${amt}`; colorClass = "text-indigo-400"; }
-            else if (type === 'challenge') { const amt = parseFloat(document.getElementById('amountInput').value) || 0; finalStr = `الهدف: ${amt} د.ج`; colorClass = "text-pink-400"; }
+            else if (type === 'opening_balance' || type === 'salary_update') { const amt = getParsedAmount('amountInput'); finalStr = `${amt}`; colorClass = "text-indigo-400"; }
+            else if (type === 'challenge') { const amt = getParsedAmount('amountInput'); finalStr = `الهدف: ${amt} د.ج`; colorClass = "text-pink-400"; }
             else if (type === 'absence') {
                 const days = parseFloat(document.getElementById('daysInput').value) || 0;
                 const today = new Date();
@@ -1084,20 +1333,20 @@
                 const currentSal = getActiveSalaryForDate(today);
                 const dailyRate = currentSal / daysInMonth;
                 const deduction = Math.round(dailyRate * days);
-                finalStr = `-${deduction} د.ج`; colorClass = "text-neon-red";
+                finalStr = `-${deduction} د.ج`; colorClass = "text-red-400";
             }
-            else if (type === 'overtime') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `+${mins * 6.5} د.ج`; colorClass = "text-neon-green"; } 
-            else if (type === 'lateness') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `-${mins * 50} د.ج`; colorClass = "text-neon-red"; }
-            else if (type === 'company_rule') { const sel = document.getElementById('ruleSelect'); const amt = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-amt')); finalStr = amt > 0 ? `+${amt} د.ج` : `${amt} د.ج`; colorClass = amt > 0 ? "text-neon-green" : "text-neon-red"; }
+            else if (type === 'overtime') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `+${mins * 6.5} د.ج`; colorClass = "text-green-400"; } 
+            else if (type === 'lateness') { const mins = parseFloat(document.getElementById('minutesInput').value) || 0; finalStr = `-${mins * 50} د.ج`; colorClass = "text-red-400"; }
+            else if (type === 'company_rule') { const sel = document.getElementById('ruleSelect'); const amt = parseFloat(sel.options[sel.selectedIndex].getAttribute('data-amt')); finalStr = amt > 0 ? `+${amt} د.ج` : `${amt} د.ج`; colorClass = amt > 0 ? "text-green-400" : "text-red-400"; }
             else if (type === 'personal') { 
                 const subType = document.getElementById('personalTypeInput').value; 
-                const amt = parseFloat(document.getElementById('amountInput').value) || 0;
+                const amt = getParsedAmount('amountInput');
                 if (subType === 'income') {
                     finalStr = amt >= 0 ? `+${amt}` : `${amt}`;
-                    colorClass = amt >= 0 ? "text-neon-green" : "text-neon-red";
+                    colorClass = amt >= 0 ? "text-green-400" : "text-red-400";
                 } else {
                     finalStr = `-${Math.abs(amt)}`;
-                    colorClass = "text-neon-red";
+                    colorClass = "text-red-400";
                 }
             }
             
