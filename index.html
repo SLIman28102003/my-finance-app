@@ -43,7 +43,7 @@
             <h2 class="text-2xl font-bold text-white mb-2">النظام محمي</h2>
             <p class="text-sm text-slate-400 mb-8">يرجى إدخال رمز المرور للوصول إلى بياناتك</p>
             <input type="password" id="pinInput" class="glass-input w-full rounded-2xl px-6 py-4 text-center text-2xl tracking-[0.5em] font-mono mb-6 focus:border-sky-400" placeholder="••••" maxlength="4" onkeypress="if(event.key === 'Enter') unlockApp()">
-            <button onclick="unlockApp()" id="loginBtnAction" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
+            <button onclick="unlockApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-sky-500/25 transition-all">دخول</button>
             <p id="loginError" class="text-red-400 text-sm mt-4 hidden animate-pulse">الرمز غير صحيح، حاول مجدداً</p>
         </div>
     </div>
@@ -77,15 +77,9 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-3">
-                <!-- زر التحكم بالصوت الخرافي -->
-                <button onclick="toggleSound()" id="soundToggleBtn" class="glass border border-white/5 p-2.5 rounded-full text-slate-500 hover:text-white transition-all active:scale-95" title="تشغيل/إيقاف صوت الصرافة">
-                    <i class="ph-fill ph-speaker-slash text-xl"></i>
-                </button>
-                <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
-                    <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية</span>
-                </button>
-            </div>
+            <button onclick="openModal()" class="hidden sm:flex bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg transition-all items-center gap-2 transform hover:-translate-y-0.5">
+                <i class="ph ph-plus-circle text-xl"></i><span>إضافة عملية جديدة</span>
+            </button>
         </div>
     </nav>
 
@@ -115,6 +109,7 @@
                     </p>
                     <h3 class="text-5xl font-bold text-white mb-3 tracking-tight" id="totalBalance">0 <span class="text-lg font-normal text-slate-400">د.ج</span></h3>
                     
+                    <!-- تفاصيل المحافظ المتعددة -->
                     <div class="flex gap-2 flex-wrap justify-center md:justify-end mt-2">
                         <span class="bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 flex items-center gap-1 cursor-pointer" onclick="togglePrivacy()">
                             💵 <span id="cashBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج
@@ -386,27 +381,6 @@
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         let isPrivacyRevealed = false;
-        
-        // 🌟 إعدادات الصوت (Cha-Ching) 💸
-        let isSoundEnabled = false; // يبدأ صامتاً لتفادي المواقف المحرجة
-        const uiSound = new Audio("https://actions.google.com/sounds/v1/foley/cash_register_purchase.ogg");
-
-        window.toggleSound = function() {
-            isSoundEnabled = !isSoundEnabled;
-            const btn = document.getElementById('soundToggleBtn');
-            if (isSoundEnabled) {
-                btn.innerHTML = `<i class="ph-fill ph-speaker-high text-xl text-sky-400 drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]"></i>`;
-                btn.classList.add('border-sky-500/30', 'bg-sky-500/10');
-                showToast("تنبيهات الصوت", "تم تفعيل صوت الصرافة 🔊", "info");
-                uiSound.volume = 0.3; // تيست خفيف
-                uiSound.currentTime = 0;
-                uiSound.play().catch(e => console.log('Audio init err:', e));
-            } else {
-                btn.innerHTML = `<i class="ph-fill ph-speaker-slash text-xl text-slate-500"></i>`;
-                btn.classList.remove('border-sky-500/30', 'bg-sky-500/10');
-                showToast("تنبيهات الصوت", "تم كتم الصوت 🔇", "info");
-            }
-        }
 
         // 🌟 محرك الأنيميشن الخرافي: "خزان السيولة" 🌊
         async function liquidAction(btn, actionFunction, loadingText = "", isIconOnly = false) {
@@ -448,18 +422,10 @@
             }, 250);
 
             try {
-                const actionResult = await actionFunction(); 
+                await actionFunction(); 
                 
                 clearInterval(progressInterval);
                 liquidBg.style.width = `100%`;
-                
-                // 💸 إطلاق الصوت إذا كانت العملية إيجابية وتم تفعيل الصوت
-                if (actionResult === 'PLAY_SOUND' && isSoundEnabled) {
-                    uiSound.volume = 1.0;
-                    uiSound.currentTime = 0;
-                    uiSound.play().catch(e => console.log('Audio blocked', e));
-                }
-
                 if (isIconOnly) {
                     liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-600 z-0 transition-all duration-300 ease-out";
                     btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-lg text-white drop-shadow-md"></i>`;
@@ -468,7 +434,7 @@
                     liquidBg.className = "liquid-bg absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-600 z-0 transition-all duration-300 ease-out";
                     btn.querySelector('.relative').innerHTML = `<i class="ph-fill ph-check-circle text-2xl text-white drop-shadow-md"></i><span class="text-white font-bold drop-shadow-md">تمت العملية بنجاح!</span>`;
                 }
-                await new Promise(r => setTimeout(r, 1200)); 
+                await new Promise(r => setTimeout(r, 1200)); // مدة الاستمتاع بالأنيميشن وهو 100%
             } catch (error) {
                 clearInterval(progressInterval);
                 liquidBg.style.width = `100%`;
@@ -499,14 +465,13 @@
         async function unlockApp() {
             const pin = document.getElementById('pinInput').value;
             if(!pin) return;
-            const loginBtn = document.getElementById('loginBtnAction');
+            const loginBtn = document.querySelector('#loginBox button');
             
             try {
                 await liquidAction(loginBtn, async () => {
                     sessionPin = pin; 
                     let isSuccess = await fetchTransactions();
                     if (!isSuccess) throw new Error("الرمز غير صحيح");
-                    return 'NO_SOUND';
                 }, "جاري الاتصال بالسيرفر...");
             } catch (err) { }
         }
@@ -613,7 +578,7 @@
                         
                         allTransactions.unshift({ id: result.response.id1, type: 'exchange', subType: 'expense', amount: -dzdAmount, wallet: sourceWallet, note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
                         allTransactions.unshift({ id: result.response.id2, type: 'exchange', subType: 'income', amount: usdtAmount, wallet: 'RedotPay', note: `سعر الصرف: ${usdtRate}`, exactTimestamp: new Date().toISOString(), status: 'مكتمل' });
-                        return 'NO_SOUND'; 
+                        return; 
                     }
                     else if (type === 'opening_balance') {
                         let rawAmount = parseFloat(document.getElementById('amountInput').value);
@@ -677,9 +642,6 @@
                     let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                     
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
-                    
-                    if (amount > 0 && type !== 'exchange') return 'PLAY_SOUND';
-                    return 'NO_SOUND';
                 }, "جاري تشفير وحفظ العملية...");
                 
                 applyFilters(); 
@@ -701,8 +663,6 @@
                     let result = await response.json();
                     if (result.status !== "success") throw new Error(result.message || "فشل في تحديث الحالة");
                     txn.status = "مكتمل"; 
-                    if (txn.amount > 0) return 'PLAY_SOUND';
-                    return 'NO_SOUND';
                 }, "", true);
                 
                 applyFilters(); 
@@ -719,8 +679,8 @@
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     let result = await response.json();
                     if (result.status !== "success") throw new Error(result.message || "فشل في الحذف");
+                    
                     allTransactions = allTransactions.filter(t => t.id !== docId);
-                    return 'NO_SOUND';
                 }, "", true);
                 
                 applyFilters();
