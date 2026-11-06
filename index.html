@@ -521,20 +521,25 @@
     </div>
 
     <script>
+        // رابط سيرفر جوجل سكريبت الخالي من التوكنات! 🚀
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
-        
-        // 🚨 إعدادات بوت تيليجرام 🚨
-        const TG_BOT_TOKEN = ""; 
-        const TG_CHAT_ID = "";   
 
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         let isPrivacyRevealed = false;
         
-        // تم إلغاء الصوت كلياً كما طلب المستخدم
+        // 🌟 دالة تحويل الصورة لـ Base64 🌟
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
-        // 🌟 دالة الآلة الحاسبة الذكية (Smart Math Evaluator)
+        // 🌟 دالة الآلة الحاسبة الذكية 
         window.evaluateMath = function(input) {
             let val = input.value.trim();
             if (!val) return;
@@ -544,7 +549,6 @@
                     let result = Function('"use strict";return (' + val + ')')();
                     if (result !== undefined && !isNaN(result) && val !== String(result)) {
                         input.value = result; 
-                        // وميض أخضر أبل ستايل (متوافق مع الدارك مود)
                         input.style.backgroundColor = 'rgba(48, 209, 88, 0.15)';
                         input.style.borderColor = '#30d158';
                         setTimeout(() => {
@@ -766,16 +770,20 @@
                         amount = usdtAmount;
                         notionTitle = `شراء ${usdtAmount} USDT`;
                         
+                        // --- الإرسال الآمن عبر سيرفر جوجل ---
                         if (receiptFile) {
-                            if(!TG_BOT_TOKEN || TG_BOT_TOKEN === "ضع_توكن_البوت_هنا") throw new Error("توكن تيليجرام مفقود في الكود");
-                            let tgFormData = new FormData();
-                            tgFormData.append("chat_id", TG_CHAT_ID);
-                            tgFormData.append("photo", receiptFile);
-                            tgFormData.append("caption", `✅ ${notionTitle}\nخصم: ${dzdAmount} د.ج (${sourceWallet})\nسعر الصرف: ${usdtRate}\nملاحظة: ${note}`);
-                            
-                            let tgRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`, { method: "POST", body: tgFormData });
-                            let tgData = await tgRes.json();
-                            if (!tgData.ok) throw new Error("فشل رفع الوصل لتيليجرام");
+                            let base64Data = await getBase64(receiptFile);
+                            let payloadToUpload = {
+                                pin: sessionPin,
+                                action: "upload_receipt",
+                                fileData: base64Data,
+                                fileName: receiptFile.name,
+                                mimeType: receiptFile.type,
+                                caption: `✅ ${notionTitle}\nخصم: ${dzdAmount} د.ج (${sourceWallet})\nسعر الصرف: ${usdtRate}\nملاحظة: ${note}`
+                            };
+                            let uploadRes = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToUpload) });
+                            let uploadJson = await uploadRes.json();
+                            if (uploadJson.status !== "success") throw new Error("فشل رفع الوصل للسيرفر السحابي");
                             note = note + " [📎 مرفق]";
                         }
 
@@ -840,16 +848,20 @@
                         if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
                     }
 
+                    // --- الإرسال الآمن عبر سيرفر جوجل لبقية العمليات ---
                     if (receiptFile && type !== 'exchange') {
-                        if(!TG_BOT_TOKEN || TG_BOT_TOKEN === "ضع_توكن_البوت_هنا") throw new Error("توكن تيليجرام مفقود في الكود");
-                        let tgFormData = new FormData();
-                        tgFormData.append("chat_id", TG_CHAT_ID);
-                        tgFormData.append("photo", receiptFile);
-                        tgFormData.append("caption", `✅ ${notionTitle}\nالمبلغ: ${amount} ${wallet === 'RedotPay' ? 'USDT' : 'د.ج'}\nالمحفظة: ${wallet}\nالملاحظة: ${note}`);
-                        
-                        let tgRes = await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`, { method: "POST", body: tgFormData });
-                        let tgData = await tgRes.json();
-                        if (!tgData.ok) throw new Error("فشل رفع الوصل لتيليجرام");
+                        let base64Data = await getBase64(receiptFile);
+                        let payloadToUpload = {
+                            pin: sessionPin,
+                            action: "upload_receipt",
+                            fileData: base64Data,
+                            fileName: receiptFile.name,
+                            mimeType: receiptFile.type,
+                            caption: `✅ ${notionTitle}\nالمبلغ: ${amount} ${wallet === 'RedotPay' ? 'USDT' : 'د.ج'}\nالمحفظة: ${wallet}\nالملاحظة: ${note}`
+                        };
+                        let uploadRes = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToUpload) });
+                        let uploadJson = await uploadRes.json();
+                        if (uploadJson.status !== "success") throw new Error("فشل رفع الوصل للسيرفر السحابي");
                         note = note + " [📎 مرفق]";
                     }
 
@@ -863,10 +875,10 @@
                     let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                     
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
-                }, "جاري الحفظ...");
+                }, "جاري الحفظ الآمن...");
                 
                 applyFilters(); 
-                showToast("نجاح", "تمت العملية سحابياً");
+                showToast("نجاح", "تمت العملية بأمان سحابياً");
                 closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
             } catch (err) { showToast("تنبيه", err.message, "error"); }
         };
