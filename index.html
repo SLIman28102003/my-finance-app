@@ -190,19 +190,43 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
-                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">أرباح الوقت الإضافي</p>
-                <h3 class="text-2xl font-bold text-green-400 mb-1" id="monthOvertimeMoney">0</h3>
-                <p class="text-[10px] font-semibold text-apple-muted"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
+        <!-- البطاقات الإحصائية الـ 6 الجديدة -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8">
+            <!-- 1. المداخيل الشهرية -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">إجمالي المداخيل</p>
+                <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthIncomes">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">شامل الراتب المحسوب</p>
             </div>
-            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
-                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">إجمالي الخصومات والتأخرات</p>
-                <h3 class="text-2xl font-bold text-red-400 mb-1" id="monthDeductions">0</h3>
+            <!-- 2. المصاريف الشهرية -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">إجمالي المصاريف</p>
+                <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthExpenses">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">مصاريف وديون سُددت</p>
             </div>
-            <div class="glass-card p-5 relative overflow-hidden flex flex-col justify-center">
-                <p class="text-apple-muted text-xs font-bold mb-1 uppercase tracking-wider">المبادرات والمكافآت</p>
-                <h3 class="text-2xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
+            <!-- 3. أرباح الوقت الإضافي -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">الوقت الإضافي</p>
+                <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthOvertimeMoney">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
+            </div>
+            <!-- 4. المبادرات والمكافآت -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">المبادرات والمكافآت</p>
+                <h3 class="text-lg md:text-2xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">مبادرات عمل وإقامة</p>
+            </div>
+            <!-- 5. الخصومات والتأخرات -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">تأخرات ومخالفات</p>
+                <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthDeductions">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">تُخصم من الراتب</p>
+            </div>
+            <!-- 6. الغيابات -->
+            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">أيام الغياب</p>
+                <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthAbsenceMoney">0</h3>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted"><span id="monthAbsenceDays">0</span> أيام مسجلة</p>
             </div>
         </div>
 
@@ -443,7 +467,6 @@
                             <input type="hidden" id="statusInput" value="مكتمل">
                         </div>
                         
-                        <!-- نظام الديون المستحقة الذكي (Smart Debt Alert) -->
                         <div id="dueDateField" class="mt-4 hidden bg-red-500/10 p-3 rounded-xl border border-red-500/20">
                             <label class="block text-xs font-bold text-red-400 mb-2"><i class="ph-bold ph-calendar-warning"></i> تاريخ الاستحقاق (اختياري)</label>
                             <input type="date" id="dueDateInput" class="glass-input w-full px-3 py-2 text-sm bg-black/40">
@@ -495,24 +518,17 @@
         
         function getBase64(file) {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
+                const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
             });
         }
 
         window.evaluateMath = function(input) {
-            let val = input.value.trim();
-            if (!val) return;
-            val = val.replace(/,/g, '.'); 
+            let val = input.value.trim(); if (!val) return; val = val.replace(/,/g, '.'); 
             if (/^[0-9+\-*/. ()]+$/.test(val)) {
                 try {
                     let result = Function('"use strict";return (' + val + ')')();
                     if (result !== undefined && !isNaN(result) && val !== String(result)) {
-                        input.value = result; 
-                        input.style.backgroundColor = 'rgba(48, 209, 88, 0.15)';
-                        input.style.borderColor = '#30d158';
+                        input.value = result; input.style.backgroundColor = 'rgba(48, 209, 88, 0.15)'; input.style.borderColor = '#30d158';
                         setTimeout(() => { input.style.backgroundColor = ''; input.style.borderColor = ''; }, 1000);
                     }
                 } catch (e) { console.log("معادلة غير مكتملة"); }
@@ -520,42 +536,25 @@
         };
 
         function getParsedAmount(id) {
-            let val = document.getElementById(id).value.trim();
-            if(!val) return 0;
-            val = val.replace(/,/g, '.');
-            try { 
-                let res = Function('"use strict";return (' + val + ')')();
-                return isNaN(res) ? 0 : res;
-            } catch(e) { 
-                let parsed = parseFloat(val);
-                return isNaN(parsed) ? 0 : parsed;
-            }
+            let val = document.getElementById(id).value.trim(); if(!val) return 0; val = val.replace(/,/g, '.');
+            try { let res = Function('"use strict";return (' + val + ')')(); return isNaN(res) ? 0 : res; } 
+            catch(e) { let parsed = parseFloat(val); return isNaN(parsed) ? 0 : parsed; }
         }
 
         async function liquidAction(btn, actionFunction, loadingText = "", isIconOnly = false) {
-            const originalHTML = btn.innerHTML;
-            const ogClass = btn.className;
-            btn.style.position = 'relative'; btn.style.overflow = 'hidden'; btn.disabled = true;
-            
+            const originalHTML = btn.innerHTML; const ogClass = btn.className; btn.style.position = 'relative'; btn.style.overflow = 'hidden'; btn.disabled = true;
             if (isIconOnly) {
                 btn.innerHTML = `<div class="absolute inset-0 bg-[#1c1c1e] z-0"></div><div class="liquid-bg absolute inset-0 liquid-bg-apple z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div><div class="relative z-10 flex justify-center items-center w-full h-full text-white"><i class="ph-bold ph-spinner-gap animate-spin"></i></div>`;
             } else {
                 btn.innerHTML = `<div class="absolute inset-0 bg-[#1c1c1e] z-0"></div><div class="liquid-bg absolute inset-0 liquid-bg-apple z-0 transition-all duration-300 ease-out" style="width: 0%; right: 0;"></div><div class="relative z-10 flex justify-center items-center gap-3 w-full h-full"><span class="pct-text font-bold text-white text-lg">0%</span><span class="text-white font-bold">${loadingText}</span></div>`;
             }
-            
-            const liquidBg = btn.querySelector('.liquid-bg');
-            const pctText = btn.querySelector('.pct-text');
-            
-            let progress = 0;
+            const liquidBg = btn.querySelector('.liquid-bg'); const pctText = btn.querySelector('.pct-text'); let progress = 0;
             const progressInterval = setInterval(() => {
-                if (progress < 92) { progress += Math.floor(Math.random() * 15) + 5; if (progress > 92) progress = 92;
-                    liquidBg.style.width = `${progress}%`; if (!isIconOnly && pctText) pctText.innerText = `${progress}%`;
-                }
+                if (progress < 92) { progress += Math.floor(Math.random() * 15) + 5; if (progress > 92) progress = 92; liquidBg.style.width = `${progress}%`; if (!isIconOnly && pctText) pctText.innerText = `${progress}%`; }
             }, 200);
 
             try {
-                await actionFunction(); 
-                clearInterval(progressInterval); liquidBg.style.width = `100%`;
+                await actionFunction(); clearInterval(progressInterval); liquidBg.style.width = `100%`;
                 if (isIconOnly) { liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-success z-0 transition-all duration-300 ease-out"; btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-check text-white"></i>`; } 
                 else { if(pctText) pctText.innerText = `100%`; liquidBg.className = "liquid-bg absolute inset-0 liquid-bg-success z-0 transition-all duration-300 ease-out"; btn.querySelector('.relative').innerHTML = `<i class="ph-bold ph-check text-xl text-white"></i><span class="text-white font-bold">بنجاح!</span>`; }
                 await new Promise(r => setTimeout(r, 800)); 
@@ -586,7 +585,7 @@
         }
 
         window.closePrivacyModal = function() { document.getElementById('privacyModalContent').classList.remove('modal-enter-active'); setTimeout(() => document.getElementById('privacyModal').classList.add('hidden'), 300); }
-        window.checkPrivacyPin = function() { const pin = document.getElementById('privacyPinInput').value; if (pin.toLowerCase() === 'klmn') { isPrivacyRevealed = true; closePrivacyModal(); renderDashboard(); showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success"); } else { document.getElementById('privacyError').classList.remove('hidden'); } }
+        window.checkPrivacyPin = function() { const pin = document.getElementById('privacyPinInput').value; if (pin.toLowerCase() === 'mmmm') { isPrivacyRevealed = true; closePrivacyModal(); renderDashboard(); showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success"); } else { document.getElementById('privacyError').classList.remove('hidden'); } }
 
         async function fetchTransactions() {
             if (!sessionPin) return false; 
@@ -649,11 +648,7 @@
             ttTxns.forEach(t => {
                 const dateObj = new Date(t.exactTimestamp); const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
                 let price = 6.5; let match = t.note.match(/السعر:\s*([\d.]+)/); if(match) price = parseFloat(match[1]); let dispNote = t.note.split('|')[1] ? t.note.split('|')[1].trim() : '-';
-                listObj.innerHTML += `
-                    <div class="bg-white/5 border border-white/10 rounded-xl p-3 mb-2 flex justify-between items-center transition-all hover:bg-white/10">
-                        <div><p class="text-sm font-bold text-apple-main">${t.minutes || 0} دقيقة <span class="text-[10px] text-apple-muted mx-1 font-normal">(x${price})</span></p><p class="text-[10px] text-apple-muted font-mono mt-0.5">${dateStr} • <span class="text-gray-400">${dispNote}</span></p></div>
-                        <div class="flex items-center gap-3"><span class="text-sm font-bold text-yellow-500" dir="ltr">${t.amount} د.ج</span><button onclick="window.deleteEntry('${t.id}', this)" class="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-lg"><i class="ph-bold ph-trash"></i></button></div>
-                    </div>`;
+                listObj.innerHTML += `<div class="bg-white/5 border border-white/10 rounded-xl p-3 mb-2 flex justify-between items-center transition-all hover:bg-white/10"><div><p class="text-sm font-bold text-apple-main">${t.minutes || 0} دقيقة <span class="text-[10px] text-apple-muted mx-1 font-normal">(x${price})</span></p><p class="text-[10px] text-apple-muted font-mono mt-0.5">${dateStr} • <span class="text-gray-400">${dispNote}</span></p></div><div class="flex items-center gap-3"><span class="text-sm font-bold text-yellow-500" dir="ltr">${t.amount} د.ج</span><button onclick="window.deleteEntry('${t.id}', this)" class="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-lg"><i class="ph-bold ph-trash"></i></button></div></div>`;
             });
         }
 
@@ -662,10 +657,7 @@
             try {
                 await liquidAction(btn, async () => {
                     const type = document.getElementById('entryType').value; let note = document.getElementById('noteInput').value; let wallet = document.getElementById('walletSelect').value; let receiptFile = document.getElementById('receiptInput').files[0];
-                    let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل";
-                    
-                    // استخراج تاريخ الاستحقاق إذا كان موجوداً
-                    let dueDate = document.getElementById('dueDateInput').value;
+                    let amount = 0, minutes = null, days = null, subType = null, notionTitle = "", notionType = "", entryStatus = "مكتمل"; let dueDate = document.getElementById('dueDateInput').value;
 
                     if (type === 'exchange') {
                         let usdtAmount = getParsedAmount('usdtAmountInput'); let usdtRate = parseFloat(document.getElementById('usdtRateInput').value); let sourceWallet = document.getElementById('exchangeSourceSelect').value;
@@ -707,11 +699,7 @@
                         if(subType === 'expense') { entryStatus = "مكتمل"; } else { entryStatus = document.getElementById('statusInput').value; }
                     }
 
-                    // إضافة تاريخ الاستحقاق للملاحظة بشكل خفي لكي يقرأه النظام
-                    if (dueDate && (entryStatus === 'قيد الانتظار' || subType === 'debt')) {
-                        note = note + (note ? " | " : "") + "Due: " + dueDate;
-                    }
-
+                    if (dueDate && (entryStatus === 'قيد الانتظار' || subType === 'debt')) { note = note + (note ? " | " : "") + "Due: " + dueDate; }
                     if (receiptFile && type !== 'exchange') {
                         let base64Data = await getBase64(receiptFile);
                         let payloadToUpload = { pin: sessionPin, action: "upload_receipt", fileData: base64Data, fileName: receiptFile.name, mimeType: receiptFile.type, caption: `✅ ${notionTitle}\nالمبلغ: ${amount} ${wallet === 'RedotPay' ? 'USDT' : 'د.ج'}\nالمحفظة: ${wallet}\nالملاحظة: ${note}` };
@@ -719,16 +707,13 @@
                         let uploadJson = await uploadRes.json(); if (uploadJson.status !== "success") throw new Error("فشل رفع الوصل للسيرفر السحابي");
                         note = note + " [📎 مرفق]";
                     }
-
                     const payloadToGas = { pin: sessionPin, title: notionTitle, type: notionType, amount: amount, wallet: wallet, notes: note || "-", date: new Date().toISOString(), status: entryStatus };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payloadToGas) });
-                    let result = await response.json();
-                    if (result.status !== "success") throw new Error(result.message || "رفض السيرفر.");
+                    let result = await response.json(); if (result.status !== "success") throw new Error(result.message || "رفض السيرفر.");
 
                     let realNotionId = result.response.id; let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
                 }, "جاري الحفظ الآمن...");
-                
                 applyFilters(); showToast("نجاح", "تمت العملية بأمان سحابياً");
                 closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
             } catch (err) { showToast("تنبيه", err.message, "error"); }
@@ -761,18 +746,28 @@
 
         function renderDashboard() {
             let activeBaseSalary = 0, accruedBaseSalary = 0, pendingReceivables = 0, pendingDebts = 0;
+            // الإحصائيات الشهرية (6 بطاقات)
+            let monthIncomes = 0, monthExpenses = 0, monthAbsenceDays = 0, monthAbsenceMoney = 0;
             let monthOvertimeMoney = 0, monthOvertimeMinutes = 0, monthDeductions = 0, monthBonuses = 0; 
-            const tableBody = document.getElementById('transactionsTableBody'); tableBody.innerHTML = '';
-            let filteredCount = 0;
-            let urgentHtml = ''; // لتخزين كود التنبيهات الذكية
+            
+            const tableBody = document.getElementById('transactionsTableBody'); tableBody.innerHTML = ''; let filteredCount = 0; let urgentHtml = '';
 
             let targetYear = parseInt(currentFilterMonth.split('-')[0]); let targetMonth = parseInt(currentFilterMonth.split('-')[1]); let targetMonthEnd = new Date(targetYear, targetMonth, 0, 23, 59, 59); 
             activeBaseSalary = getActiveSalaryForDate(targetMonthEnd);
             let daysInMonth = new Date(targetYear, targetMonth, 0).getDate(); let dailyRate = activeBaseSalary / daysInMonth;
             let today = new Date(), currentYear = today.getFullYear(), currentRealMonth = today.getMonth() + 1, daysPassed = 0;
             
-            if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { daysPassed = daysInMonth; } 
-            else if (targetYear === currentYear && targetMonth === currentRealMonth) { daysPassed = today.getDate(); } 
+            // اللوجيك الجديد لاحتساب أيام العمل: إضافة اليوم الحالي فقط إذا تجاوزت الساعة 17:00 🕔
+            if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { 
+                daysPassed = daysInMonth; 
+            } else if (targetYear === currentYear && targetMonth === currentRealMonth) { 
+                if (today.getHours() >= 17) {
+                    daysPassed = today.getDate(); // يحسب اليوم كاملاً بعد الـ 17:00
+                } else {
+                    daysPassed = today.getDate() - 1; // مازال ما يخلصش اليوم
+                }
+                if (daysPassed < 0) daysPassed = 0;
+            } 
             accruedBaseSalary = Math.round(dailyRate * daysPassed);
 
             const tableStartDateVal = document.getElementById('tableStartDate').value; const tableEndDateVal = document.getElementById('tableEndDate').value; const tableTypeVal = document.getElementById('tableTypeSelect').value;
@@ -784,7 +779,6 @@
                 let rateMatch = exchangeTransactions[0].note.match(/سعر الصرف:\s*([\d.]+)/); if (rateMatch && rateMatch[1]) latestExchangeRate = parseFloat(rateMatch[1]);
             }
 
-            // فحص المعاملات لبناء لوحة القيادة والتنبيهات الذكية
             allTransactions.forEach(t => {
                 if (t.type === 'time_tracker') return;
                 const tDate = new Date(t.exactTimestamp); const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
@@ -801,31 +795,39 @@
                         }
                     }
                     if (t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
-                        if (t.type === 'overtime') { monthOvertimeMoney += t.amount; monthOvertimeMinutes += (t.minutes || 0); } 
-                        else if (t.type === 'lateness' || (t.amount < 0 && (t.type === 'company_rule' || t.type === 'absence'))) { monthDeductions += Math.abs(t.amount); } 
-                        else if (t.type === 'company_rule' && t.amount > 0) { monthBonuses += t.amount; }
+                        // تحديث بيانات الـ 6 بطاقات الشهرية
+                        if (t.type === 'overtime') { 
+                            monthOvertimeMoney += t.amount; 
+                            monthOvertimeMinutes += (t.minutes || 0); 
+                            monthIncomes += t.amount; 
+                        } 
+                        else if (t.type === 'lateness') { 
+                            monthDeductions += Math.abs(t.amount); 
+                        } 
+                        else if (t.type === 'company_rule') { 
+                            if (t.amount > 0) { monthBonuses += t.amount; monthIncomes += t.amount; }
+                            else { monthDeductions += Math.abs(t.amount); }
+                        }
+                        else if (t.type === 'absence') {
+                            monthAbsenceDays += (t.days || 0);
+                            monthAbsenceMoney += Math.abs(t.amount);
+                        }
+                        else if (t.type === 'personal') {
+                            if (t.amount > 0) { monthIncomes += t.amount; }
+                            else { monthExpenses += Math.abs(t.amount); }
+                        }
                     }
                 }
 
-                // الرادار الذكي: نظام التنبيه للديون المستحقة
                 if (t.status === 'قيد الانتظار') {
                     let dueMatch = t.note.match(/Due:\s*([\d-]+)/);
                     if (dueMatch) {
-                        let dDate = new Date(dueMatch[1] + 'T23:59:59');
-                        let daysLeft = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
-                        
-                        // التنبيه يظهر إذا بقي 3 أيام أو أقل، أو كان متأخراً
+                        let dDate = new Date(dueMatch[1] + 'T23:59:59'); let daysLeft = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
                         if (daysLeft <= 3) {
                             let debtType = t.amount > 0 ? "تحصيل من عند الغير" : "سداد دين عليك";
                             let debtColor = t.amount > 0 ? "text-orange-400 border-orange-500/30 bg-orange-500/10" : "text-red-400 border-red-500/30 bg-red-500/10";
                             let timeMsg = daysLeft < 0 ? `متأخر بـ ${Math.abs(daysLeft)} يوم!` : (daysLeft === 0 ? "اليوم الاستحقاق!" : `باقي ${daysLeft} أيام`);
-                            let amountFmt = new Intl.NumberFormat('en-DZ').format(Math.abs(t.amount));
-                            
-                            urgentHtml += `
-                            <div class="flex justify-between items-center p-2 rounded-lg border ${debtColor} animate-pulse">
-                                <span class="text-[10px] font-bold flex items-center gap-1"><i class="ph-fill ph-warning"></i> ${debtType} (${amountFmt} د.ج)</span>
-                                <span class="text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded shadow-sm">${timeMsg}</span>
-                            </div>`;
+                            urgentHtml += `<div class="flex justify-between items-center p-2 rounded-lg border ${debtColor} animate-pulse"><span class="text-[10px] font-bold flex items-center gap-1"><i class="ph-fill ph-warning"></i> ${debtType} (${new Intl.NumberFormat('en-DZ').format(Math.abs(t.amount))} د.ج)</span><span class="text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded shadow-sm">${timeMsg}</span></div>`;
                         }
                     }
                 }
@@ -839,19 +841,16 @@
                     let itemType = t.type; if (t.type === 'personal' || t.type === 'company_rule') itemType = t.subType;
                     if (itemType !== tableTypeVal) includeInTable = false;
                 }
-
                 if (includeInTable) { filteredCount++; tableBody.appendChild(createTableRow(t)); }
             });
 
-            // تحديث نافذة التنبيهات
-            const alertsContainer = document.getElementById('urgentAlertsContainer');
-            alertsContainer.innerHTML = urgentHtml;
+            // إضافة الراتب المحسوب لإجمالي المداخيل الشهرية
+            monthIncomes += accruedBaseSalary;
 
+            const alertsContainer = document.getElementById('urgentAlertsContainer'); alertsContainer.innerHTML = urgentHtml;
             if (filteredCount === 0) tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted font-semibold">لا توجد عمليات مطابقة.</td></tr>`;
             
-            let redotPayInDZD = Math.round(balances['RedotPay'] * latestExchangeRate);
-            let finalBalance = balances['كاش'] + balances['بريدي موب'] + redotPayInDZD;
-
+            let redotPayInDZD = Math.round(balances['RedotPay'] * latestExchangeRate); let finalBalance = balances['كاش'] + balances['بريدي موب'] + redotPayInDZD;
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash'; const generalBlurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`; document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
@@ -865,7 +864,16 @@
             animateValue("totalBalance", finalBalance, totalBalanceColorClass, true, true);
             
             animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true); animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true);
-            animateValue("monthOvertimeMoney", monthOvertimeMoney, null, false, true); animateValue("monthDeductions", monthDeductions, null, false, true); animateValue("monthBonuses", monthBonuses, null, false, true);
+            
+            // تحديث البطاقات الـ 6
+            animateValue("monthIncomes", monthIncomes, 'text-green-400', false, true);
+            animateValue("monthExpenses", monthExpenses, 'text-red-400', false, true);
+            animateValue("monthAbsenceMoney", monthAbsenceMoney, 'text-red-400', false, true);
+            document.getElementById("monthAbsenceDays").innerHTML = `<span class="${generalBlurClass}">${monthAbsenceDays}</span>`;
+            
+            animateValue("monthOvertimeMoney", monthOvertimeMoney, 'text-green-400', false, true); 
+            animateValue("monthDeductions", monthDeductions, 'text-red-400', false, true); 
+            animateValue("monthBonuses", monthBonuses, 'text-yellow-400', false, true);
             document.getElementById("monthOvertimeMinutes").innerHTML = `<span class="${generalBlurClass}">${monthOvertimeMinutes}</span>`;
 
             let challengeTxns = allTransactions.filter(t => t.type === 'challenge'); const challengeContainer = document.getElementById('challengeContainer');
@@ -969,7 +977,6 @@
             actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-red-400 hover:text-red-300 bg-red-500/20 border border-red-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="حذف نهائي"><i class="ph-bold ph-trash text-lg"></i></button>`;
 
             let dispNote = t.note || '-';
-            // تنظيف الملاحظة من الوسوم البرمجية وتنسيقها بشكل جميل
             if (dispNote.includes("[📎 مرفق]")) { dispNote = dispNote.replace("[📎 مرفق]", `<span class="inline-flex items-center gap-1 bg-sky-500/20 border border-sky-500/30 text-sky-400 px-1.5 py-0.5 rounded-md text-[10px] mr-2 font-bold shadow-sm" title="الوصل مرفق في تيليجرام"><i class="ph-bold ph-paperclip"></i> وصل مرفق</span>`); }
             
             let dueMatch = dispNote.match(/\|\s*Due:\s*([\d-]+)/);
@@ -1033,10 +1040,7 @@
             else if (type === 'challenge') {
                 walletField.classList.add('hidden'); personalField.classList.remove('hidden'); document.getElementById('personalBtnGroup').classList.add('hidden'); document.getElementById('personalTypeLabel').classList.add('hidden'); document.getElementById('amountLabel').innerText = 'المبلغ المستهدف'; document.getElementById('statusField').classList.add('hidden'); challengeDateField.classList.remove('hidden'); btnText = "إطلاق التحدي 🚀";
             }
-            
-            document.getElementById('submitBtnText').innerText = btnText; 
-            calculateAmount();
-            checkDueDateVisibility(); // مراقبة حقل الديون
+            document.getElementById('submitBtnText').innerText = btnText; calculateAmount(); checkDueDateVisibility();
         }
 
         function setPersonalType(val) {
@@ -1048,7 +1052,7 @@
                 statusField.classList.remove('hidden');
                 if (val === 'income') { document.getElementById('statusLabel').innerText = 'هل تم قبض المبلغ فعلياً؟'; document.querySelectorAll('.status-btn')[0].innerText = 'مقبوض'; } 
                 else if (val === 'debt') { document.getElementById('statusLabel').innerText = 'هل سددت هذا الدين؟'; document.querySelectorAll('.status-btn')[0].innerText = 'تم التسديد'; }
-                setStatusVal('قيد الانتظار'); // الافتراضي للديون
+                setStatusVal('قيد الانتظار'); 
             }
             calculateAmount();
         }
@@ -1059,19 +1063,10 @@
             checkDueDateVisibility();
         }
 
-        // دالة عرض/إخفاء حقل تاريخ الاستحقاق
         function checkDueDateVisibility() {
-            let status = document.getElementById('statusInput').value;
-            let type = document.getElementById('entryType').value;
-            let pType = document.getElementById('personalTypeInput').value;
-            let dueDateField = document.getElementById('dueDateField');
-            
-            if (type === 'personal' && (status === 'قيد الانتظار' || pType === 'debt')) {
-                dueDateField.classList.remove('hidden');
-            } else {
-                dueDateField.classList.add('hidden');
-                document.getElementById('dueDateInput').value = '';
-            }
+            let status = document.getElementById('statusInput').value; let type = document.getElementById('entryType').value; let pType = document.getElementById('personalTypeInput').value; let dueDateField = document.getElementById('dueDateField');
+            if (type === 'personal' && (status === 'قيد الانتظار' || pType === 'debt')) { dueDateField.classList.remove('hidden'); } 
+            else { dueDateField.classList.add('hidden'); document.getElementById('dueDateInput').value = ''; }
         }
 
         window.calculateAmount = function() {
