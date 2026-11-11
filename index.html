@@ -585,7 +585,7 @@
         }
 
         window.closePrivacyModal = function() { document.getElementById('privacyModalContent').classList.remove('modal-enter-active'); setTimeout(() => document.getElementById('privacyModal').classList.add('hidden'), 300); }
-        window.checkPrivacyPin = function() { const pin = document.getElementById('privacyPinInput').value; if (pin.toLowerCase() === 'mmmm') { isPrivacyRevealed = true; closePrivacyModal(); renderDashboard(); showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success"); } else { document.getElementById('privacyError').classList.remove('hidden'); } }
+        window.checkPrivacyPin = function() { const pin = document.getElementById('privacyPinInput').value; if (pin.toLowerCase() === 'klmn') { isPrivacyRevealed = true; closePrivacyModal(); renderDashboard(); showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success"); } else { document.getElementById('privacyError').classList.remove('hidden'); } }
 
         async function fetchTransactions() {
             if (!sessionPin) return false; 
