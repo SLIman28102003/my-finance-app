@@ -528,9 +528,29 @@
         let sessionPin = null; 
         let isPrivacyRevealed = false;
 
-        // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine)
+        // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine) مع حفظ الفاصلة العشرية
         let displayedValues = {};
         let activeCounters = {};
+
+        function cleanDecimal(val) {
+            const c = Math.round(val * 100) / 100;
+            return Math.abs(c) < 0.005 ? 0 : c;
+        }
+
+        function hasFraction(val) {
+            return Math.abs(cleanDecimal(val) % 1) > 0.001;
+        }
+
+        function formatExactDzd(val, isRolling = false, showDecimalsDuringRoll = false) {
+            const c = cleanDecimal(val);
+            if (isRolling) {
+                if (showDecimalsDuringRoll) {
+                    return new Intl.NumberFormat('en-DZ', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(c);
+                }
+                return new Intl.NumberFormat('en-DZ').format(Math.round(c));
+            }
+            return new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(c);
+        }
 
         function getRealCurrentMonthStr() {
             const now = new Date();
@@ -547,7 +567,6 @@
                 if (parsed.month === realMonth) {
                     displayedValues = { ...parsed.values };
                 } else {
-                    // عند دخول شهر جديد نحتفظ فقط بآخر قيم للرصيد والمحافظ
                     ['totalBalance', 'cashBalDisplay', 'baridiBalDisplay', 'redotBalDisplay'].forEach(k => {
                         if (parsed.values[k] !== undefined) displayedValues[k] = parsed.values[k];
                     });
@@ -568,9 +587,10 @@
 
         function showBalanceDelta(diff) {
             const container = document.getElementById('balanceDeltaContainer');
-            if (!container || !diff) return;
-            const isPositive = diff > 0;
-            const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(Math.round(diff)));
+            const cleanDiff = cleanDecimal(diff);
+            if (!container || !cleanDiff) return;
+            const isPositive = cleanDiff > 0;
+            const formatted = new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(Math.abs(cleanDiff));
             const badge = document.createElement('span');
             badge.className = `delta-badge inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold border shadow-lg ${
                 isPositive 
@@ -590,9 +610,9 @@
                 if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
             }
             const obj = document.getElementById(id);
-            renderFn(startVal);
+            renderFn(startVal, false);
 
-            const delay = 220; // وقفة خفيفة باش عينك تشد الرقم القديم قبل ما يبدا يتحرك
+            const delay = 220;
             const duration = 1100;
 
             const timer = setTimeout(() => {
@@ -603,15 +623,14 @@
                 function step(now) {
                     const elapsed = now - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    // حركة ناعمة سريعة في البداية وهادئة عند التوقف (Apple EaseOutQuart)
                     const eased = 1 - Math.pow(1 - progress, 4);
                     const current = startVal + (endVal - startVal) * eased;
-                    renderFn(current);
 
                     if (progress < 1) {
+                        renderFn(current, true);
                         activeCounters[id].raf = requestAnimationFrame(step);
                     } else {
-                        renderFn(endVal);
+                        renderFn(endVal, false);
                         if (obj) obj.classList.remove('counter-rolling');
                         delete activeCounters[id];
                         if (onComplete) onComplete();
@@ -627,11 +646,14 @@
             const obj = document.getElementById(id);
             if (!obj) return;
 
-            const renderVal = (val) => {
+            const prevVal = displayedValues[id];
+            const showDec = isUsdt || hasFraction(newVal) || (prevVal !== undefined && hasFraction(prevVal));
+
+            const renderVal = (val, isRolling = false) => {
                 if (isUsdt) {
                     obj.innerHTML = `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val)} <span class="text-[9px] text-teal-400 block -mt-1 opacity-70" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
                 } else {
-                    obj.innerText = new Intl.NumberFormat('en-DZ').format(Math.round(val));
+                    obj.innerText = formatExactDzd(val, isRolling, showDec);
                 }
             };
 
@@ -641,9 +663,8 @@
                 obj.classList.add('blur-md', 'select-none', 'opacity-90');
             }
 
-            const prevVal = displayedValues[id];
             const diff = prevVal !== undefined ? Math.abs(newVal - prevVal) : 0;
-            const hasMeaningfulChange = isUsdt ? diff >= 0.005 : Math.round(diff) >= 1;
+            const hasMeaningfulChange = diff >= 0.005;
 
             if (shouldAnimate && isPrivacyRevealed && prevVal !== undefined && hasMeaningfulChange) {
                 runRollingCounter(id, prevVal, newVal, renderVal);
@@ -654,7 +675,7 @@
                     if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
                     delete activeCounters[id];
                 }
-                renderVal(newVal);
+                renderVal(newVal, false);
                 if (isPrivacyRevealed) displayedValues[id] = newVal;
             }
         }
@@ -734,7 +755,6 @@
                 isPrivacyRevealed = true; 
                 closePrivacyModal(); 
                 showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success");
-                // ننتظر إغلاق نافذة الخصوصية ثم نطلق العدّاد التدريجي أمام عينيك
                 setTimeout(() => renderDashboard(true), 260);
             } else { 
                 document.getElementById('privacyError').classList.remove('hidden'); 
@@ -871,7 +891,6 @@
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
                 }, "جاري الحفظ الآمن...");
 
-                // 🌟 إغلاق النافذة أولاً، ثم تشغيل العدّاد التدريجي بعد العودة للواجهة
                 closeModal();
                 document.getElementById('addEntryForm').reset();
                 calculateAmount();
@@ -924,7 +943,6 @@
             let daysInMonth = new Date(targetYear, targetMonth, 0).getDate(); let dailyRate = activeBaseSalary / daysInMonth;
             let today = new Date(), currentYear = today.getFullYear(), currentRealMonth = today.getMonth() + 1, daysPassed = 0;
             
-            // احتساب أيام العمل مع توقيت الساعة 17:00
             if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { 
                 daysPassed = daysInMonth; 
             } else if (targetYear === currentYear && targetMonth === currentRealMonth) { 
@@ -993,7 +1011,7 @@
                             let debtType = t.amount > 0 ? "تحصيل من عند الغير" : "سداد دين عليك";
                             let debtColor = t.amount > 0 ? "text-orange-400 border-orange-500/30 bg-orange-500/10" : "text-red-400 border-red-500/30 bg-red-500/10";
                             let timeMsg = daysLeft < 0 ? `متأخر بـ ${Math.abs(daysLeft)} يوم!` : (daysLeft === 0 ? "اليوم الاستحقاق!" : `باقي ${daysLeft} أيام`);
-                            urgentHtml += `<div class="flex justify-between items-center p-2 rounded-lg border ${debtColor} animate-pulse"><span class="text-[10px] font-bold flex items-center gap-1"><i class="ph-fill ph-warning"></i> ${debtType} (${new Intl.NumberFormat('en-DZ').format(Math.abs(t.amount))} د.ج)</span><span class="text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded shadow-sm">${timeMsg}</span></div>`;
+                            urgentHtml += `<div class="flex justify-between items-center p-2 rounded-lg border ${debtColor} animate-pulse"><span class="text-[10px] font-bold flex items-center gap-1"><i class="ph-fill ph-warning"></i> ${debtType} (${new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(Math.abs(t.amount))} د.ج)</span><span class="text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded shadow-sm">${timeMsg}</span></div>`;
                         }
                     }
                 }
@@ -1020,7 +1038,6 @@
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`; document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
             
-            // 🌟 تحديث المحافظ الـ 3 بالعدّاد التدريجي
             updateWalletCounter("cashBalDisplay", balances['كاش'], false, latestExchangeRate, shouldAnimate);
             updateWalletCounter("baridiBalDisplay", balances['بريدي موب'], false, latestExchangeRate, shouldAnimate);
             updateWalletCounter("redotBalDisplay", balances['RedotPay'], true, latestExchangeRate, shouldAnimate);
@@ -1035,7 +1052,6 @@
             animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true, false); 
             animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true, false);
             
-            // 🌟 تحديث البطاقات الـ 6 بالعدّاد التدريجي
             animateValue("monthIncomes", monthIncomes, 'text-green-400', false, true, shouldAnimate);
             animateValue("monthExpenses", monthExpenses, 'text-red-400', false, true, shouldAnimate);
             animateValue("monthAbsenceMoney", monthAbsenceMoney, 'text-red-400', false, true, shouldAnimate);
@@ -1046,7 +1062,6 @@
             animateValue("monthBonuses", monthBonuses, 'text-yellow-400', false, true, shouldAnimate);
             document.getElementById("monthOvertimeMinutes").innerHTML = `<span class="${generalBlurClass}">${monthOvertimeMinutes}</span>`;
 
-            // حفظ آخر القيم المرئية في الذاكرة المحلية لتفعيل العدّاد عند نزول أجرة 17:00 لاحقاً
             if (isPrivacyRevealed) {
                 saveLastSeenValues({
                     totalBalance: finalBalance,
@@ -1093,9 +1108,9 @@
                             <div class="absolute -left-4 -top-4 text-pink-500/5 transition-colors pointer-events-none"><i class="ph-fill ph-target text-9xl"></i></div>
                             <div class="relative z-10">
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3"><h3 class="text-lg font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-rocket text-pink-400 text-xl"></i> التحدي المالي النشط</h3>${timeBadge}</div>
-                                <div class="flex justify-between text-sm text-apple-main mb-2 font-bold px-1"><span>المحقق: <span class="${chalBlur} text-apple-blue" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(currentChallengeBalance)}</span> د.ج</span><span>الهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(targetAmount)}</span> د.ج</span></div>
+                                <div class="flex justify-between text-sm text-apple-main mb-2 font-bold px-1"><span>المحقق: <span class="${chalBlur} text-apple-blue" ${chalClick}>${new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(currentChallengeBalance)}</span> د.ج</span><span>الهدف: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(targetAmount)}</span> د.ج</span></div>
                                 <div class="w-full bg-white/10 rounded-full h-3.5 mb-2 overflow-hidden shadow-inner"><div class="bg-gradient-to-r ${progressColor} h-full rounded-full transition-all duration-1000 relative flex items-center justify-end px-2" style="width: ${progress}%">${progress >= 15 ? `<span class="text-[9px] font-bold text-white shadow-sm ${chalBlur}" ${chalClick}>${progress}%</span>` : ''}</div></div>
-                                <div class="flex justify-between text-xs px-1 text-apple-muted font-medium"><span class="text-pink-400">${progress < 15 ? `النسبة: <span class="${chalBlur}" ${chalClick}>${progress}</span>%` : ''}</span><span>المتبقي: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ').format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span></div>
+                                <div class="flex justify-between text-xs px-1 text-apple-muted font-medium"><span class="text-pink-400">${progress < 15 ? `النسبة: <span class="${chalBlur}" ${chalClick}>${progress}</span>%` : ''}</span><span>المتبقي: <span class="${chalBlur}" ${chalClick}>${new Intl.NumberFormat('en-DZ', { maximumFractionDigits: 2 }).format(Math.max(targetAmount - currentChallengeBalance, 0))}</span> د.ج</span></div>
                                 <div class="mt-4 flex justify-end"><button onclick="window.deleteEntry('${activeChallenge.id}', this)" class="text-xs text-apple-muted hover:text-red-400 font-bold transition-colors flex items-center gap-1 relative overflow-hidden px-2 py-1 rounded bg-white/5 border border-white/10"><i class="ph-bold ph-trash"></i> إلغاء التحدي</button></div>
                             </div>
                         </div>
@@ -1183,6 +1198,9 @@
             let blurClass = ''; let clickHandler = '';
             if (isSensitive) { blurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm'; clickHandler = `onclick="togglePrivacy()" title="انقر لكشف الرصيد"`; }
 
+            const prevVal = displayedValues[id];
+            const showDec = hasFraction(end) || (prevVal !== undefined && hasFraction(prevVal));
+
             const applyColor = (cClass) => {
                 if (cClass) {
                     obj.className = obj.className.replace(/neon-glow-\w+|text-\w+-\d+/g, '').trim();
@@ -1190,21 +1208,20 @@
                 }
             };
 
-            const renderNum = (val) => {
-                const rounded = Math.round(val);
-                const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(rounded));
-                const sign = rounded < 0 ? '-' : '';
+            const renderNum = (val, isRolling = false) => {
+                const c = cleanDecimal(val);
+                const formatted = formatExactDzd(Math.abs(c), isRolling, showDec);
+                const sign = c < 0 ? '-' : '';
                 obj.innerHTML = hideDZDInSpan
                     ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-base font-semibold opacity-70">د.ج</span>`
                     : `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span>`;
                 if (id === 'totalBalance') {
-                    const dynamicGlow = rounded > 0 ? 'neon-glow-green' : (rounded < 0 ? 'neon-glow-red' : 'neon-glow-neutral');
+                    const dynamicGlow = c > 0 ? 'neon-glow-green' : (c < 0 ? 'neon-glow-red' : 'neon-glow-neutral');
                     applyColor(dynamicGlow);
                 }
             };
 
-            const prevVal = displayedValues[id];
-            const canRoll = shouldRoll && isPrivacyRevealed && prevVal !== undefined && Math.round(prevVal) !== Math.round(end);
+            const canRoll = shouldRoll && isPrivacyRevealed && prevVal !== undefined && Math.abs(prevVal - end) >= 0.005;
 
             if (canRoll) {
                 if (id !== 'totalBalance') applyColor(colorClass);
@@ -1216,7 +1233,7 @@
                     if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
                     delete activeCounters[id];
                 }
-                renderNum(end);
+                renderNum(end, false);
                 applyColor(colorClass);
                 if (isPrivacyRevealed && shouldRoll !== null) {
                     displayedValues[id] = end;
