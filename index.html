@@ -168,7 +168,6 @@
                     <p class="text-apple-muted text-sm font-semibold mb-2 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
                         الرصيد الإجمالي (التقديري بالدينار) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-lg" style="color: var(--apple-blue);"></i>
                     </p>
-                    <!-- حاوية المؤشر العائم لفرق الرصيد -->
                     <div id="balanceDeltaContainer" class="relative h-0 flex justify-center md:justify-end z-20 pointer-events-none"></div>
                     <h3 class="text-6xl tracking-tight mb-4 neon-glow-neutral transition-transform duration-200" id="totalBalance">0 <span class="text-xl font-semibold opacity-70">د.ج</span></h3>
                     
@@ -242,46 +241,63 @@
         </div>
 
         <div class="glass-card overflow-hidden flex flex-col">
-            <div class="px-6 py-5 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="px-6 py-5 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <h3 class="text-lg font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-list-dashes" style="color: var(--apple-blue);"></i> سجل العمليات</h3>
-                <span class="text-xs bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full border border-sky-500/30 font-bold whitespace-nowrap" id="recordCountBadge">0 عملية</span>
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <span class="text-xs bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full border border-sky-500/30 font-bold whitespace-nowrap" id="recordCountBadge">0 عملية</span>
+                    <!-- شارة المجموع الصافي الذكي للنتائج -->
+                    <span class="hidden text-xs bg-white/10 text-apple-main px-3 py-1 rounded-full border border-white/15 font-bold whitespace-nowrap items-center gap-1.5" id="filteredSumBadge"></span>
+                </div>
             </div>
             
-            <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col lg:flex-row gap-4 items-end">
-                <div class="w-full lg:w-auto">
-                    <label class="block text-xs font-bold text-apple-muted mb-1">من تاريخ</label>
-                    <input type="date" id="tableStartDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
+            <!-- شريط البحث والفلاتر الذكي -->
+            <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col gap-4">
+                <!-- شريط البحث -->
+                <div class="relative w-full">
+                    <i class="ph-bold ph-magnifying-glass absolute right-4 top-1/2 transform -translate-y-1/2 text-apple-muted text-lg pointer-events-none"></i>
+                    <input type="text" id="tableSearchInput" class="glass-input w-full pr-11 pl-10 py-2.5 text-sm font-medium" placeholder="ابحث في الملاحظات (مثلاً: قهوة، انترنت، اسم شخص...) أو المحفظة أو المبلغ..." oninput="applyFilters(false)">
+                    <button type="button" id="clearSearchBtn" onclick="clearSearchInput()" class="hidden absolute left-3 top-1/2 transform -translate-y-1/2 text-apple-muted hover:text-white p-1 rounded-full transition-colors" title="مسح البحث">
+                        <i class="ph-bold ph-x-circle text-lg"></i>
+                    </button>
                 </div>
-                <div class="w-full lg:w-auto">
-                    <label class="block text-xs font-bold text-apple-muted mb-1">إلى تاريخ</label>
-                    <input type="date" id="tableEndDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
-                </div>
-                <div class="w-full lg:flex-1">
-                    <label class="block text-xs font-bold text-apple-muted mb-1">نوع العملية</label>
-                    <div class="relative">
-                        <select id="tableTypeSelect" class="glass-input w-full px-3 py-2 text-sm appearance-none cursor-pointer" onchange="applyFilters(false)">
-                            <option value="all">عرض جميع العمليات</option>
-                            <option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>
-                            <option value="challenge" class="text-pink-400 font-bold">التحديات والأهداف</option>
-                            <option value="income">المداخيل (مقبوضة أو ديون لك)</option>
-                            <option value="expense">المصاريف</option>
-                            <option value="debt">الديون (عليك)</option>
-                            <option value="salary_update">تحديثات الراتب</option>
-                            <option value="exchange" class="text-teal-400">تحويل وشراء عملة (USDT)</option>
-                            <option value="overtime">أرباح الوقت الإضافي</option>
-                            <option value="lateness">التأخرات</option>
-                            <option value="absence">الغيابات (أيام)</option>
-                            <option value="work_penalty">مخالفات العمل</option>
-                            <option value="res_penalty">مخالفات الإقامة</option>
-                            <option value="work_bonus">مبادرات العمل</option>
-                            <option value="res_bonus">مبادرات الإقامة</option>
-                        </select>
-                        <i class="ph ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
+
+                <!-- فلاتر التاريخ والنوع -->
+                <div class="flex flex-col lg:flex-row gap-4 items-end">
+                    <div class="w-full lg:w-auto">
+                        <label class="block text-xs font-bold text-apple-muted mb-1">من تاريخ</label>
+                        <input type="date" id="tableStartDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
                     </div>
+                    <div class="w-full lg:w-auto">
+                        <label class="block text-xs font-bold text-apple-muted mb-1">إلى تاريخ</label>
+                        <input type="date" id="tableEndDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
+                    </div>
+                    <div class="w-full lg:flex-1">
+                        <label class="block text-xs font-bold text-apple-muted mb-1">نوع العملية</label>
+                        <div class="relative">
+                            <select id="tableTypeSelect" class="glass-input w-full px-3 py-2 text-sm appearance-none cursor-pointer" onchange="applyFilters(false)">
+                                <option value="all">عرض جميع العمليات</option>
+                                <option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>
+                                <option value="challenge" class="text-pink-400 font-bold">التحديات والأهداف</option>
+                                <option value="income">المداخيل (مقبوضة أو ديون لك)</option>
+                                <option value="expense">المصاريف</option>
+                                <option value="debt">الديون (عليك)</option>
+                                <option value="salary_update">تحديثات الراتب</option>
+                                <option value="exchange" class="text-teal-400">تحويل وشراء عملة (USDT)</option>
+                                <option value="overtime">أرباح الوقت الإضافي</option>
+                                <option value="lateness">التأخرات</option>
+                                <option value="absence">الغيابات (أيام)</option>
+                                <option value="work_penalty">مخالفات العمل</option>
+                                <option value="res_penalty">مخالفات الإقامة</option>
+                                <option value="work_bonus">مبادرات العمل</option>
+                                <option value="res_bonus">مبادرات الإقامة</option>
+                            </select>
+                            <i class="ph ph-caret-down absolute left-3 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <button onclick="resetTableFilters()" class="w-full lg:w-auto px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/10 transition-colors text-sm font-semibold flex items-center justify-center gap-2 bg-white/5">
+                        <i class="ph-bold ph-arrows-counter-clockwise"></i> إعادة ضبط
+                    </button>
                 </div>
-                <button onclick="resetTableFilters()" class="w-full lg:w-auto px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/10 transition-colors text-sm font-semibold flex items-center justify-center gap-2 bg-white/5">
-                    <i class="ph-bold ph-arrows-counter-clockwise"></i> إعادة ضبط
-                </button>
             </div>
 
             <div class="overflow-x-auto">
@@ -292,7 +308,7 @@
                             <th class="py-4 px-6 font-bold w-1/5">العملية</th>
                             <th class="py-4 px-6 font-bold w-1/6 text-left">المبلغ</th>
                             <th class="py-4 px-6 font-bold w-1/3">الملاحظات والإثبات</th>
-                            <th class="py-4 px-6 font-bold w-24 text-center">إجراء</th>
+                            <th class="py-4 px-6 font-bold w-28 text-center">إجراء</th>
                         </tr>
                     </thead>
                     <tbody id="transactionsTableBody" class="text-sm text-apple-main">
@@ -318,6 +334,58 @@
         <button onclick="toggleFabMenu()" id="mainFabBtn" class="w-14 h-14 btn-apple rounded-full flex items-center justify-center text-white active:scale-90 transition-all duration-300 shadow-xl z-50">
             <i id="fabMainIcon" class="ph-bold ph-plus text-2xl fab-icon"></i>
         </button>
+    </div>
+
+    <!-- نافذة تعديل العملية (Edit Transaction Modal) -->
+    <div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeEditModal()"></div>
+        <div class="relative glass-card w-full max-w-md p-8 modal-enter max-h-[90vh] overflow-y-auto bg-[#1c1c1e]" id="editModalContent">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10 sticky top-0 bg-[#1c1c1e]/90 backdrop-blur-md z-10">
+                <h3 class="text-xl font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-pencil-simple" style="color: var(--apple-blue);"></i> تعديل العملية</h3>
+                <button type="button" onclick="closeEditModal()" class="text-apple-muted hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-1.5 transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+
+            <form id="editEntryForm" onsubmit="handleEditSubmit(event)">
+                <input type="hidden" id="editDocId">
+
+                <div class="mb-5 bg-white/5 border border-white/10 rounded-xl px-4 py-3 flex justify-between items-center">
+                    <span class="text-xs font-bold text-apple-muted">نوع العملية:</span>
+                    <span id="editTypeDisplay" class="text-xs font-bold text-sky-400"></span>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider" id="editAmountLabel">المبلغ (يقبل + و - و * و /)</label>
+                    <input type="text" id="editAmountInput" dir="ltr" class="glass-input w-full px-4 py-3.5 font-bold text-lg transition-colors duration-300" placeholder="أدخل المبلغ..." onblur="evaluateMath(this)" required>
+                    <p id="editAmountHint" class="text-[10px] text-apple-muted mt-1.5 hidden"></p>
+                </div>
+
+                <div class="mb-5" id="editWalletField">
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">المحفظة</label>
+                    <div class="relative flex bg-black/40 rounded-xl p-1 border border-white/10">
+                        <select id="editWalletSelect" class="w-full bg-transparent border-none px-4 py-3 appearance-none cursor-pointer font-semibold text-apple-main focus:outline-none">
+                            <option value="كاش">💵 كاش (سيولة في اليد)</option>
+                            <option value="بريدي موب">💳 بريدي موب</option>
+                            <option value="RedotPay">🪙 RedotPay (USDT)</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute left-4 top-1/2 transform -translate-y-1/2 text-apple-muted pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div id="editDueDateField" class="mb-5 hidden bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+                    <label class="block text-xs font-bold text-red-400 mb-2"><i class="ph-bold ph-calendar-warning"></i> تاريخ الاستحقاق (اختياري)</label>
+                    <input type="date" id="editDueDateInput" class="glass-input w-full px-3 py-2 text-sm bg-black/40">
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">الملاحظات</label>
+                    <textarea id="editNoteInput" rows="3" class="glass-input w-full px-4 py-3 resize-none font-medium text-sm" placeholder="اكتب تفاصيل العملية هنا..."></textarea>
+                </div>
+
+                <button type="submit" id="editSubmitBtn" class="w-full btn-apple py-4 text-lg flex justify-center items-center gap-2">
+                    <i class="ph-bold ph-floppy-disk text-xl"></i><span>حفظ التعديلات</span>
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- نافذة كناش الدقائق (Time Tracker Modal) -->
@@ -531,6 +599,8 @@
         // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine) مع حفظ الفاصلة العشرية
         let displayedValues = {};
         let activeCounters = {};
+        // لحفظ الوسوم البرمجية المخفية داخل الملاحظة أثناء التعديل
+        let editPreservedMeta = { prefix: "", hasAttachment: false };
 
         function cleanDecimal(val) {
             const c = Math.round(val * 100) / 100;
@@ -737,6 +807,30 @@
             return validSalaryUpdate ? validSalaryUpdate.amount : 0;
         }
 
+        function getTransactionTypeLabel(t) {
+            switch(t.type) {
+                case 'opening_balance': return 'رصيد افتتاحي';
+                case 'challenge': return 'تحدي مالي';
+                case 'salary_update': return 'تحديث الراتب';
+                case 'absence': return `غياب (${t.days || 0} ي)`;
+                case 'overtime': return `إضافي (${t.minutes || 0}د)`;
+                case 'lateness': return `تأخر (${t.minutes || 0}د)`;
+                case 'exchange': return t.amount > 0 ? 'استلام USDT' : 'شراء USDT';
+                case 'company_rule':
+                    if (t.subType === 'work_penalty') return 'مخالفة عمل';
+                    if (t.subType === 'res_penalty') return 'مخالفة إقامة';
+                    if (t.subType === 'work_bonus') return 'مبادرة عمل';
+                    if (t.subType === 'res_bonus') return 'مبادرة إقامة';
+                    return 'قواعد الشركة';
+                case 'personal':
+                    if (t.subType === 'income') return 'مدخول';
+                    if (t.subType === 'expense') return 'مصروف';
+                    if (t.subType === 'debt') return 'دين';
+                    return 'مالية شخصية';
+                default: return 'عملية';
+            }
+        }
+
         async function unlockApp() {
             const pin = document.getElementById('pinInput').value; if(!pin) return;
             const loginBtn = document.getElementById('loginBtnAction');
@@ -799,6 +893,171 @@
             }
         }
 
+        // --- دوال نافذة تعديل العملية (Edit Modal) ---
+        window.openEditModal = function(docId) {
+            const txn = allTransactions.find(t => t.id === docId);
+            if (!txn) return;
+
+            document.getElementById('editDocId').value = txn.id;
+            document.getElementById('editTypeDisplay').innerText = getTransactionTypeLabel(txn);
+
+            const isOpening = txn.type === 'opening_balance';
+            const amtHint = document.getElementById('editAmountHint');
+            if (isOpening) {
+                document.getElementById('editAmountInput').value = txn.amount;
+                amtHint.innerText = "يمكنك إدخال قيمة موجبة أو سالبة (-).";
+                amtHint.classList.remove('hidden');
+            } else {
+                document.getElementById('editAmountInput').value = Math.abs(txn.amount);
+                amtHint.classList.add('hidden');
+            }
+
+            const walletField = document.getElementById('editWalletField');
+            if (txn.type === 'challenge') {
+                walletField.classList.add('hidden');
+            } else {
+                walletField.classList.remove('hidden');
+                document.getElementById('editWalletSelect').value = txn.wallet || 'كاش';
+            }
+
+            // تفكيك الملاحظة بذكاء لحفظ الوسوم البرمجية المخفية دون ضياعها
+            let rawNote = txn.note || "";
+            editPreservedMeta = { prefix: "", hasAttachment: false };
+
+            if (rawNote.includes("[📎 مرفق]")) {
+                editPreservedMeta.hasAttachment = true;
+                rawNote = rawNote.replace("[📎 مرفق]", "").trim();
+            }
+
+            let dueDateVal = "";
+            const dueMatch = rawNote.match(/(?:\|\s*)?Due:\s*([\d-]+)/);
+            if (dueMatch) {
+                dueDateVal = dueMatch[1];
+                rawNote = rawNote.replace(dueMatch[0], "").trim();
+            }
+
+            if (txn.type === 'challenge') {
+                const chalMatch = rawNote.match(/^(Start:\s*[\d-]+\s*\|\s*End:\s*[\d-]+\s*\|)/);
+                if (chalMatch) {
+                    editPreservedMeta.prefix = chalMatch[1] + " ";
+                    rawNote = rawNote.replace(chalMatch[1], "").trim();
+                }
+            } else if (txn.type === 'exchange') {
+                const exMatch = rawNote.match(/^(سعر الصرف:\s*[\d.]+\s*\|)/);
+                if (exMatch) {
+                    editPreservedMeta.prefix = exMatch[1] + " ";
+                    rawNote = rawNote.replace(exMatch[1], "").trim();
+                }
+            }
+
+            if (rawNote === "-") rawNote = "";
+            document.getElementById('editNoteInput').value = rawNote;
+
+            const editDueField = document.getElementById('editDueDateField');
+            if (txn.status === 'قيد الانتظار') {
+                editDueField.classList.remove('hidden');
+                document.getElementById('editDueDateInput').value = dueDateVal;
+            } else {
+                editDueField.classList.add('hidden');
+                document.getElementById('editDueDateInput').value = "";
+            }
+
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            document.getElementById('editModalContent').classList.add('modal-enter-active');
+        }
+
+        window.closeEditModal = function() {
+            document.getElementById('editModalContent').classList.remove('modal-enter-active');
+            setTimeout(() => document.getElementById('editModal').classList.add('hidden'), 300);
+        }
+
+        window.handleEditSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('editSubmitBtn');
+            const docId = document.getElementById('editDocId').value;
+            const txn = allTransactions.find(t => t.id === docId);
+            if (!txn) return;
+
+            try {
+                await liquidAction(btn, async () => {
+                    let rawAmt = getParsedAmount('editAmountInput');
+                    if (isNaN(rawAmt) || rawAmt === 0) throw new Error("الرجاء إدخال مبلغ صحيح");
+
+                    // الحفاظ على الإشارة الصحيحة حسب نوع العملية لضمان دقة الحسابات
+                    const negativeTypes = ['absence', 'lateness'];
+                    const negativeSubTypes = ['expense', 'debt', 'work_penalty', 'res_penalty'];
+                    let finalAmount = rawAmt;
+
+                    if (txn.type === 'opening_balance') {
+                        finalAmount = rawAmt;
+                    } else if (
+                        negativeTypes.includes(txn.type) ||
+                        negativeSubTypes.includes(txn.subType) ||
+                        (txn.type === 'exchange' && txn.subType === 'expense')
+                    ) {
+                        finalAmount = -Math.abs(rawAmt);
+                    } else {
+                        finalAmount = Math.abs(rawAmt);
+                    }
+
+                    const newWallet = txn.type === 'challenge' ? (txn.wallet || 'كاش') : document.getElementById('editWalletSelect').value;
+                    let cleanUserNote = document.getElementById('editNoteInput').value.trim();
+                    let finalNote = (editPreservedMeta.prefix + cleanUserNote).trim();
+
+                    const newDueDate = document.getElementById('editDueDateInput').value;
+                    if (txn.status === 'قيد الانتظار' && newDueDate) {
+                        finalNote = finalNote + (finalNote ? " | " : "") + "Due: " + newDueDate;
+                    }
+                    if (editPreservedMeta.hasAttachment) {
+                        finalNote = (finalNote ? finalNote + " " : "") + "[📎 مرفق]";
+                    }
+                    if (!finalNote) finalNote = "-";
+
+                    const notionType = (txn.type === 'salary_update' || txn.type === 'challenge')
+                        ? "إضافة"
+                        : (finalAmount >= 0 ? "إضافة" : "خصم");
+
+                    const payload = {
+                        pin: sessionPin,
+                        action: "edit_entry",
+                        page_id: docId,
+                        amount: finalAmount,
+                        wallet: newWallet,
+                        notes: finalNote,
+                        type: notionType
+                    };
+
+                    const response = await fetch(GAS_WEB_APP_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    if (result.status !== "success") throw new Error(result.message || "فشل تحديث العملية في السيرفر");
+
+                    // تحديث البيانات محلياً
+                    txn.amount = finalAmount;
+                    txn.wallet = newWallet;
+                    txn.note = finalNote;
+                }, "جاري حفظ التعديل...");
+
+                closeEditModal();
+                showToast("تم التعديل", "تم تحديث العملية في Notion بنجاح", "success");
+                setTimeout(() => applyFilters(true), 350);
+            } catch (err) {
+                showToast("تنبيه", err.message, "error");
+            }
+        }
+
+        window.clearSearchInput = function() {
+            const input = document.getElementById('tableSearchInput');
+            input.value = '';
+            applyFilters(false);
+            input.focus();
+        }
+
         window.openTimeTracker = function() { document.getElementById('timeTrackerModal').classList.remove('hidden'); void document.getElementById('timeTrackerModal').offsetWidth; document.getElementById('trackerContent').classList.add('modal-enter-active'); renderTimeTrackerList(); }
         window.closeTimeTracker = function() { document.getElementById('trackerContent').classList.remove('modal-enter-active'); setTimeout(() => document.getElementById('timeTrackerModal').classList.add('hidden'), 300); }
         window.calcTtTotal = function() { let mins = getParsedAmount('ttMins'); let price = parseFloat(document.getElementById('ttPrice').value) || 0; document.getElementById('ttPreview').innerText = (mins * price) + " د.ج"; }
@@ -823,7 +1082,7 @@
             if(ttTxns.length === 0) { listObj.innerHTML = '<p class="text-center text-apple-muted text-xs py-4">الكناش فارغ حالياً.</p>'; return; }
             ttTxns.forEach(t => {
                 const dateObj = new Date(t.exactTimestamp); const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'});
-                let price = 6.5; let match = t.note.match(/السعر:\s*([\d.]+)/); if(match) price = parseFloat(match[1]); let dispNote = t.note.split('|')[1] ? t.note.split('|')[1].trim() : '-';
+                let price = 6.5; let match = (t.note || '').match(/السعر:\s*([\d.]+)/); if(match) price = parseFloat(match[1]); let dispNote = (t.note || '').split('|')[1] ? t.note.split('|')[1].trim() : '-';
                 listObj.innerHTML += `<div class="bg-white/5 border border-white/10 rounded-xl p-3 mb-2 flex justify-between items-center transition-all hover:bg-white/10"><div><p class="text-sm font-bold text-apple-main">${t.minutes || 0} دقيقة <span class="text-[10px] text-apple-muted mx-1 font-normal">(x${price})</span></p><p class="text-[10px] text-apple-muted font-mono mt-0.5">${dateStr} • <span class="text-gray-400">${dispNote}</span></p></div><div class="flex items-center gap-3"><span class="text-sm font-bold text-yellow-500" dir="ltr">${t.amount} د.ج</span><button onclick="window.deleteEntry('${t.id}', this)" class="text-red-400 hover:text-red-300 p-1 bg-red-500/10 rounded-lg"><i class="ph-bold ph-trash"></i></button></div></div>`;
             });
         }
@@ -929,14 +1188,24 @@
         }
 
         window.applyFilters = function(shouldAnimate = false) { currentFilterMonth = document.getElementById('monthFilter').value; renderDashboard(shouldAnimate); }
-        window.resetTableFilters = function() { document.getElementById('tableStartDate').value = ''; document.getElementById('tableEndDate').value = ''; document.getElementById('tableTypeSelect').value = 'all'; applyFilters(false); }
+        window.resetTableFilters = function() { 
+            document.getElementById('tableSearchInput').value = '';
+            document.getElementById('tableStartDate').value = ''; 
+            document.getElementById('tableEndDate').value = ''; 
+            document.getElementById('tableTypeSelect').value = 'all'; 
+            applyFilters(false); 
+        }
 
         function renderDashboard(shouldAnimate = false) {
             let activeBaseSalary = 0, accruedBaseSalary = 0, pendingReceivables = 0, pendingDebts = 0;
             let monthIncomes = 0, monthExpenses = 0, monthAbsenceDays = 0, monthAbsenceMoney = 0;
             let monthOvertimeMoney = 0, monthOvertimeMinutes = 0, monthDeductions = 0, monthBonuses = 0; 
             
-            const tableBody = document.getElementById('transactionsTableBody'); tableBody.innerHTML = ''; let filteredCount = 0; let urgentHtml = '';
+            const tableBody = document.getElementById('transactionsTableBody'); tableBody.innerHTML = ''; 
+            let filteredCount = 0; 
+            let filteredSumDzd = 0, filteredSumUsdt = 0;
+            let hasDzdFiltered = false, hasUsdtFiltered = false;
+            let urgentHtml = '';
 
             let targetYear = parseInt(currentFilterMonth.split('-')[0]); let targetMonth = parseInt(currentFilterMonth.split('-')[1]); let targetMonthEnd = new Date(targetYear, targetMonth, 0, 23, 59, 59); 
             activeBaseSalary = getActiveSalaryForDate(targetMonthEnd);
@@ -955,18 +1224,31 @@
             } 
             accruedBaseSalary = Math.round(dailyRate * daysPassed);
 
-            const tableStartDateVal = document.getElementById('tableStartDate').value; const tableEndDateVal = document.getElementById('tableEndDate').value; const tableTypeVal = document.getElementById('tableTypeSelect').value;
+            const searchInputEl = document.getElementById('tableSearchInput');
+            const searchQuery = searchInputEl ? searchInputEl.value.trim().toLowerCase() : '';
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            if (clearSearchBtn) {
+                if (searchQuery) clearSearchBtn.classList.remove('hidden');
+                else clearSearchBtn.classList.add('hidden');
+            }
+
+            const tableStartDateVal = document.getElementById('tableStartDate').value; 
+            const tableEndDateVal = document.getElementById('tableEndDate').value; 
+            const tableTypeVal = document.getElementById('tableTypeSelect').value;
+            const isAnyTableFilterActive = Boolean(searchQuery || tableStartDateVal || tableEndDateVal || tableTypeVal !== 'all');
+
             let balances = { 'كاش': accruedBaseSalary, 'بريدي موب': 0, 'RedotPay': 0 }; let latestExchangeRate = 250; 
             
             let exchangeTransactions = allTransactions.filter(t => t.type === 'exchange' && t.subType === 'income');
             if (exchangeTransactions.length > 0) {
                 exchangeTransactions.sort((a,b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp));
-                let rateMatch = exchangeTransactions[0].note.match(/سعر الصرف:\s*([\d.]+)/); if (rateMatch && rateMatch[1]) latestExchangeRate = parseFloat(rateMatch[1]);
+                let rateMatch = (exchangeTransactions[0].note || '').match(/سعر الصرف:\s*([\d.]+)/); if (rateMatch && rateMatch[1]) latestExchangeRate = parseFloat(rateMatch[1]);
             }
 
             allTransactions.forEach(t => {
                 if (t.type === 'time_tracker') return;
                 const tDate = new Date(t.exactTimestamp); const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+                const safeNote = t.note || '';
                 
                 if (t.type !== 'salary_update' && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
                     let w = t.wallet || 'كاش'; if (balances[w] !== undefined) balances[w] += t.amount; else balances['كاش'] += t.amount;
@@ -1004,7 +1286,7 @@
                 }
 
                 if (t.status === 'قيد الانتظار') {
-                    let dueMatch = t.note.match(/Due:\s*([\d-]+)/);
+                    let dueMatch = safeNote.match(/Due:\s*([\d-]+)/);
                     if (dueMatch) {
                         let dDate = new Date(dueMatch[1] + 'T23:59:59'); let daysLeft = Math.ceil((dDate - today) / (1000 * 60 * 60 * 24));
                         if (daysLeft <= 3) {
@@ -1025,7 +1307,32 @@
                     let itemType = t.type; if (t.type === 'personal' || t.type === 'company_rule') itemType = t.subType;
                     if (itemType !== tableTypeVal) includeInTable = false;
                 }
-                if (includeInTable) { filteredCount++; tableBody.appendChild(createTableRow(t)); }
+                if (includeInTable && searchQuery) {
+                    const cleanSearchNote = safeNote
+                        .replace(/\[📎 مرفق\]/g, '')
+                        .replace(/(?:\|\s*)?Due:\s*[\d-]+/g, '')
+                        .replace(/^Start:\s*[\d-]+\s*\|\s*End:\s*[\d-]+\s*\|/g, '')
+                        .toLowerCase();
+                    const searchableText = `${cleanSearchNote} ${(t.wallet || 'كاش').toLowerCase()} ${getTransactionTypeLabel(t).toLowerCase()} ${String(t.amount)} ${(t.status || '').toLowerCase()}`;
+                    if (!searchableText.includes(searchQuery)) includeInTable = false;
+                }
+
+                if (includeInTable) { 
+                    filteredCount++; 
+                    tableBody.appendChild(createTableRow(t)); 
+
+                    // حساب المجموع الصافي للنتائج المفلترة (باستثناء تحديث الراتب والتحديات إلا إذا تم اختيارها تحديداً)
+                    const includeInSum = (t.type !== 'salary_update' && t.type !== 'challenge') || (tableTypeVal === 'salary_update' || tableTypeVal === 'challenge');
+                    if (includeInSum) {
+                        if (t.wallet === 'RedotPay') {
+                            filteredSumUsdt += t.amount;
+                            hasUsdtFiltered = true;
+                        } else {
+                            filteredSumDzd += t.amount;
+                            hasDzdFiltered = true;
+                        }
+                    }
+                }
             });
 
             monthIncomes += accruedBaseSalary;
@@ -1037,6 +1344,29 @@
             const eyeIconClass = isPrivacyRevealed ? 'ph-eye' : 'ph-eye-slash'; const generalBlurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`; document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
+
+            // 🌟 تحديث شارة المجموع الصافي الذكي لنتائج البحث والفلاتر
+            const sumBadge = document.getElementById('filteredSumBadge');
+            if (isAnyTableFilterActive && filteredCount > 0 && (hasDzdFiltered || hasUsdtFiltered)) {
+                let parts = [];
+                if (hasDzdFiltered) {
+                    const cDzd = cleanDecimal(filteredSumDzd);
+                    const sign = cDzd > 0 ? '+' : (cDzd < 0 ? '-' : '');
+                    const col = cDzd > 0 ? 'text-green-400' : (cDzd < 0 ? 'text-red-400' : 'text-apple-main');
+                    parts.push(`<span class="${col} ${generalBlurClass} cursor-pointer" onclick="togglePrivacy()" dir="ltr">${sign}${formatExactDzd(Math.abs(cDzd))} د.ج</span>`);
+                }
+                if (hasUsdtFiltered) {
+                    const cUsdt = cleanDecimal(filteredSumUsdt);
+                    const sign = cUsdt > 0 ? '+' : (cUsdt < 0 ? '-' : '');
+                    parts.push(`<span class="text-teal-400 ${generalBlurClass} cursor-pointer" onclick="togglePrivacy()" dir="ltr">${sign}${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Math.abs(cUsdt))} USDT</span>`);
+                }
+                sumBadge.innerHTML = `<span class="text-apple-muted">المجموع:</span> ${parts.join(' <span class="text-white/30">|</span> ')}`;
+                sumBadge.classList.remove('hidden');
+                sumBadge.classList.add('inline-flex');
+            } else {
+                sumBadge.classList.add('hidden');
+                sumBadge.classList.remove('inline-flex');
+            }
             
             updateWalletCounter("cashBalDisplay", balances['كاش'], false, latestExchangeRate, shouldAnimate);
             updateWalletCounter("baridiBalDisplay", balances['بريدي موب'], false, latestExchangeRate, shouldAnimate);
@@ -1081,7 +1411,7 @@
             let challengeTxns = allTransactions.filter(t => t.type === 'challenge'); const challengeContainer = document.getElementById('challengeContainer');
             if (challengeTxns.length > 0) {
                 let activeChallenge = challengeTxns.sort((a,b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp))[0];
-                let startMatch = activeChallenge.note.match(/Start:\s*([\d-]+)/); let endMatch = activeChallenge.note.match(/End:\s*([\d-]+)/);
+                let startMatch = (activeChallenge.note || '').match(/Start:\s*([\d-]+)/); let endMatch = (activeChallenge.note || '').match(/End:\s*([\d-]+)/);
                 let startDateStr = startMatch ? startMatch[1] : null; let endDateStr = endMatch ? endMatch[1] : null;
                 
                 if (startDateStr && endDateStr) {
@@ -1174,8 +1504,10 @@
             let actionButtons = '';
             if (isPending) {
                 let checkTitle = t.amount > 0 ? "تم القبض" : "تم التسديد";
-                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 bg-green-500/20 border border-green-500/30 p-1.5 rounded-lg mr-1 overflow-hidden transition-all shadow-sm" title="${checkTitle}"><i class="ph-bold ph-check text-xl"></i></button>`;
+                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 bg-green-500/20 border border-green-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="${checkTitle}"><i class="ph-bold ph-check text-lg"></i></button>`;
             }
+            // زر تعديل العملية الجديد ✏️
+            actionButtons += `<button onclick="window.openEditModal('${t.id}')" class="relative text-sky-400 hover:text-sky-300 bg-sky-500/20 border border-sky-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="تعديل العملية"><i class="ph-bold ph-pencil-simple text-lg"></i></button>`;
             actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-red-400 hover:text-red-300 bg-red-500/20 border border-red-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="حذف نهائي"><i class="ph-bold ph-trash text-lg"></i></button>`;
 
             let dispNote = t.note || '-';
@@ -1189,7 +1521,7 @@
 
             if (t.type === 'challenge') { dispNote = dispNote.split('|').length > 2 ? dispNote.split('|')[2].trim() : '-'; }
 
-            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-apple-muted font-semibold" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${typeColor} shadow-sm"><i class="ph-bold ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor} text-base" dir="ltr">${formattedAmtStr}</td><td class="py-4 px-6 text-apple-main text-xs font-medium">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap flex justify-center items-center h-full">${actionButtons}</td>`;
+            tr.innerHTML = `<td class="py-4 px-6 text-xs font-mono text-apple-muted font-semibold" dir="ltr">${dateStr}</td><td class="py-4 px-6"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold ${typeColor} shadow-sm"><i class="ph-bold ${icon}"></i> ${typeLabel}</span>${pendingBadge}</td><td class="py-4 px-6 font-bold text-left ${amtColor} text-base" dir="ltr">${formattedAmtStr}</td><td class="py-4 px-6 text-apple-main text-xs font-medium">${dispNote}</td><td class="py-4 px-6 text-center whitespace-nowrap"><div class="flex justify-center items-center gap-1.5">${actionButtons}</div></td>`;
             return tr;
         }
 
