@@ -79,6 +79,22 @@
         .fab-menu.active-menu { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
         .fab-icon { transition: transform 0.3s ease; }
         .fab-icon.rotated { transform: rotate(135deg); }
+
+        /* Rolling Counter & Floating Delta Animations */
+        .counter-rolling {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(1.04);
+        }
+        @keyframes floatDeltaFade {
+            0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+            18% { opacity: 1; transform: translateY(-4px) scale(1.04); }
+            75% { opacity: 1; transform: translateY(-16px) scale(1); }
+            100% { opacity: 0; transform: translateY(-28px) scale(0.95); }
+        }
+        .delta-badge {
+            animation: floatDeltaFade 1.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="antialiased overflow-x-hidden relative">
@@ -139,7 +155,7 @@
             <div class="glass px-4 py-2 rounded-xl flex items-center gap-3 shadow-md border border-white/10">
                 <i class="ph ph-calendar-blank text-apple-muted"></i>
                 <label for="monthFilter" class="text-sm text-apple-main font-semibold">ملخص شهر:</label>
-                <input type="month" id="monthFilter" class="glass-input rounded-lg px-3 py-1 text-sm bg-black/30 border-none shadow-inner" onchange="applyFilters()">
+                <input type="month" id="monthFilter" class="glass-input rounded-lg px-3 py-1 text-sm bg-black/30 border-none shadow-inner" onchange="applyFilters(true)">
             </div>
         </div>
 
@@ -152,12 +168,14 @@
                     <p class="text-apple-muted text-sm font-semibold mb-2 flex items-center justify-center md:justify-end gap-1 cursor-pointer" onclick="togglePrivacy()" title="إخفاء/كشف الرصيد">
                         الرصيد الإجمالي (التقديري بالدينار) <i id="privacyIcon1" class="ph-fill ph-eye-slash text-lg" style="color: var(--apple-blue);"></i>
                     </p>
-                    <h3 class="text-6xl tracking-tight mb-4 neon-glow-neutral" id="totalBalance">0 <span class="text-xl font-semibold opacity-70">د.ج</span></h3>
+                    <!-- حاوية المؤشر العائم لفرق الرصيد -->
+                    <div id="balanceDeltaContainer" class="relative h-0 flex justify-center md:justify-end z-20 pointer-events-none"></div>
+                    <h3 class="text-6xl tracking-tight mb-4 neon-glow-neutral transition-transform duration-200" id="totalBalance">0 <span class="text-xl font-semibold opacity-70">د.ج</span></h3>
                     
                     <div class="flex gap-2 flex-wrap justify-center md:justify-end mt-2">
-                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">💵 <span id="cashBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج</span>
-                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">💳 <span id="baridiBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> د.ج</span>
-                        <span class="bg-teal-500/20 border border-teal-500/30 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-400 flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">🪙 <span id="redotBalDisplay" class="blur-md select-none opacity-90 transition-all duration-300">0</span> USDT</span>
+                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">💵 <span id="cashBalDisplay" class="inline-block blur-md select-none opacity-90 transition-all duration-300" dir="ltr">0</span> د.ج</span>
+                        <span class="bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl text-xs font-bold text-apple-main flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">💳 <span id="baridiBalDisplay" class="inline-block blur-md select-none opacity-90 transition-all duration-300" dir="ltr">0</span> د.ج</span>
+                        <span class="bg-teal-500/20 border border-teal-500/30 px-3 py-1.5 rounded-xl text-xs font-bold text-teal-400 flex items-center gap-1 cursor-pointer shadow-sm" onclick="togglePrivacy()">🪙 <span id="redotBalDisplay" class="inline-block blur-md select-none opacity-90 transition-all duration-300" dir="ltr">0</span> USDT</span>
                     </div>
                 </div>
                 <div class="relative z-10 mt-4 pt-4 border-t border-white/10 flex flex-col gap-3 bg-black/40 p-4 rounded-xl">
@@ -169,7 +187,6 @@
                         <span class="text-xs font-semibold text-red-400 flex items-center gap-1"><i class="ph-fill ph-warning"></i> ديون عليك (قيد الانتظار):</span>
                         <span class="text-sm font-bold text-red-400" id="pendingDebtsTotal" dir="ltr">0 د.ج</span>
                     </div>
-                    <!-- تنبيهات الديون المستحقة الذكية -->
                     <div id="urgentAlertsContainer" class="flex flex-col gap-2 empty:hidden mt-1"></div>
                 </div>
             </div>
@@ -190,39 +207,33 @@
             </div>
         </div>
 
-        <!-- البطاقات الإحصائية الـ 6 الجديدة -->
+        <!-- البطاقات الإحصائية الـ 6 -->
         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-8">
-            <!-- 1. المداخيل الشهرية -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">إجمالي المداخيل</p>
                 <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthIncomes">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">شامل الراتب المحسوب</p>
             </div>
-            <!-- 2. المصاريف الشهرية -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">إجمالي المصاريف</p>
                 <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthExpenses">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">مصاريف وديون سُددت</p>
             </div>
-            <!-- 3. أرباح الوقت الإضافي -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">الوقت الإضافي</p>
                 <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthOvertimeMoney">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted"><span id="monthOvertimeMinutes">0</span> دقيقة مسجلة</p>
             </div>
-            <!-- 4. المبادرات والمكافآت -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">المبادرات والمكافآت</p>
                 <h3 class="text-lg md:text-2xl font-bold text-yellow-400 mb-1" id="monthBonuses">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">مبادرات عمل وإقامة</p>
             </div>
-            <!-- 5. الخصومات والتأخرات -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">تأخرات ومخالفات</p>
                 <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthDeductions">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">تُخصم من الراتب</p>
             </div>
-            <!-- 6. الغيابات -->
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">أيام الغياب</p>
                 <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthAbsenceMoney">0</h3>
@@ -239,16 +250,16 @@
             <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col lg:flex-row gap-4 items-end">
                 <div class="w-full lg:w-auto">
                     <label class="block text-xs font-bold text-apple-muted mb-1">من تاريخ</label>
-                    <input type="date" id="tableStartDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters()">
+                    <input type="date" id="tableStartDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
                 </div>
                 <div class="w-full lg:w-auto">
                     <label class="block text-xs font-bold text-apple-muted mb-1">إلى تاريخ</label>
-                    <input type="date" id="tableEndDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters()">
+                    <input type="date" id="tableEndDate" class="glass-input w-full px-3 py-2 text-sm" onchange="applyFilters(false)">
                 </div>
                 <div class="w-full lg:flex-1">
                     <label class="block text-xs font-bold text-apple-muted mb-1">نوع العملية</label>
                     <div class="relative">
-                        <select id="tableTypeSelect" class="glass-input w-full px-3 py-2 text-sm appearance-none cursor-pointer" onchange="applyFilters()">
+                        <select id="tableTypeSelect" class="glass-input w-full px-3 py-2 text-sm appearance-none cursor-pointer" onchange="applyFilters(false)">
                             <option value="all">عرض جميع العمليات</option>
                             <option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>
                             <option value="challenge" class="text-pink-400 font-bold">التحديات والأهداف</option>
@@ -510,12 +521,144 @@
 
     <script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
+        const LAST_SEEN_STORAGE_KEY = "sliman_finance_last_seen_v1";
 
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         let isPrivacyRevealed = false;
-        
+
+        // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine)
+        let displayedValues = {};
+        let activeCounters = {};
+
+        function getRealCurrentMonthStr() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function loadLastSeenValues() {
+            try {
+                const raw = localStorage.getItem(LAST_SEEN_STORAGE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !parsed.values) return;
+                const realMonth = getRealCurrentMonthStr();
+                if (parsed.month === realMonth) {
+                    displayedValues = { ...parsed.values };
+                } else {
+                    // عند دخول شهر جديد نحتفظ فقط بآخر قيم للرصيد والمحافظ
+                    ['totalBalance', 'cashBalDisplay', 'baridiBalDisplay', 'redotBalDisplay'].forEach(k => {
+                        if (parsed.values[k] !== undefined) displayedValues[k] = parsed.values[k];
+                    });
+                }
+            } catch (e) { console.log("Storage read skipped"); }
+        }
+
+        function saveLastSeenValues(snapshot) {
+            if (!isPrivacyRevealed) return;
+            if (currentFilterMonth !== getRealCurrentMonthStr()) return;
+            try {
+                localStorage.setItem(LAST_SEEN_STORAGE_KEY, JSON.stringify({
+                    month: currentFilterMonth,
+                    values: snapshot
+                }));
+            } catch (e) { console.log("Storage write skipped"); }
+        }
+
+        function showBalanceDelta(diff) {
+            const container = document.getElementById('balanceDeltaContainer');
+            if (!container || !diff) return;
+            const isPositive = diff > 0;
+            const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(Math.round(diff)));
+            const badge = document.createElement('span');
+            badge.className = `delta-badge inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold border shadow-lg ${
+                isPositive 
+                    ? 'bg-green-500/20 text-green-400 border-green-500/40' 
+                    : 'bg-red-500/20 text-red-400 border-red-500/40'
+            }`;
+            badge.setAttribute('dir', 'ltr');
+            badge.innerText = `${isPositive ? '+' : '-'}${formatted} د.ج`;
+            container.innerHTML = '';
+            container.appendChild(badge);
+            setTimeout(() => { if (badge.parentNode) badge.remove(); }, 2000);
+        }
+
+        function runRollingCounter(id, startVal, endVal, renderFn, onComplete) {
+            if (activeCounters[id]) {
+                if (activeCounters[id].timer) clearTimeout(activeCounters[id].timer);
+                if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
+            }
+            const obj = document.getElementById(id);
+            renderFn(startVal);
+
+            const delay = 220; // وقفة خفيفة باش عينك تشد الرقم القديم قبل ما يبدا يتحرك
+            const duration = 1100;
+
+            const timer = setTimeout(() => {
+                if (obj) obj.classList.add('counter-rolling');
+                if (id === 'totalBalance') showBalanceDelta(endVal - startVal);
+
+                const startTime = performance.now();
+                function step(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // حركة ناعمة سريعة في البداية وهادئة عند التوقف (Apple EaseOutQuart)
+                    const eased = 1 - Math.pow(1 - progress, 4);
+                    const current = startVal + (endVal - startVal) * eased;
+                    renderFn(current);
+
+                    if (progress < 1) {
+                        activeCounters[id].raf = requestAnimationFrame(step);
+                    } else {
+                        renderFn(endVal);
+                        if (obj) obj.classList.remove('counter-rolling');
+                        delete activeCounters[id];
+                        if (onComplete) onComplete();
+                    }
+                }
+                activeCounters[id].raf = requestAnimationFrame(step);
+            }, delay);
+
+            activeCounters[id] = { timer, raf: null };
+        }
+
+        function updateWalletCounter(id, newVal, isUsdt, latestExchangeRate, shouldAnimate) {
+            const obj = document.getElementById(id);
+            if (!obj) return;
+
+            const renderVal = (val) => {
+                if (isUsdt) {
+                    obj.innerHTML = `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val)} <span class="text-[9px] text-teal-400 block -mt-1 opacity-70" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
+                } else {
+                    obj.innerText = new Intl.NumberFormat('en-DZ').format(Math.round(val));
+                }
+            };
+
+            if (isPrivacyRevealed) {
+                obj.classList.remove('blur-md', 'select-none', 'opacity-90');
+            } else {
+                obj.classList.add('blur-md', 'select-none', 'opacity-90');
+            }
+
+            const prevVal = displayedValues[id];
+            const diff = prevVal !== undefined ? Math.abs(newVal - prevVal) : 0;
+            const hasMeaningfulChange = isUsdt ? diff >= 0.005 : Math.round(diff) >= 1;
+
+            if (shouldAnimate && isPrivacyRevealed && prevVal !== undefined && hasMeaningfulChange) {
+                runRollingCounter(id, prevVal, newVal, renderVal);
+                displayedValues[id] = newVal;
+            } else {
+                if (activeCounters[id]) {
+                    if (activeCounters[id].timer) clearTimeout(activeCounters[id].timer);
+                    if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
+                    delete activeCounters[id];
+                }
+                renderVal(newVal);
+                if (isPrivacyRevealed) displayedValues[id] = newVal;
+            }
+        }
+
         function getBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
@@ -580,12 +723,23 @@
         }
 
         window.togglePrivacy = function() {
-            if (isPrivacyRevealed) { isPrivacyRevealed = false; renderDashboard(); showToast("الخصوصية", "تم إخفاء الأرصدة", "info"); } 
+            if (isPrivacyRevealed) { isPrivacyRevealed = false; renderDashboard(false); showToast("الخصوصية", "تم إخفاء الأرصدة", "info"); } 
             else { document.getElementById('privacyPinInput').value = ''; document.getElementById('privacyError').classList.add('hidden'); document.getElementById('privacyModal').classList.remove('hidden'); void document.getElementById('privacyModal').offsetWidth; document.getElementById('privacyModalContent').classList.add('modal-enter-active'); setTimeout(() => document.getElementById('privacyPinInput').focus(), 100); }
         }
 
         window.closePrivacyModal = function() { document.getElementById('privacyModalContent').classList.remove('modal-enter-active'); setTimeout(() => document.getElementById('privacyModal').classList.add('hidden'), 300); }
-        window.checkPrivacyPin = function() { const pin = document.getElementById('privacyPinInput').value; if (pin.toLowerCase() === 'klmn') { isPrivacyRevealed = true; closePrivacyModal(); renderDashboard(); showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success"); } else { document.getElementById('privacyError').classList.remove('hidden'); } }
+        window.checkPrivacyPin = function() { 
+            const pin = document.getElementById('privacyPinInput').value; 
+            if (pin.toLowerCase() === 'klmn') { 
+                isPrivacyRevealed = true; 
+                closePrivacyModal(); 
+                showToast("فتح الخصوصية", "تم كشف الأرصدة للعمل", "success");
+                // ننتظر إغلاق نافذة الخصوصية ثم نطلق العدّاد التدريجي أمام عينيك
+                setTimeout(() => renderDashboard(true), 260);
+            } else { 
+                document.getElementById('privacyError').classList.remove('hidden'); 
+            } 
+        }
 
         async function fetchTransactions() {
             if (!sessionPin) return false; 
@@ -599,14 +753,16 @@
                     allTransactions = result.data;
                     if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) { document.getElementById('tableTypeSelect').innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>`; }
                     if (!document.querySelector('#entryType option[value="opening_balance"]')) { document.getElementById('entryType').innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">💰 إدخال رصيد افتتاحي</option>`; }
-                    applyFilters(); return true;
+                    applyFilters(false); return true;
                 } else { document.getElementById('loginError').classList.remove('hidden'); sessionPin = null; tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted">الرمز غير صحيح.</td></tr>`; return false; }
             } catch (error) { showToast("خطأ اتصال", "تأكد من الإنترنت", "error"); tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-apple-muted">لا يمكن الوصول للسيرفر.</td></tr>`; return false; }
         }
 
         window.onload = function() {
-            const today = new Date(); const mm = String(today.getMonth() + 1).padStart(2, '0'); const yyyy = today.getFullYear(); currentFilterMonth = `${yyyy}-${mm}`;
-            document.getElementById('monthFilter').value = currentFilterMonth; setPersonalType('income');
+            loadLastSeenValues();
+            currentFilterMonth = getRealCurrentMonthStr();
+            document.getElementById('monthFilter').value = currentFilterMonth; 
+            setPersonalType('income');
             
             document.addEventListener('click', function(event) {
                 const fabMenu = document.getElementById('fabMenu'); const mainBtn = document.getElementById('mainFabBtn');
@@ -714,8 +870,15 @@
                     let realNotionId = result.response.id; let localType = type === 'challenge' ? 'challenge' : (type === 'opening_balance' ? 'opening_balance' : type);
                     allTransactions.unshift({ id: realNotionId, type: localType, subType, amount, minutes, days, wallet, note, exactTimestamp: new Date().toISOString(), status: entryStatus }); 
                 }, "جاري الحفظ الآمن...");
-                applyFilters(); showToast("نجاح", "تمت العملية بأمان سحابياً");
-                closeModal(); document.getElementById('addEntryForm').reset(); calculateAmount(); 
+
+                // 🌟 إغلاق النافذة أولاً، ثم تشغيل العدّاد التدريجي بعد العودة للواجهة
+                closeModal();
+                document.getElementById('addEntryForm').reset();
+                calculateAmount();
+                showToast("نجاح", "تمت العملية بأمان سحابياً");
+                setTimeout(() => {
+                    applyFilters(true);
+                }, 350);
             } catch (err) { showToast("تنبيه", err.message, "error"); }
         };
 
@@ -726,7 +889,9 @@
                     let payload = { pin: sessionPin, action: "update_status", page_id: docId };
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     let result = await response.json(); if (result.status !== "success") throw new Error("فشل التحديث"); txn.status = "مكتمل"; 
-                }, "", true); applyFilters(); showToast("تحديث", "تم إكمال العملية وإضافتها للرصيد", "success");
+                }, "", true); 
+                showToast("تحديث", "تم إكمال العملية وإضافتها للرصيد", "success");
+                setTimeout(() => applyFilters(true), 120);
             } catch (err) { showToast("خطأ", err.message, "error"); }
         }
 
@@ -737,16 +902,18 @@
                     let response = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
                     let result = await response.json(); if (result.status !== "success") throw new Error("فشل الحذف");
                     allTransactions = allTransactions.filter(t => t.id !== docId);
-                }, "", true); applyFilters(); renderTimeTrackerList(); showToast("حذف", "تمت الإزالة بنجاح", "success");
+                }, "", true); 
+                renderTimeTrackerList(); 
+                showToast("حذف", "تمت الإزالة بنجاح", "success");
+                setTimeout(() => applyFilters(true), 120);
             } catch (err) { showToast("خطأ", err.message, "error"); }
         }
 
-        window.applyFilters = function() { currentFilterMonth = document.getElementById('monthFilter').value; renderDashboard(); }
-        window.resetTableFilters = function() { document.getElementById('tableStartDate').value = ''; document.getElementById('tableEndDate').value = ''; document.getElementById('tableTypeSelect').value = 'all'; applyFilters(); }
+        window.applyFilters = function(shouldAnimate = false) { currentFilterMonth = document.getElementById('monthFilter').value; renderDashboard(shouldAnimate); }
+        window.resetTableFilters = function() { document.getElementById('tableStartDate').value = ''; document.getElementById('tableEndDate').value = ''; document.getElementById('tableTypeSelect').value = 'all'; applyFilters(false); }
 
-        function renderDashboard() {
+        function renderDashboard(shouldAnimate = false) {
             let activeBaseSalary = 0, accruedBaseSalary = 0, pendingReceivables = 0, pendingDebts = 0;
-            // الإحصائيات الشهرية (6 بطاقات)
             let monthIncomes = 0, monthExpenses = 0, monthAbsenceDays = 0, monthAbsenceMoney = 0;
             let monthOvertimeMoney = 0, monthOvertimeMinutes = 0, monthDeductions = 0, monthBonuses = 0; 
             
@@ -757,14 +924,14 @@
             let daysInMonth = new Date(targetYear, targetMonth, 0).getDate(); let dailyRate = activeBaseSalary / daysInMonth;
             let today = new Date(), currentYear = today.getFullYear(), currentRealMonth = today.getMonth() + 1, daysPassed = 0;
             
-            // اللوجيك الجديد لاحتساب أيام العمل: إضافة اليوم الحالي فقط إذا تجاوزت الساعة 17:00 🕔
+            // احتساب أيام العمل مع توقيت الساعة 17:00
             if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { 
                 daysPassed = daysInMonth; 
             } else if (targetYear === currentYear && targetMonth === currentRealMonth) { 
                 if (today.getHours() >= 17) {
-                    daysPassed = today.getDate(); // يحسب اليوم كاملاً بعد الـ 17:00
+                    daysPassed = today.getDate();
                 } else {
-                    daysPassed = today.getDate() - 1; // مازال ما يخلصش اليوم
+                    daysPassed = today.getDate() - 1;
                 }
                 if (daysPassed < 0) daysPassed = 0;
             } 
@@ -795,7 +962,6 @@
                         }
                     }
                     if (t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
-                        // تحديث بيانات الـ 6 بطاقات الشهرية
                         if (t.type === 'overtime') { 
                             monthOvertimeMoney += t.amount; 
                             monthOvertimeMinutes += (t.minutes || 0); 
@@ -844,7 +1010,6 @@
                 if (includeInTable) { filteredCount++; tableBody.appendChild(createTableRow(t)); }
             });
 
-            // إضافة الراتب المحسوب لإجمالي المداخيل الشهرية
             monthIncomes += accruedBaseSalary;
 
             const alertsContainer = document.getElementById('urgentAlertsContainer'); alertsContainer.innerHTML = urgentHtml;
@@ -855,26 +1020,48 @@
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`; document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
             
-            document.getElementById("cashBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['كاش']); document.getElementById("baridiBalDisplay").innerText = new Intl.NumberFormat('en-DZ').format(balances['بريدي موب']); document.getElementById("redotBalDisplay").innerHTML = `${new Intl.NumberFormat('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(balances['RedotPay'])} <span class="text-[9px] text-teal-400 block -mt-1 opacity-70" title="مُقدر بـ ${latestExchangeRate} د.ج للدولار">(x${latestExchangeRate})</span>`;
-            if(isPrivacyRevealed) { document.getElementById("cashBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90'); document.getElementById("baridiBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90'); document.getElementById("redotBalDisplay").classList.remove('blur-md', 'select-none', 'opacity-90'); } 
-            else { document.getElementById("cashBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90'); document.getElementById("baridiBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90'); document.getElementById("redotBalDisplay").classList.add('blur-md', 'select-none', 'opacity-90'); }
+            // 🌟 تحديث المحافظ الـ 3 بالعدّاد التدريجي
+            updateWalletCounter("cashBalDisplay", balances['كاش'], false, latestExchangeRate, shouldAnimate);
+            updateWalletCounter("baridiBalDisplay", balances['بريدي موب'], false, latestExchangeRate, shouldAnimate);
+            updateWalletCounter("redotBalDisplay", balances['RedotPay'], true, latestExchangeRate, shouldAnimate);
 
-            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-100', true, true); animateValue("accruedBaseSalary", accruedBaseSalary, 'text-indigo-400', true, true); document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
+            animateValue("activeBaseSalary", activeBaseSalary, 'text-indigo-100', true, true, false); 
+            animateValue("accruedBaseSalary", accruedBaseSalary, 'text-indigo-400', true, true, shouldAnimate); 
+            document.getElementById("daysPassedBadge").innerText = `${daysPassed} أيام محسوبة`;
+            
             let totalBalanceColorClass = 'neon-glow-neutral'; if (finalBalance > 0) totalBalanceColorClass = 'neon-glow-green'; if (finalBalance < 0) totalBalanceColorClass = 'neon-glow-red';
-            animateValue("totalBalance", finalBalance, totalBalanceColorClass, true, true);
+            animateValue("totalBalance", finalBalance, totalBalanceColorClass, true, true, shouldAnimate);
             
-            animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true); animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true);
+            animateValue("pendingReceivablesTotal", pendingReceivables, 'text-orange-400', true, true, false); 
+            animateValue("pendingDebtsTotal", pendingDebts, 'text-red-400', true, true, false);
             
-            // تحديث البطاقات الـ 6
-            animateValue("monthIncomes", monthIncomes, 'text-green-400', false, true);
-            animateValue("monthExpenses", monthExpenses, 'text-red-400', false, true);
-            animateValue("monthAbsenceMoney", monthAbsenceMoney, 'text-red-400', false, true);
+            // 🌟 تحديث البطاقات الـ 6 بالعدّاد التدريجي
+            animateValue("monthIncomes", monthIncomes, 'text-green-400', false, true, shouldAnimate);
+            animateValue("monthExpenses", monthExpenses, 'text-red-400', false, true, shouldAnimate);
+            animateValue("monthAbsenceMoney", monthAbsenceMoney, 'text-red-400', false, true, shouldAnimate);
             document.getElementById("monthAbsenceDays").innerHTML = `<span class="${generalBlurClass}">${monthAbsenceDays}</span>`;
             
-            animateValue("monthOvertimeMoney", monthOvertimeMoney, 'text-green-400', false, true); 
-            animateValue("monthDeductions", monthDeductions, 'text-red-400', false, true); 
-            animateValue("monthBonuses", monthBonuses, 'text-yellow-400', false, true);
+            animateValue("monthOvertimeMoney", monthOvertimeMoney, 'text-green-400', false, true, shouldAnimate); 
+            animateValue("monthDeductions", monthDeductions, 'text-red-400', false, true, shouldAnimate); 
+            animateValue("monthBonuses", monthBonuses, 'text-yellow-400', false, true, shouldAnimate);
             document.getElementById("monthOvertimeMinutes").innerHTML = `<span class="${generalBlurClass}">${monthOvertimeMinutes}</span>`;
+
+            // حفظ آخر القيم المرئية في الذاكرة المحلية لتفعيل العدّاد عند نزول أجرة 17:00 لاحقاً
+            if (isPrivacyRevealed) {
+                saveLastSeenValues({
+                    totalBalance: finalBalance,
+                    cashBalDisplay: balances['كاش'],
+                    baridiBalDisplay: balances['بريدي موب'],
+                    redotBalDisplay: balances['RedotPay'],
+                    accruedBaseSalary: accruedBaseSalary,
+                    monthIncomes: monthIncomes,
+                    monthExpenses: monthExpenses,
+                    monthOvertimeMoney: monthOvertimeMoney,
+                    monthBonuses: monthBonuses,
+                    monthDeductions: monthDeductions,
+                    monthAbsenceMoney: monthAbsenceMoney
+                });
+            }
 
             let challengeTxns = allTransactions.filter(t => t.type === 'challenge'); const challengeContainer = document.getElementById('challengeContainer');
             if (challengeTxns.length > 0) {
@@ -979,7 +1166,7 @@
             let dispNote = t.note || '-';
             if (dispNote.includes("[📎 مرفق]")) { dispNote = dispNote.replace("[📎 مرفق]", `<span class="inline-flex items-center gap-1 bg-sky-500/20 border border-sky-500/30 text-sky-400 px-1.5 py-0.5 rounded-md text-[10px] mr-2 font-bold shadow-sm" title="الوصل مرفق في تيليجرام"><i class="ph-bold ph-paperclip"></i> وصل مرفق</span>`); }
             
-            let dueMatch = dispNote.match(/\|\s*Due:\s*([\d-]+)/);
+            let dueMatch = dispNote.match(/(?:\|\s*)?Due:\s*([\d-]+)/);
             if (dueMatch) { 
                 dispNote = dispNote.replace(dueMatch[0], '').trim();
                 dispNote += ` <span class="inline-flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 px-1.5 py-0.5 rounded-md text-[10px] mr-2 font-bold shadow-sm" title="تاريخ الاستحقاق"><i class="ph-bold ph-calendar"></i> ${dueMatch[1]}</span>`;
@@ -991,14 +1178,50 @@
             return tr;
         }
 
-        function animateValue(id, end, colorClass = null, hideDZDInSpan = false, isSensitive = false) {
+        function animateValue(id, end, colorClass = null, hideDZDInSpan = false, isSensitive = false, shouldRoll = false) {
             const obj = document.getElementById(id); if (!obj) return;
-            const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(end)); const sign = end < 0 ? '-' : '';
             let blurClass = ''; let clickHandler = '';
             if (isSensitive) { blurClass = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm'; clickHandler = `onclick="togglePrivacy()" title="انقر لكشف الرصيد"`; }
-            
-            obj.innerHTML = hideDZDInSpan ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-base font-semibold opacity-70">د.ج</span>` : `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span>`;
-            if (colorClass) { obj.className = obj.className.replace(/neon-glow-\w+|text-\w+-\d+/g, '').trim(); obj.className += ` ${colorClass}`; }
+
+            const applyColor = (cClass) => {
+                if (cClass) {
+                    obj.className = obj.className.replace(/neon-glow-\w+|text-\w+-\d+/g, '').trim();
+                    obj.className += ` ${cClass}`;
+                }
+            };
+
+            const renderNum = (val) => {
+                const rounded = Math.round(val);
+                const formatted = new Intl.NumberFormat('en-DZ').format(Math.abs(rounded));
+                const sign = rounded < 0 ? '-' : '';
+                obj.innerHTML = hideDZDInSpan
+                    ? `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span> <span class="text-base font-semibold opacity-70">د.ج</span>`
+                    : `<span class="inline-block ${blurClass}" ${clickHandler} dir="ltr">${sign}${formatted}</span>`;
+                if (id === 'totalBalance') {
+                    const dynamicGlow = rounded > 0 ? 'neon-glow-green' : (rounded < 0 ? 'neon-glow-red' : 'neon-glow-neutral');
+                    applyColor(dynamicGlow);
+                }
+            };
+
+            const prevVal = displayedValues[id];
+            const canRoll = shouldRoll && isPrivacyRevealed && prevVal !== undefined && Math.round(prevVal) !== Math.round(end);
+
+            if (canRoll) {
+                if (id !== 'totalBalance') applyColor(colorClass);
+                runRollingCounter(id, prevVal, end, renderNum, () => applyColor(colorClass));
+                displayedValues[id] = end;
+            } else {
+                if (activeCounters[id]) {
+                    if (activeCounters[id].timer) clearTimeout(activeCounters[id].timer);
+                    if (activeCounters[id].raf) cancelAnimationFrame(activeCounters[id].raf);
+                    delete activeCounters[id];
+                }
+                renderNum(end);
+                applyColor(colorClass);
+                if (isPrivacyRevealed && shouldRoll !== null) {
+                    displayedValues[id] = end;
+                }
+            }
         }
 
         let toastTimeout;
