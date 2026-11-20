@@ -39,7 +39,7 @@
         }
 
         .glass { background: var(--apple-glass-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--apple-glass-border); box-shadow: var(--apple-glass-shadow); }
-        .glass-card { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.06); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); border-radius: 24px; }
+        .glass-card { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.06); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); border-radius: 24px; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
         .glass-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); color: var(--apple-text-main); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border-radius: 12px; }
         .glass-input:focus { outline: none; border-color: var(--apple-blue); box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2); background: rgba(255, 255, 255, 0.08); }
         .glass-input::placeholder { color: #6e6e73; }
@@ -54,7 +54,7 @@
         .modal-enter-active { opacity: 1; transform: scale(1) translateY(0); transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         
         tr.glass-row { background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background-color 0.2s; }
-        tr.glass-row:hover { background: rgba(255, 255, 255, 0.06); }
+        tr.glass-row:hover { background: rgba(255, 255, 255, 0.07); }
 
         .text-apple-main { color: var(--apple-text-main); }
         .text-apple-muted { color: var(--apple-text-muted); }
@@ -94,6 +94,23 @@
         .delta-badge {
             animation: floatDeltaFade 1.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             pointer-events: none;
+        }
+
+        /* Budget Alert Card States */
+        .budget-warn-card {
+            border-color: rgba(251, 146, 60, 0.45) !important;
+            box-shadow: 0 10px 35px rgba(251, 146, 60, 0.14) !important;
+        }
+        .budget-over-card {
+            border-color: rgba(255, 69, 58, 0.65) !important;
+            box-shadow: 0 0 28px rgba(255, 69, 58, 0.25), inset 0 0 18px rgba(255, 69, 58, 0.08) !important;
+        }
+
+        /* Receipt Privacy Backdrop (Extra Heavy Blur for Screenshots) */
+        .receipt-backdrop {
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
         }
     </style>
 </head>
@@ -213,11 +230,19 @@
                 <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthIncomes">0</h3>
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">شامل الراتب المحسوب</p>
             </div>
-            <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
-                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">إجمالي المصاريف</p>
+
+            <!-- بطاقة المصاريف الشهرية + رادار سقف المصاريف الذكي -->
+            <div id="expensesCard" class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
+                <button type="button" onclick="openBudgetModal()" class="absolute top-3 left-3 text-apple-muted hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 p-1.5 rounded-full transition-all z-10" title="إعداد سقف المصاريف الشهري">
+                    <i class="ph-bold ph-gear text-sm"></i>
+                </button>
+                <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider pl-6 md:pl-0">إجمالي المصاريف</p>
                 <h3 class="text-lg md:text-2xl font-bold text-red-400 mb-1" id="monthExpenses">0</h3>
-                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">مصاريف وديون سُددت</p>
+                <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted" id="expensesSubtitle">مصاريف وديون سُددت</p>
+                <!-- شريط ومعلومات سقف المصاريف الذكي -->
+                <div id="budgetStatusContainer" class="hidden mt-2.5 pt-2.5 border-t border-white/10 text-right"></div>
             </div>
+
             <div class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <p class="text-apple-muted text-[10px] md:text-xs font-bold mb-1 uppercase tracking-wider">الوقت الإضافي</p>
                 <h3 class="text-lg md:text-2xl font-bold text-green-400 mb-1" id="monthOvertimeMoney">0</h3>
@@ -245,14 +270,12 @@
                 <h3 class="text-lg font-bold text-apple-main flex items-center gap-2"><i class="ph-fill ph-list-dashes" style="color: var(--apple-blue);"></i> سجل العمليات</h3>
                 <div class="flex flex-wrap items-center justify-center gap-2">
                     <span class="text-xs bg-sky-500/20 text-sky-400 px-3 py-1 rounded-full border border-sky-500/30 font-bold whitespace-nowrap" id="recordCountBadge">0 عملية</span>
-                    <!-- شارة المجموع الصافي الذكي للنتائج -->
                     <span class="hidden text-xs bg-white/10 text-apple-main px-3 py-1 rounded-full border border-white/15 font-bold whitespace-nowrap items-center gap-1.5" id="filteredSumBadge"></span>
                 </div>
             </div>
             
             <!-- شريط البحث والفلاتر الذكي -->
             <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col gap-4">
-                <!-- شريط البحث -->
                 <div class="relative w-full">
                     <i class="ph-bold ph-magnifying-glass absolute right-4 top-1/2 transform -translate-y-1/2 text-apple-muted text-lg pointer-events-none"></i>
                     <input type="text" id="tableSearchInput" class="glass-input w-full pr-11 pl-10 py-2.5 text-sm font-medium" placeholder="ابحث في الملاحظات (مثلاً: قهوة، انترنت، اسم شخص...) أو المحفظة أو المبلغ..." oninput="applyFilters(false)">
@@ -261,7 +284,6 @@
                     </button>
                 </div>
 
-                <!-- فلاتر التاريخ والنوع -->
                 <div class="flex flex-col lg:flex-row gap-4 items-end">
                     <div class="w-full lg:w-auto">
                         <label class="block text-xs font-bold text-apple-muted mb-1">من تاريخ</label>
@@ -334,6 +356,119 @@
         <button onclick="toggleFabMenu()" id="mainFabBtn" class="w-14 h-14 btn-apple rounded-full flex items-center justify-center text-white active:scale-90 transition-all duration-300 shadow-xl z-50">
             <i id="fabMainIcon" class="ph-bold ph-plus text-2xl fab-icon"></i>
         </button>
+    </div>
+
+    <!-- 🌟 نافذة تفاصيل الإيصال الرقمي (Apple Wallet Receipt Modal) -->
+    <div id="receiptModal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
+        <div class="absolute inset-0 receipt-backdrop" onclick="closeReceiptModal()"></div>
+        <div class="relative w-full max-w-sm rounded-[28px] bg-[#161618] border border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden modal-enter" id="receiptModalContent">
+            <!-- شريط علوي أنيق -->
+            <div class="flex justify-between items-center px-6 pt-5 pb-3">
+                <span class="text-xs font-bold text-apple-muted flex items-center gap-1.5">
+                    <i class="ph-fill ph-receipt text-base" style="color: var(--apple-blue);"></i>
+                    <span>تفاصيل العملية</span>
+                </span>
+                <div class="flex items-center gap-2">
+                    <!-- زر كشف/إخفاء مبلغ هذه العملية وحدها -->
+                    <button type="button" id="receiptPrivacyToggleBtn" onclick="toggleReceiptAmountPrivacy()" class="hidden text-sky-400 hover:text-sky-300 bg-sky-500/15 border border-sky-500/30 rounded-full p-1.5 transition-colors" title="كشف/إخفاء مبلغ هذه العملية فقط">
+                        <i id="receiptPrivacyIcon" class="ph-fill ph-eye-slash text-base"></i>
+                    </button>
+                    <button type="button" onclick="closeReceiptModal()" class="text-apple-muted hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-1.5 transition-colors">
+                        <i class="ph-bold ph-x text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- القسم الرئيسي للمبلغ والنوع -->
+            <div class="px-6 pt-2 pb-6 text-center">
+                <div id="receiptIconBadge" class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center border shadow-lg">
+                    <i id="receiptMainIcon" class="ph-fill ph-wallet text-3xl"></i>
+                </div>
+                <h3 id="receiptTypeTitle" class="text-lg font-bold text-apple-main mb-1">عملية</h3>
+                <div id="receiptStatusPill" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border mb-4"></div>
+
+                <!-- المبلغ البارز (قابل للضغط لكشفه وحده عند تفعيل الخصوصية) -->
+                <div id="receiptAmountWrapper" onclick="handleReceiptAmountClick()" class="py-3 px-4 rounded-2xl bg-black/40 border border-white/5 select-none">
+                    <div id="receiptAmountValue" class="text-4xl font-extrabold tracking-tight" dir="ltr">0 د.ج</div>
+                    <p id="receiptRevealHint" class="hidden text-[10px] text-sky-400 font-semibold mt-1.5 flex items-center justify-center gap-1">
+                        <i class="ph-fill ph-eye"></i> اضغط لكشف مبلغ هذه العملية فقط
+                    </p>
+                </div>
+            </div>
+
+            <!-- فاصل منقط كالإيصال الحقيقي -->
+            <div class="relative flex items-center px-4">
+                <div class="w-5 h-5 rounded-full bg-black -mr-6 border-l border-white/15"></div>
+                <div class="flex-1 border-t border-dashed border-white/15 mx-2"></div>
+                <div class="w-5 h-5 rounded-full bg-black -ml-6 border-r border-white/15"></div>
+            </div>
+
+            <!-- جدول تفاصيل الإيصال -->
+            <div class="px-6 py-5 flex flex-col gap-3 text-xs" id="receiptDetailsList"></div>
+
+            <!-- صندوق الملاحظات الكاملة -->
+            <div class="px-6 pb-6">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-4">
+                    <p class="text-[10px] font-bold text-apple-muted uppercase tracking-wider mb-1.5">الملاحظات والتفاصيل</p>
+                    <p id="receiptFullNote" class="text-sm text-apple-main font-medium leading-relaxed break-words">-</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 نافذة إعداد سقف المصاريف الشهري (Smart Budget Modal) -->
+    <div id="budgetModal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeBudgetModal()"></div>
+        <div class="relative glass-card w-full max-w-md p-8 modal-enter max-h-[90vh] overflow-y-auto bg-[#1c1c1e]" id="budgetModalContent">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-white/10">
+                <h3 class="text-xl font-bold text-apple-main flex items-center gap-2">
+                    <i class="ph-fill ph-gauge text-red-400"></i> سقف المصاريف الشهري
+                </h3>
+                <button type="button" onclick="closeBudgetModal()" class="text-apple-muted hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-1.5 transition-colors">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-apple-muted mb-5 leading-relaxed border-r-2 border-sky-500 pr-3">
+                يُحفظ هذا السقف مباشرة في Notion ليكون متزامناً بين هاتفك وحاسوبك، ولا يؤثر أبداً على أرصدتك أو سجلك.
+            </p>
+
+            <form id="budgetForm" onsubmit="handleBudgetSubmit(event)">
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">طريقة احتساب السقف</label>
+                    <div class="flex bg-black/40 p-1 rounded-xl border border-white/10">
+                        <button type="button" class="budget-mode-btn flex-1 py-2.5 rounded-lg text-xs font-bold transition-all bg-white/10 text-apple-main" data-mode="fixed" onclick="setBudgetMode('fixed')">مبلغ ثابت (د.ج)</button>
+                        <button type="button" class="budget-mode-btn flex-1 py-2.5 rounded-lg text-xs font-bold text-gray-400 transition-all" data-mode="percent" onclick="setBudgetMode('percent')">نسبة من الراتب (%)</button>
+                    </div>
+                    <input type="hidden" id="budgetModeInput" value="fixed">
+                </div>
+
+                <div class="mb-4">
+                    <label id="budgetValueLabel" class="block text-xs font-bold text-apple-muted mb-2 uppercase tracking-wider">الحد الأقصى للمصاريف (د.ج)</label>
+                    <input type="text" id="budgetValueInput" dir="ltr" class="glass-input w-full px-4 py-3.5 font-bold text-lg" placeholder="مثال: 15000" onblur="evaluateMath(this); updateBudgetPreview()" oninput="updateBudgetPreview()" required>
+                </div>
+
+                <!-- اختصارات سريعة للنسبة المئوية -->
+                <div id="budgetPercentPresets" class="hidden flex gap-2 mb-4">
+                    <button type="button" onclick="applyBudgetPreset(30)" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-apple-muted hover:text-white transition-colors">30%</button>
+                    <button type="button" onclick="applyBudgetPreset(50)" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-apple-muted hover:text-white transition-colors">50%</button>
+                    <button type="button" onclick="applyBudgetPreset(70)" class="flex-1 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-apple-muted hover:text-white transition-colors">70%</button>
+                </div>
+
+                <div class="bg-black/50 rounded-xl p-4 mb-6 flex justify-between items-center border border-white/10">
+                    <span class="text-xs font-bold text-apple-muted">السقف الشهري الفعلي:</span>
+                    <span id="budgetLivePreview" class="text-lg font-bold text-sky-400" dir="ltr">0 د.ج</span>
+                </div>
+
+                <button type="submit" id="budgetSubmitBtn" class="w-full btn-apple py-3.5 text-base flex justify-center items-center gap-2">
+                    <i class="ph-bold ph-floppy-disk text-xl"></i><span>حفظ السقف في Notion</span>
+                </button>
+
+                <button type="button" id="budgetDeleteBtn" onclick="deleteBudgetLimit(this)" class="hidden w-full mt-3 py-3 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 text-sm font-bold transition-all flex justify-center items-center gap-2">
+                    <i class="ph-bold ph-trash"></i><span>إلغاء سقف المصاريف</span>
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- نافذة تعديل العملية (Edit Transaction Modal) -->
@@ -564,10 +699,13 @@
                     <textarea id="noteInput" rows="2" class="glass-input w-full px-4 py-3 resize-none font-medium text-sm" placeholder="اكتب التفاصيل هنا..."></textarea>
                 </div>
 
-                <div class="bg-black/50 rounded-xl p-4 mb-6 flex justify-between items-center border border-white/10" id="previewBox">
+                <div class="bg-black/50 rounded-xl p-4 mb-4 flex justify-between items-center border border-white/10" id="previewBox">
                     <span class="text-xs font-bold text-apple-muted uppercase tracking-wider">القيمة المحسوبة:</span>
                     <span id="calculatedPreview" class="text-xl font-bold text-apple-main dir-ltr">0 د.ج</span>
                 </div>
+
+                <!-- تنبيه استباقي عند اقتراب أو تجاوز سقف المصاريف -->
+                <div id="budgetProactiveWarning" class="hidden mb-4 p-3 rounded-xl border text-xs font-bold flex items-start gap-2 leading-relaxed"></div>
 
                 <button type="submit" id="submitBtn" class="w-full btn-apple py-4 text-lg flex justify-center items-center gap-2">
                     <span id="submitBtnText">حفظ العملية</span>
@@ -577,7 +715,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed top-6 right-6 md:top-10 md:right-10 transform -translate-y-20 opacity-0 transition-all duration-400 z-50 bg-[#1c1c1e]/90 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4 pointer-events-none">
+    <div id="toast" class="fixed top-6 right-6 md:top-10 md:right-10 transform -translate-y-20 opacity-0 transition-all duration-400 z-[90] bg-[#1c1c1e]/90 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-4 pointer-events-none">
         <div id="toastIconContainer" class="w-10 h-10 rounded-full flex items-center justify-center bg-green-500/20 border border-green-500/30">
             <i class="ph-bold ph-check text-green-400 text-xl" id="toastIcon"></i>
         </div>
@@ -599,8 +737,13 @@
         // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine) مع حفظ الفاصلة العشرية
         let displayedValues = {};
         let activeCounters = {};
-        // لحفظ الوسوم البرمجية المخفية داخل الملاحظة أثناء التعديل
         let editPreservedMeta = { prefix: "", hasAttachment: false };
+
+        // 🌟 متغيرات حالة الإيصال وسقف المصاريف
+        let isReceiptAmountRevealed = false;
+        let currentActiveSalaryCache = 0;
+        let realCurrentMonthExpensesCache = 0;
+        let realCurrentMonthSalaryCache = 0;
 
         function cleanDecimal(val) {
             const c = Math.round(val * 100) / 100;
@@ -625,6 +768,39 @@
         function getRealCurrentMonthStr() {
             const now = new Date();
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // 🌟 عزل سجل "سقف المصاريف" القادم من Notion تلقائياً دون الحاجة لتعديل السيرفر
+        function normalizeSpecialTransactions(list) {
+            list.forEach(t => {
+                if (t.wallet === 'إعدادات' || (t.note && t.note.startsWith('LIMIT_MODE:'))) {
+                    t.type = 'spending_limit';
+                }
+            });
+            return list;
+        }
+
+        function getSpendingLimitConfig() {
+            const limitTxns = allTransactions.filter(t => t.type === 'spending_limit');
+            if (limitTxns.length === 0) return null;
+            limitTxns.sort((a, b) => new Date(b.exactTimestamp) - new Date(a.exactTimestamp));
+            const latest = limitTxns[0];
+            if (!latest.amount || latest.amount <= 0) return null;
+            const isPercent = (latest.note || '').includes('LIMIT_MODE:percent');
+            return {
+                id: latest.id,
+                mode: isPercent ? 'percent' : 'fixed',
+                value: cleanDecimal(Math.abs(latest.amount))
+            };
+        }
+
+        function computeEffectiveLimit(config, baseSalary) {
+            if (!config) return null;
+            if (config.mode === 'percent') {
+                const limitDzd = baseSalary > 0 ? cleanDecimal((baseSalary * config.value) / 100) : 0;
+                return { ...config, limitDzd };
+            }
+            return { ...config, limitDzd: config.value };
         }
 
         function loadLastSeenValues() {
@@ -807,28 +983,32 @@
             return validSalaryUpdate ? validSalaryUpdate.amount : 0;
         }
 
-        function getTransactionTypeLabel(t) {
+        function getTransactionVisualMeta(t) {
             switch(t.type) {
-                case 'opening_balance': return 'رصيد افتتاحي';
-                case 'challenge': return 'تحدي مالي';
-                case 'salary_update': return 'تحديث الراتب';
-                case 'absence': return `غياب (${t.days || 0} ي)`;
-                case 'overtime': return `إضافي (${t.minutes || 0}د)`;
-                case 'lateness': return `تأخر (${t.minutes || 0}د)`;
-                case 'exchange': return t.amount > 0 ? 'استلام USDT' : 'شراء USDT';
+                case 'opening_balance': return { label: 'رصيد افتتاحي', badge: 'bg-teal-500/20 text-teal-400 border-teal-500/30', icon: 'ph-money' };
+                case 'challenge': return { label: 'تحدي مالي', badge: 'bg-pink-500/20 text-pink-400 border-pink-500/30', icon: 'ph-target' };
+                case 'salary_update': return { label: 'تحديث الراتب', badge: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30', icon: 'ph-bank' };
+                case 'absence': return { label: `غياب (${t.days || 0} ي)`, badge: 'bg-red-500/20 text-red-400 border-red-500/30', icon: 'ph-user-minus' };
+                case 'overtime': return { label: `إضافي (${t.minutes || 0}د)`, badge: 'bg-green-500/20 text-green-400 border-green-500/30', icon: 'ph-timer' };
+                case 'lateness': return { label: `تأخر (${t.minutes || 0}د)`, badge: 'bg-red-500/20 text-red-400 border-red-500/30', icon: 'ph-clock-countdown' };
+                case 'exchange': return { label: t.amount > 0 ? 'استلام USDT' : 'شراء USDT', badge: 'bg-teal-500/20 text-teal-400 border-teal-500/30', icon: 'ph-currency-circle-dollar' };
                 case 'company_rule':
-                    if (t.subType === 'work_penalty') return 'مخالفة عمل';
-                    if (t.subType === 'res_penalty') return 'مخالفة إقامة';
-                    if (t.subType === 'work_bonus') return 'مبادرة عمل';
-                    if (t.subType === 'res_bonus') return 'مبادرة إقامة';
-                    return 'قواعد الشركة';
+                    if (t.subType === 'work_penalty') return { label: 'مخالفة عمل', badge: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: 'ph-warning-circle' };
+                    if (t.subType === 'res_penalty') return { label: 'مخالفة إقامة', badge: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: 'ph-house-line' };
+                    if (t.subType === 'work_bonus') return { label: 'مبادرة عمل', badge: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: 'ph-star' };
+                    if (t.subType === 'res_bonus') return { label: 'مبادرة إقامة', badge: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: 'ph-house-line' };
+                    return { label: 'قواعد الشركة', badge: 'bg-white/10 text-gray-300 border-white/20', icon: 'ph-briefcase' };
                 case 'personal':
-                    if (t.subType === 'income') return 'مدخول';
-                    if (t.subType === 'expense') return 'مصروف';
-                    if (t.subType === 'debt') return 'دين';
-                    return 'مالية شخصية';
-                default: return 'عملية';
+                    if (t.subType === 'income') return { label: 'مدخول', badge: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: 'ph-wallet' };
+                    if (t.subType === 'expense') return { label: 'مصروف', badge: 'bg-white/10 text-gray-300 border-white/20', icon: 'ph-shopping-cart' };
+                    if (t.subType === 'debt') return { label: 'دين', badge: 'bg-purple-500/20 text-purple-400 border-purple-500/30', icon: 'ph-hand-coins' };
+                    return { label: 'مالية شخصية', badge: 'bg-white/10 text-gray-300 border-white/20', icon: 'ph-wallet' };
+                default: return { label: 'عملية', badge: 'bg-white/10 text-gray-300 border-white/20', icon: 'ph-receipt' };
             }
+        }
+
+        function getTransactionTypeLabel(t) {
+            return getTransactionVisualMeta(t).label;
         }
 
         async function unlockApp() {
@@ -864,7 +1044,7 @@
                 let result = await response.json();
                 if (result.status === "success") {
                     document.getElementById('loginOverlay').style.opacity = '0'; setTimeout(() => document.getElementById('loginOverlay').classList.add('hidden'), 500);
-                    allTransactions = result.data;
+                    allTransactions = normalizeSpecialTransactions(result.data);
                     if (!document.querySelector('#tableTypeSelect option[value="opening_balance"]')) { document.getElementById('tableTypeSelect').innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">الأرصدة الافتتاحية</option>`; }
                     if (!document.querySelector('#entryType option[value="opening_balance"]')) { document.getElementById('entryType').innerHTML += `<option value="opening_balance" class="text-teal-400 font-bold">💰 إدخال رصيد افتتاحي</option>`; }
                     applyFilters(false); return true;
@@ -890,6 +1070,350 @@
                 menu.classList.remove('hidden-menu'); menu.classList.add('active-menu'); icon.classList.add('rotated'); btn.style.backgroundColor = 'var(--neon-red)';
             } else {
                 menu.classList.add('hidden-menu'); menu.classList.remove('active-menu'); icon.classList.remove('rotated'); btn.style.backgroundColor = 'var(--apple-blue)';
+            }
+        }
+
+        // --- 🌟 دوال بطاقة الإيصال الرقمي (Digital Receipt Modal) ---
+        function applyReceiptPrivacyVisual() {
+            const amtEl = document.getElementById('receiptAmountValue');
+            const hintEl = document.getElementById('receiptRevealHint');
+            const eyeBtn = document.getElementById('receiptPrivacyToggleBtn');
+            const eyeIcon = document.getElementById('receiptPrivacyIcon');
+            const wrapper = document.getElementById('receiptAmountWrapper');
+
+            if (isPrivacyRevealed) {
+                amtEl.classList.remove('blur-md', 'opacity-80');
+                hintEl.classList.add('hidden');
+                eyeBtn.classList.add('hidden');
+                wrapper.classList.remove('cursor-pointer', 'hover:bg-black/60');
+            } else {
+                eyeBtn.classList.remove('hidden');
+                wrapper.classList.add('cursor-pointer', 'hover:bg-black/60');
+                if (isReceiptAmountRevealed) {
+                    amtEl.classList.remove('blur-md', 'opacity-80');
+                    hintEl.classList.add('hidden');
+                    eyeIcon.className = 'ph-fill ph-eye text-base';
+                } else {
+                    amtEl.classList.add('blur-md', 'opacity-80');
+                    hintEl.classList.remove('hidden');
+                    eyeIcon.className = 'ph-fill ph-eye-slash text-base';
+                }
+            }
+        }
+
+        window.toggleReceiptAmountPrivacy = function() {
+            if (isPrivacyRevealed) return;
+            isReceiptAmountRevealed = !isReceiptAmountRevealed;
+            applyReceiptPrivacyVisual();
+        }
+
+        window.handleReceiptAmountClick = function() {
+            if (isPrivacyRevealed) return;
+            toggleReceiptAmountPrivacy();
+        }
+
+        window.openReceiptModal = function(docId) {
+            const t = allTransactions.find(item => item.id === docId);
+            if (!t) return;
+
+            isReceiptAmountRevealed = false;
+            const meta = getTransactionVisualMeta(t);
+            const isPending = (t.status === 'قيد الانتظار');
+
+            document.getElementById('receiptIconBadge').className = `w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center border shadow-lg ${meta.badge}`;
+            document.getElementById('receiptMainIcon').className = `ph-fill ${meta.icon} text-3xl`;
+            document.getElementById('receiptTypeTitle').innerText = meta.label;
+
+            const statusPill = document.getElementById('receiptStatusPill');
+            let statusText = 'مكتمل';
+            let statusPillClass = 'bg-green-500/15 text-green-400 border-green-500/30';
+            if (isPending) {
+                statusText = t.amount > 0 ? 'قيد التحصيل (أموال عند الغير)' : 'قيد الانتظار (لم يُسدد بعد)';
+                statusPillClass = t.amount > 0
+                    ? 'bg-orange-500/15 text-orange-400 border-orange-500/30'
+                    : 'bg-red-500/15 text-red-400 border-red-500/30';
+            }
+            statusPill.className = `inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-bold border mb-4 ${statusPillClass}`;
+            statusPill.innerHTML = `<i class="ph-bold ${isPending ? 'ph-clock' : 'ph-check-circle'}"></i> ${statusText}`;
+
+            const currency = t.wallet === 'RedotPay' ? 'USDT' : 'د.ج';
+            const cleanAmt = cleanDecimal(t.amount);
+            const showPlus = cleanAmt > 0 && t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'opening_balance';
+            const sign = cleanAmt < 0 ? '-' : (showPlus ? '+' : '');
+            const formattedAmt = currency === 'USDT'
+                ? new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(cleanAmt))
+                : formatExactDzd(Math.abs(cleanAmt));
+
+            let amtColor = 'text-white';
+            if (t.type === 'salary_update' || t.type === 'opening_balance') amtColor = 'text-indigo-400';
+            else if (t.type === 'challenge') amtColor = 'text-pink-400';
+            else if (isPending) amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400';
+            else if (t.amount > 0) amtColor = 'text-green-400';
+            else if (t.amount < 0) amtColor = 'text-red-400';
+
+            const amtEl = document.getElementById('receiptAmountValue');
+            amtEl.className = `text-4xl font-extrabold tracking-tight transition-all duration-300 ${amtColor}`;
+            amtEl.innerHTML = `${sign}${formattedAmt} <span class="text-base font-semibold opacity-70">${currency}</span>`;
+
+            // استخراج التفاصيل المنظمة من الملاحظة
+            const dateObj = new Date(t.exactTimestamp);
+            const dateOnly = dateObj.toLocaleDateString('en-GB');
+            const timeOnly = dateObj.toLocaleTimeString('en-GB');
+
+            let rawNote = t.note || '';
+            let hasAttachment = false;
+            if (rawNote.includes('[📎 مرفق]')) {
+                hasAttachment = true;
+                rawNote = rawNote.replace('[📎 مرفق]', '').trim();
+            }
+
+            let dueDateStr = null;
+            const dueMatch = rawNote.match(/(?:\|\s*)?Due:\s*([\d-]+)/);
+            if (dueMatch) {
+                dueDateStr = dueMatch[1];
+                rawNote = rawNote.replace(dueMatch[0], '').trim();
+            }
+
+            let exchangeRateStr = null;
+            const rateMatch = rawNote.match(/سعر الصرف:\s*([\d.]+)\s*\|?/);
+            if (rateMatch) {
+                exchangeRateStr = rateMatch[1];
+                rawNote = rawNote.replace(rateMatch[0], '').trim();
+            }
+
+            let challengePeriodStr = null;
+            if (t.type === 'challenge') {
+                const startM = rawNote.match(/Start:\s*([\d-]+)/);
+                const endM = rawNote.match(/End:\s*([\d-]+)/);
+                if (startM && endM) challengePeriodStr = `${startM[1]} ➔ ${endM[1]}`;
+                const parts = rawNote.split('|');
+                rawNote = parts.length > 2 ? parts[2].trim() : '';
+            }
+
+            if (!rawNote || rawNote === '-') rawNote = 'لا توجد ملاحظات إضافية';
+
+            let walletDisplay = '💵 كاش';
+            if (t.wallet === 'بريدي موب') walletDisplay = '💳 بريدي موب';
+            else if (t.wallet === 'RedotPay') walletDisplay = '🪙 RedotPay';
+
+            let rowsHtml = `
+                <div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">التاريخ</span><span class="font-mono font-bold text-apple-main" dir="ltr">${dateOnly}</span></div>
+                <div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">الوقت</span><span class="font-mono font-bold text-apple-main" dir="ltr">${timeOnly}</span></div>
+                <div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">المحفظة</span><span class="font-bold text-apple-main">${walletDisplay}</span></div>
+            `;
+
+            if (t.minutes) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">المدة المسجلة</span><span class="font-bold text-apple-main">${t.minutes} دقيقة</span></div>`;
+            }
+            if (t.days) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">عدد الأيام</span><span class="font-bold text-apple-main">${t.days} يوم</span></div>`;
+            }
+            if (exchangeRateStr) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">سعر الصرف</span><span class="font-bold text-teal-400" dir="ltr">1$ = ${exchangeRateStr} د.ج</span></div>`;
+            }
+            if (challengePeriodStr) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">فترة التحدي</span><span class="font-mono font-bold text-pink-400" dir="ltr">${challengePeriodStr}</span></div>`;
+            }
+            if (dueDateStr) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">تاريخ الاستحقاق</span><span class="font-mono font-bold text-red-400 bg-red-500/15 border border-red-500/30 px-2 py-0.5 rounded-md" dir="ltr">${dueDateStr}</span></div>`;
+            }
+            if (hasAttachment) {
+                rowsHtml += `<div class="flex justify-between items-center"><span class="text-apple-muted font-semibold">الإثبات</span><span class="font-bold text-sky-400 flex items-center gap-1"><i class="ph-bold ph-paperclip"></i> وصل محفوظ في تيليجرام</span></div>`;
+            }
+
+            document.getElementById('receiptDetailsList').innerHTML = rowsHtml;
+            document.getElementById('receiptFullNote').innerText = rawNote;
+
+            applyReceiptPrivacyVisual();
+
+            const modal = document.getElementById('receiptModal');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            document.getElementById('receiptModalContent').classList.add('modal-enter-active');
+        }
+
+        window.closeReceiptModal = function() {
+            document.getElementById('receiptModalContent').classList.remove('modal-enter-active');
+            setTimeout(() => document.getElementById('receiptModal').classList.add('hidden'), 300);
+        }
+
+        // --- 🌟 دوال نافذة سقف المصاريف الشهري (Smart Budget Modal) ---
+        window.openBudgetModal = function() {
+            const config = getSpendingLimitConfig();
+            const delBtn = document.getElementById('budgetDeleteBtn');
+
+            if (config) {
+                setBudgetMode(config.mode);
+                document.getElementById('budgetValueInput').value = config.value;
+                delBtn.classList.remove('hidden');
+                delBtn.classList.add('flex');
+            } else {
+                setBudgetMode('fixed');
+                document.getElementById('budgetValueInput').value = '';
+                delBtn.classList.add('hidden');
+                delBtn.classList.remove('flex');
+            }
+            updateBudgetPreview();
+
+            const modal = document.getElementById('budgetModal');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            document.getElementById('budgetModalContent').classList.add('modal-enter-active');
+        }
+
+        window.closeBudgetModal = function() {
+            document.getElementById('budgetModalContent').classList.remove('modal-enter-active');
+            setTimeout(() => document.getElementById('budgetModal').classList.add('hidden'), 300);
+        }
+
+        window.setBudgetMode = function(mode) {
+            document.getElementById('budgetModeInput').value = mode;
+            document.querySelectorAll('.budget-mode-btn').forEach(b => {
+                b.classList.remove('bg-white/10', 'text-apple-main');
+                b.classList.add('text-gray-400');
+            });
+            const active = document.querySelector(`.budget-mode-btn[data-mode="${mode}"]`);
+            if (active) {
+                active.classList.remove('text-gray-400');
+                active.classList.add('bg-white/10', 'text-apple-main');
+            }
+
+            const label = document.getElementById('budgetValueLabel');
+            const input = document.getElementById('budgetValueInput');
+            const presets = document.getElementById('budgetPercentPresets');
+
+            if (mode === 'percent') {
+                label.innerText = 'النسبة من الراتب الأساسي (%)';
+                input.placeholder = 'مثال: 50';
+                presets.classList.remove('hidden');
+                presets.classList.add('flex');
+            } else {
+                label.innerText = 'الحد الأقصى للمصاريف (د.ج)';
+                input.placeholder = 'مثال: 15000';
+                presets.classList.add('hidden');
+                presets.classList.remove('flex');
+            }
+            updateBudgetPreview();
+        }
+
+        window.applyBudgetPreset = function(pct) {
+            document.getElementById('budgetValueInput').value = pct;
+            updateBudgetPreview();
+        }
+
+        window.updateBudgetPreview = function() {
+            const mode = document.getElementById('budgetModeInput').value;
+            const val = getParsedAmount('budgetValueInput');
+            const preview = document.getElementById('budgetLivePreview');
+
+            if (!val || val <= 0) {
+                preview.innerText = '0 د.ج';
+                return;
+            }
+            if (mode === 'percent') {
+                if (currentActiveSalaryCache <= 0) {
+                    preview.innerText = `${val}% (أضف راتب أساسي)`;
+                } else {
+                    const dzd = cleanDecimal((currentActiveSalaryCache * val) / 100);
+                    preview.innerText = `${formatExactDzd(dzd)} د.ج (${val}%)`;
+                }
+            } else {
+                preview.innerText = `${formatExactDzd(val)} د.ج`;
+            }
+        }
+
+        window.handleBudgetSubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('budgetSubmitBtn');
+            const mode = document.getElementById('budgetModeInput').value;
+            const val = cleanDecimal(getParsedAmount('budgetValueInput'));
+
+            if (isNaN(val) || val <= 0) {
+                showToast("تنبيه", "الرجاء إدخال قيمة صحيحة أكبر من صفر", "error");
+                return;
+            }
+            if (mode === 'percent' && val > 100) {
+                showToast("تنبيه", "النسبة المئوية يجب أن تكون بين 1 و 100%", "error");
+                return;
+            }
+
+            const existing = getSpendingLimitConfig();
+            const noteVal = `LIMIT_MODE:${mode}`;
+
+            try {
+                await liquidAction(btn, async () => {
+                    if (existing) {
+                        const payload = {
+                            pin: sessionPin,
+                            action: "edit_entry",
+                            page_id: existing.id,
+                            amount: val,
+                            wallet: "إعدادات",
+                            notes: noteVal,
+                            type: "معلومة"
+                        };
+                        const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                        const json = await res.json();
+                        if (json.status !== "success") throw new Error(json.message || "فشل تحديث السقف");
+                        const target = allTransactions.find(t => t.id === existing.id);
+                        if (target) {
+                            target.amount = val;
+                            target.note = noteVal;
+                            target.exactTimestamp = new Date().toISOString();
+                        }
+                    } else {
+                        const payload = {
+                            pin: sessionPin,
+                            title: "🎯 سقف المصاريف",
+                            type: "معلومة",
+                            amount: val,
+                            wallet: "إعدادات",
+                            notes: noteVal,
+                            date: new Date().toISOString(),
+                            status: "مكتمل"
+                        };
+                        const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                        const json = await res.json();
+                        if (json.status !== "success") throw new Error(json.message || "فشل حفظ السقف");
+                        allTransactions.unshift({
+                            id: json.response.id,
+                            type: 'spending_limit',
+                            amount: val,
+                            wallet: "إعدادات",
+                            note: noteVal,
+                            exactTimestamp: new Date().toISOString(),
+                            status: "مكتمل"
+                        });
+                    }
+                }, "جاري الحفظ في Notion...");
+
+                closeBudgetModal();
+                renderDashboard(false);
+                showToast("تم الحفظ", "تم تفعيل سقف المصاريف ومزامنته سحابياً", "success");
+            } catch (err) {
+                showToast("خطأ", err.message, "error");
+            }
+        }
+
+        window.deleteBudgetLimit = async function(btnElement) {
+            const existing = getSpendingLimitConfig();
+            if (!existing) return;
+            if (!confirm("هل تريد إلغاء سقف المصاريف الشهري؟")) return;
+
+            try {
+                await liquidAction(btnElement, async () => {
+                    const payload = { pin: sessionPin, action: "delete_entry", page_id: existing.id };
+                    const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+                    const json = await res.json();
+                    if (json.status !== "success") throw new Error("فشل إلغاء السقف");
+                    allTransactions = allTransactions.filter(t => t.type !== 'spending_limit');
+                }, "جاري الإلغاء...");
+
+                closeBudgetModal();
+                renderDashboard(false);
+                showToast("تم الإلغاء", "تم إيقاف سقف المصاريف الشهري", "info");
+            } catch (err) {
+                showToast("خطأ", err.message, "error");
             }
         }
 
@@ -920,7 +1444,6 @@
                 document.getElementById('editWalletSelect').value = txn.wallet || 'كاش';
             }
 
-            // تفكيك الملاحظة بذكاء لحفظ الوسوم البرمجية المخفية دون ضياعها
             let rawNote = txn.note || "";
             editPreservedMeta = { prefix: "", hasAttachment: false };
 
@@ -985,7 +1508,6 @@
                     let rawAmt = getParsedAmount('editAmountInput');
                     if (isNaN(rawAmt) || rawAmt === 0) throw new Error("الرجاء إدخال مبلغ صحيح");
 
-                    // الحفاظ على الإشارة الصحيحة حسب نوع العملية لضمان دقة الحسابات
                     const negativeTypes = ['absence', 'lateness'];
                     const negativeSubTypes = ['expense', 'debt', 'work_penalty', 'res_penalty'];
                     let finalAmount = rawAmt;
@@ -1037,7 +1559,6 @@
                     const result = await response.json();
                     if (result.status !== "success") throw new Error(result.message || "فشل تحديث العملية في السيرفر");
 
-                    // تحديث البيانات محلياً
                     txn.amount = finalAmount;
                     txn.wallet = newWallet;
                     txn.note = finalNote;
@@ -1196,6 +1717,73 @@
             applyFilters(false); 
         }
 
+        function renderBudgetRadar(monthExpenses, activeBaseSalary, daysInMonth, today, isCurrentRealMonth) {
+            const card = document.getElementById('expensesCard');
+            const container = document.getElementById('budgetStatusContainer');
+            const subtitle = document.getElementById('expensesSubtitle');
+            card.classList.remove('budget-warn-card', 'budget-over-card');
+
+            const config = getSpendingLimitConfig();
+            const eff = computeEffectiveLimit(config, activeBaseSalary);
+
+            if (!eff || eff.limitDzd <= 0) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                subtitle.innerText = 'مصاريف وديون سُددت';
+                return;
+            }
+
+            const limitDzd = eff.limitDzd;
+            const rawPct = (monthExpenses / limitDzd) * 100;
+            const clampedPct = Math.min(rawPct, 100);
+            const remaining = cleanDecimal(limitDzd - monthExpenses);
+            const blurCls = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm';
+            const clickAttr = isPrivacyRevealed ? '' : `onclick="togglePrivacy()"`;
+
+            let barColor = 'from-sky-400 to-green-400';
+            let statusTextColor = 'text-green-400';
+            let statusLine = '';
+
+            if (rawPct >= 100) {
+                card.classList.add('budget-over-card');
+                barColor = 'from-red-500 to-rose-600';
+                statusTextColor = 'text-red-400';
+                const overAmt = Math.abs(remaining);
+                statusLine = `<span class="text-red-400 font-bold">⚠️ تجاوز: <span class="${blurCls}" ${clickAttr} dir="ltr">${formatExactDzd(overAmt)}</span> د.ج</span>`;
+            } else if (rawPct >= 70) {
+                card.classList.add('budget-warn-card');
+                barColor = 'from-yellow-400 to-orange-500';
+                statusTextColor = 'text-orange-400';
+                statusLine = `<span class="text-orange-400 font-bold">متبقي: <span class="${blurCls}" ${clickAttr} dir="ltr">${formatExactDzd(remaining)}</span> د.ج</span>`;
+            } else {
+                statusLine = `<span class="text-apple-muted font-semibold">متبقي: <span class="${blurCls} text-apple-main" ${clickAttr} dir="ltr">${formatExactDzd(remaining)}</span> د.ج</span>`;
+            }
+
+            let dailySafeHtml = '';
+            if (isCurrentRealMonth && remaining > 0) {
+                const daysLeftInMonth = Math.max(1, daysInMonth - today.getDate() + 1);
+                const dailySafe = cleanDecimal(remaining / daysLeftInMonth);
+                dailySafeHtml = `<div class="mt-1 text-[9px] md:text-[10px] text-sky-400 font-semibold flex justify-between items-center">
+                    <span>المسموح يومياً:</span>
+                    <span class="${blurCls}" ${clickAttr} dir="ltr">${formatExactDzd(dailySafe)} د.ج/يوم</span>
+                </div>`;
+            }
+
+            subtitle.innerHTML = `السقف: <span class="${blurCls}" ${clickAttr} dir="ltr">${formatExactDzd(limitDzd)} د.ج</span>${eff.mode === 'percent' ? ` (${eff.value}%)` : ''}`;
+
+            container.innerHTML = `
+                <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden mb-1.5">
+                    <div class="bg-gradient-to-r ${barColor} h-full rounded-full transition-all duration-700" style="width: ${clampedPct.toFixed(1)}%"></div>
+                </div>
+                <div class="flex justify-between items-center text-[9px] md:text-[10px] gap-1">
+                    ${statusLine}
+                    <span class="font-mono font-bold ${statusTextColor}" dir="ltr">${rawPct.toFixed(0)}%</span>
+                </div>
+                ${dailySafeHtml}
+            `;
+            container.classList.remove('hidden');
+        }
+
         function renderDashboard(shouldAnimate = false) {
             let activeBaseSalary = 0, accruedBaseSalary = 0, pendingReceivables = 0, pendingDebts = 0;
             let monthIncomes = 0, monthExpenses = 0, monthAbsenceDays = 0, monthAbsenceMoney = 0;
@@ -1209,8 +1797,14 @@
 
             let targetYear = parseInt(currentFilterMonth.split('-')[0]); let targetMonth = parseInt(currentFilterMonth.split('-')[1]); let targetMonthEnd = new Date(targetYear, targetMonth, 0, 23, 59, 59); 
             activeBaseSalary = getActiveSalaryForDate(targetMonthEnd);
+            currentActiveSalaryCache = activeBaseSalary;
+
             let daysInMonth = new Date(targetYear, targetMonth, 0).getDate(); let dailyRate = activeBaseSalary / daysInMonth;
             let today = new Date(), currentYear = today.getFullYear(), currentRealMonth = today.getMonth() + 1, daysPassed = 0;
+            const realMonthStr = getRealCurrentMonthStr();
+            const isCurrentRealMonth = (currentFilterMonth === realMonthStr);
+            realCurrentMonthSalaryCache = getActiveSalaryForDate(today);
+            realCurrentMonthExpensesCache = 0;
             
             if (targetYear < currentYear || (targetYear === currentYear && targetMonth < currentRealMonth)) { 
                 daysPassed = daysInMonth; 
@@ -1246,12 +1840,18 @@
             }
 
             allTransactions.forEach(t => {
-                if (t.type === 'time_tracker') return;
+                // إقصاء كناش الدقائق وسقف المصاريف تماماً عن الحسابات والجدول
+                if (t.type === 'time_tracker' || t.type === 'spending_limit') return;
                 const tDate = new Date(t.exactTimestamp); const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
                 const safeNote = t.note || '';
                 
                 if (t.type !== 'salary_update' && t.type !== 'challenge' && (t.status === 'مكتمل' || t.status === undefined)) {
                     let w = t.wallet || 'كاش'; if (balances[w] !== undefined) balances[w] += t.amount; else balances['كاش'] += t.amount;
+                }
+
+                // احتساب مصاريف الشهر الحالي الفعلي للتنبيه الاستباقي في نافذة الإضافة
+                if (tMonthStr === realMonthStr && t.type === 'personal' && t.amount < 0 && (t.status === 'مكتمل' || t.status === undefined)) {
+                    realCurrentMonthExpensesCache += Math.abs(t.amount);
                 }
 
                 if (tMonthStr === currentFilterMonth) {
@@ -1321,7 +1921,6 @@
                     filteredCount++; 
                     tableBody.appendChild(createTableRow(t)); 
 
-                    // حساب المجموع الصافي للنتائج المفلترة (باستثناء تحديث الراتب والتحديات إلا إذا تم اختيارها تحديداً)
                     const includeInSum = (t.type !== 'salary_update' && t.type !== 'challenge') || (tableTypeVal === 'salary_update' || tableTypeVal === 'challenge');
                     if (includeInSum) {
                         if (t.wallet === 'RedotPay') {
@@ -1345,7 +1944,6 @@
             document.getElementById('privacyIcon1').className = `ph-fill ${eyeIconClass} text-lg`; document.getElementById('privacyIcon2').className = `ph-fill ${eyeIconClass} text-lg`;
             document.getElementById('recordCountBadge').innerText = `${filteredCount} عمليات`;
 
-            // 🌟 تحديث شارة المجموع الصافي الذكي لنتائج البحث والفلاتر
             const sumBadge = document.getElementById('filteredSumBadge');
             if (isAnyTableFilterActive && filteredCount > 0 && (hasDzdFiltered || hasUsdtFiltered)) {
                 let parts = [];
@@ -1392,6 +1990,9 @@
             animateValue("monthBonuses", monthBonuses, 'text-yellow-400', false, true, shouldAnimate);
             document.getElementById("monthOvertimeMinutes").innerHTML = `<span class="${generalBlurClass}">${monthOvertimeMinutes}</span>`;
 
+            // 🌟 تحديث رادار سقف المصاريف في بطاقة المصاريف
+            renderBudgetRadar(monthExpenses, activeBaseSalary, daysInMonth, today, isCurrentRealMonth);
+
             if (isPrivacyRevealed) {
                 saveLastSeenValues({
                     totalBalance: finalBalance,
@@ -1421,7 +2022,7 @@
                     let chalAccruedSalary = Math.round(chalDailyRate * passedChalDays); let chalOpsSum = 0;
                     allTransactions.forEach(t => {
                         let tDate = new Date(t.exactTimestamp); let limitDate = today > endDate ? endDate : today; 
-                        if (t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'time_tracker' && (t.status === 'مكتمل' || t.status === undefined)) {
+                        if (t.type !== 'salary_update' && t.type !== 'challenge' && t.type !== 'time_tracker' && t.type !== 'spending_limit' && (t.status === 'مكتمل' || t.status === undefined)) {
                             if (tDate >= startDate && tDate <= limitDate) { chalOpsSum += t.amount; }
                         }
                     });
@@ -1455,33 +2056,16 @@
             let isPending = (t.status === 'قيد الانتظار'); let rowBgColor = 'glass-row';
             
             if(isPending) {
-                if(t.amount > 0) { rowBgColor = 'bg-orange-500/10 border-l-4 border-orange-500'; } 
-                else { rowBgColor = 'bg-red-500/10 border-l-4 border-red-500'; }
-            } else if (t.type === 'challenge') { rowBgColor = 'bg-pink-500/10 border-l-4 border-pink-500'; }
-            tr.className = `${rowBgColor}`;
-            const dateObj = new Date(t.exactTimestamp); const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB');
-            let typeLabel = '', typeColor = '', icon = '';
+                if(t.amount > 0) { rowBgColor = 'bg-orange-500/10 border-l-4 border-orange-500 hover:bg-orange-500/15 transition-colors'; } 
+                else { rowBgColor = 'bg-red-500/10 border-l-4 border-red-500 hover:bg-red-500/15 transition-colors'; }
+            } else if (t.type === 'challenge') { rowBgColor = 'bg-pink-500/10 border-l-4 border-pink-500 hover:bg-pink-500/15 transition-colors'; }
+            tr.className = `${rowBgColor} cursor-pointer`;
+            tr.title = "اضغط لعرض بطاقة تفاصيل العملية";
+            tr.onclick = () => window.openReceiptModal(t.id);
 
-            switch(t.type) {
-                case 'opening_balance': typeLabel = `رصيد افتتاحي`; typeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30'; icon = 'ph-money'; break;
-                case 'challenge': typeLabel = `تحدي مالي`; typeColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; icon = 'ph-target'; break;
-                case 'salary_update': typeLabel = `تحديث الراتب`; typeColor = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'; icon = 'ph-bank'; break;
-                case 'absence': typeLabel = `غياب (${t.days} ي)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-user-minus'; break;
-                case 'overtime': typeLabel = `إضافي (${t.minutes}د)`; typeColor = 'bg-green-500/20 text-green-400 border-green-500/30'; icon = 'ph-timer'; break;
-                case 'lateness': typeLabel = `تأخر (${t.minutes}د)`; typeColor = 'bg-red-500/20 text-red-400 border-red-500/30'; icon = 'ph-clock-countdown'; break;
-                case 'exchange': typeLabel = t.amount > 0 ? `استلام USDT` : `شراء USDT`; typeColor = 'bg-teal-500/20 text-teal-400 border-teal-500/30'; icon = 'ph-currency-circle-dollar'; break;
-                case 'company_rule':
-                    if (t.subType === 'work_penalty') { typeLabel = 'مخالفة عمل'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-warning-circle'; }
-                    else if (t.subType === 'res_penalty') { typeLabel = 'مخالفة إقامة'; typeColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; icon = 'ph-house-line'; }
-                    else if (t.subType === 'work_bonus') { typeLabel = 'مبادرة عمل'; typeColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'; icon = 'ph-star'; }
-                    else if (t.subType === 'res_bonus') { typeLabel = 'مبادرة إقامة'; typeColor = 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'; icon = 'ph-house-line'; }
-                    break;
-                case 'personal':
-                    if (t.subType === 'income') { typeLabel = 'مدخول'; typeColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30'; icon = 'ph-wallet'; }
-                    else if (t.subType === 'expense') { typeLabel = 'مصروف'; typeColor = 'bg-white/10 text-gray-300 border-white/20'; icon = 'ph-shopping-cart'; }
-                    else if (t.subType === 'debt') { typeLabel = 'دين'; typeColor = 'bg-purple-500/20 text-purple-400 border-purple-500/30'; icon = 'ph-hand-coins'; }
-                    break;
-            }
+            const dateObj = new Date(t.exactTimestamp); const dateStr = dateObj.toLocaleDateString('en-GB') + ' ' + dateObj.toLocaleTimeString('en-GB');
+            const meta = getTransactionVisualMeta(t);
+            let typeLabel = meta.label, typeColor = meta.badge, icon = meta.icon;
 
             let walletIcon = '';
             if(t.wallet === 'بريدي موب') walletIcon = '<i class="ph-fill ph-credit-card text-indigo-400" title="بريدي موب"></i>'; else if(t.wallet === 'RedotPay') walletIcon = '<i class="ph-fill ph-coin text-teal-400" title="RedotPay"></i>'; else walletIcon = '<i class="ph-fill ph-money text-green-400" title="كاش"></i>';
@@ -1492,8 +2076,8 @@
             let amtColor = (t.type === 'salary_update' || t.type === 'opening_balance') ? 'text-indigo-400' : (t.type === 'challenge' ? 'text-pink-400' : (t.amount > 0 ? 'text-green-400' : (t.amount < 0 ? 'text-red-400' : 'text-gray-400')));
             if(isPending) { amtColor = t.amount > 0 ? 'text-orange-400' : 'text-red-400'; }
 
-            let tableBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300 cursor-pointer hover:blur-sm'; let tableClick = isPrivacyRevealed ? '' : `onclick="togglePrivacy()" title="انقر لكشف الأرقام"`;
-            let formattedAmtStr = `<span class="inline-block ${tableBlur}" ${tableClick} dir="ltr">${amtStr}</span> <span class="text-[10px] font-semibold text-apple-muted">${amtCurrency}</span>`;
+            let tableBlur = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
+            let formattedAmtStr = `<span class="inline-block ${tableBlur}" dir="ltr">${amtStr}</span> <span class="text-[10px] font-semibold text-apple-muted">${amtCurrency}</span>`;
 
             let pendingBadge = '';
             if (isPending) {
@@ -1504,11 +2088,10 @@
             let actionButtons = '';
             if (isPending) {
                 let checkTitle = t.amount > 0 ? "تم القبض" : "تم التسديد";
-                actionButtons += `<button onclick="window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 bg-green-500/20 border border-green-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="${checkTitle}"><i class="ph-bold ph-check text-lg"></i></button>`;
+                actionButtons += `<button onclick="event.stopPropagation(); window.markAsPaid('${t.id}', this)" class="relative text-green-400 hover:text-green-300 bg-green-500/20 border border-green-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="${checkTitle}"><i class="ph-bold ph-check text-lg"></i></button>`;
             }
-            // زر تعديل العملية الجديد ✏️
-            actionButtons += `<button onclick="window.openEditModal('${t.id}')" class="relative text-sky-400 hover:text-sky-300 bg-sky-500/20 border border-sky-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="تعديل العملية"><i class="ph-bold ph-pencil-simple text-lg"></i></button>`;
-            actionButtons += `<button onclick="window.deleteEntry('${t.id}', this)" class="relative text-red-400 hover:text-red-300 bg-red-500/20 border border-red-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="حذف نهائي"><i class="ph-bold ph-trash text-lg"></i></button>`;
+            actionButtons += `<button onclick="event.stopPropagation(); window.openEditModal('${t.id}')" class="relative text-sky-400 hover:text-sky-300 bg-sky-500/20 border border-sky-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="تعديل العملية"><i class="ph-bold ph-pencil-simple text-lg"></i></button>`;
+            actionButtons += `<button onclick="event.stopPropagation(); window.deleteEntry('${t.id}', this)" class="relative text-red-400 hover:text-red-300 bg-red-500/20 border border-red-500/30 p-1.5 rounded-lg overflow-hidden transition-all shadow-sm" title="حذف نهائي"><i class="ph-bold ph-trash text-lg"></i></button>`;
 
             let dispNote = t.note || '-';
             if (dispNote.includes("[📎 مرفق]")) { dispNote = dispNote.replace("[📎 مرفق]", `<span class="inline-flex items-center gap-1 bg-sky-500/20 border border-sky-500/30 text-sky-400 px-1.5 py-0.5 rounded-md text-[10px] mr-2 font-bold shadow-sm" title="الوصل مرفق في تيليجرام"><i class="ph-bold ph-paperclip"></i> وصل مرفق</span>`); }
@@ -1633,12 +2216,50 @@
             document.getElementById('statusInput').value = val; document.querySelectorAll('.status-btn').forEach(b => { b.classList.remove('bg-sky-500/20', 'border-sky-500/30', 'text-sky-400'); b.classList.add('bg-black/40', 'border-white/10', 'text-gray-400'); });
             const activeBtn = document.querySelector(`.status-btn[data-val="${val}"]`); activeBtn.classList.remove('bg-black/40', 'border-white/10', 'text-gray-400'); activeBtn.classList.add('bg-sky-500/20', 'border-sky-500/30', 'text-sky-400');
             checkDueDateVisibility();
+            calculateAmount();
         }
 
         function checkDueDateVisibility() {
             let status = document.getElementById('statusInput').value; let type = document.getElementById('entryType').value; let pType = document.getElementById('personalTypeInput').value; let dueDateField = document.getElementById('dueDateField');
             if (type === 'personal' && (status === 'قيد الانتظار' || pType === 'debt')) { dueDateField.classList.remove('hidden'); } 
             else { dueDateField.classList.add('hidden'); document.getElementById('dueDateInput').value = ''; }
+        }
+
+        function updateProactiveBudgetWarning(type) {
+            const warnEl = document.getElementById('budgetProactiveWarning');
+            if (!warnEl) return;
+
+            const subType = document.getElementById('personalTypeInput').value;
+            const status = document.getElementById('statusInput').value;
+            const isSpendingAction = (type === 'personal') && (subType === 'expense' || (subType === 'debt' && status === 'مكتمل'));
+            const amt = Math.abs(getParsedAmount('amountInput'));
+
+            if (!isSpendingAction || amt <= 0) {
+                warnEl.classList.add('hidden');
+                return;
+            }
+
+            const config = getSpendingLimitConfig();
+            const eff = computeEffectiveLimit(config, realCurrentMonthSalaryCache);
+            if (!eff || eff.limitDzd <= 0) {
+                warnEl.classList.add('hidden');
+                return;
+            }
+
+            const projected = cleanDecimal(realCurrentMonthExpensesCache + amt);
+            const pct = (projected / eff.limitDzd) * 100;
+
+            if (projected > eff.limitDzd) {
+                const over = cleanDecimal(projected - eff.limitDzd);
+                warnEl.className = 'mb-4 p-3 rounded-xl border border-red-500/40 bg-red-500/15 text-red-300 text-xs font-bold flex items-start gap-2 leading-relaxed';
+                warnEl.innerHTML = `<i class="ph-fill ph-warning-octagon text-red-400 text-lg shrink-0 mt-0.5"></i><span>تنبيه: بهذا المصروف ستتجاوز سقف هذا الشهر بـ <span dir="ltr">${formatExactDzd(over)} د.ج</span> (${pct.toFixed(0)}%)!</span>`;
+            } else if (pct >= 80) {
+                const rem = cleanDecimal(eff.limitDzd - projected);
+                warnEl.className = 'mb-4 p-3 rounded-xl border border-orange-500/40 bg-orange-500/15 text-orange-300 text-xs font-bold flex items-start gap-2 leading-relaxed';
+                warnEl.innerHTML = `<i class="ph-fill ph-warning text-orange-400 text-lg shrink-0 mt-0.5"></i><span>تنبيه: ستصل إلى ${pct.toFixed(0)}% من سقف الشهر (المتبقي بعدها: <span dir="ltr">${formatExactDzd(rem)} د.ج</span>).</span>`;
+            } else {
+                warnEl.classList.add('hidden');
+            }
         }
 
         window.calculateAmount = function() {
@@ -1658,6 +2279,7 @@
                 if (subType === 'income') { finalStr = amt >= 0 ? `+${amt}` : `${amt}`; colorClass = amt >= 0 ? "text-green-400" : "text-red-400"; } else { finalStr = `-${Math.abs(amt)}`; colorClass = "text-red-400"; }
             }
             const preview = document.getElementById('calculatedPreview'); preview.innerText = finalStr; preview.className = `text-xl font-bold dir-ltr ${colorClass}`;
+            updateProactiveBudgetWarning(type);
         }
     </script>
 </body>
