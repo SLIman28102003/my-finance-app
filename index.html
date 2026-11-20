@@ -136,8 +136,8 @@
         input[type="range"].apple-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: #ffffff;
             border: 3px solid #a855f7;
@@ -189,11 +189,9 @@
             </div>
             
             <div class="flex items-center gap-2.5">
-                <!-- زر آلة الزمن المالية -->
                 <button onclick="openTimeMachineModal()" class="hidden md:flex btn-apple bg-purple-500/15 border border-purple-500/30 shadow-none hover:bg-purple-500/25 px-4 py-2.5 items-center gap-2">
                     <i class="ph-fill ph-sparkle text-lg text-purple-400"></i><span class="text-purple-200 text-sm">آلة الزمن</span>
                 </button>
-                <!-- زر غرفة التبريد 48 ساعة -->
                 <button onclick="openCoolingModal()" class="hidden md:flex relative btn-apple bg-cyan-500/15 border border-cyan-500/30 shadow-none hover:bg-cyan-500/25 px-4 py-2.5 items-center gap-2">
                     <i class="ph-fill ph-snowflake text-lg text-cyan-400"></i><span class="text-cyan-200 text-sm">التبريد</span>
                     <span id="navCoolingBadge" class="hidden absolute -top-1.5 -left-1.5 min-w-[20px] h-5 px-1 rounded-full bg-cyan-400 text-black text-[10px] font-extrabold flex items-center justify-center shadow-md">0</span>
@@ -270,7 +268,6 @@
                             <span class="text-sm font-bold text-indigo-400" id="accruedBaseSalary" dir="ltr">0 د.ج</span>
                         </div>
 
-                        <!-- ⚡ شريط نبض اليومية الحي -->
                         <div id="liveShiftTickerBox" class="hidden bg-black/50 border border-white/10 p-3.5 rounded-xl transition-all">
                             <div class="flex justify-between items-center mb-2 gap-2">
                                 <span id="liveShiftStatusText" class="text-[11px] font-bold flex items-center gap-2 text-green-400"></span>
@@ -297,7 +294,6 @@
                 <p class="text-[9px] md:text-[10px] font-semibold text-apple-muted">شامل الراتب المحسوب</p>
             </div>
 
-            <!-- بطاقة المصاريف الشهرية + رادار سقف المصاريف الذكي -->
             <div id="expensesCard" class="glass-card p-4 md:p-5 relative overflow-hidden flex flex-col justify-center text-center md:text-right">
                 <button type="button" onclick="openBudgetModal()" class="absolute top-3 left-3 text-apple-muted hover:text-white bg-white/5 hover:bg-white/15 border border-white/10 p-1.5 rounded-full transition-all z-10" title="إعداد سقف المصاريف الشهري">
                     <i class="ph-bold ph-gear text-sm"></i>
@@ -339,7 +335,6 @@
                 </div>
             </div>
             
-            <!-- شريط البحث والفلاتر الذكي -->
             <div class="px-6 py-4 border-b border-white/10 bg-black/40 flex flex-col gap-4">
                 <div class="relative w-full">
                     <i class="ph-bold ph-magnifying-glass absolute right-4 top-1/2 transform -translate-y-1/2 text-apple-muted text-lg pointer-events-none"></i>
@@ -406,7 +401,7 @@
         </div>
     </main>
 
-    <!-- الأزرار العائمة في الهاتف (Smart FAB Menu المرقّاة) -->
+    <!-- الأزرار العائمة في الهاتف (Smart FAB Menu) -->
     <div class="md:hidden fixed bottom-8 left-6 z-40 flex flex-col items-end gap-3">
         <div id="fabMenu" class="fab-menu hidden-menu flex flex-col gap-2.5 w-max items-end mb-1">
             <button onclick="toggleFabMenu(); openTimeMachineModal();" class="flex items-center gap-3 bg-[#1c1c1e] border border-purple-500/30 rounded-2xl px-4 py-2.5 shadow-xl hover:bg-gray-800 transition-colors">
@@ -457,10 +452,10 @@
         </div>
     </div>
 
-    <!-- 🔮 نافذة آلة الزمن المالية (What-If Financial Time Machine Modal) -->
+    <!-- 🔮 نافذة آلة الزمن المبسّطة (نسخة المؤشر الواحد الخفيفة) -->
     <div id="timeMachineModal" class="fixed inset-0 z-[60] flex items-center justify-center hidden p-4">
         <div class="absolute inset-0 bg-black/85 backdrop-blur-md" onclick="closeTimeMachineModal()"></div>
-        <div class="relative glass-card w-full max-w-lg p-7 modal-enter max-h-[90vh] overflow-y-auto bg-[#17161c] border border-purple-500/25" id="timeMachineContent">
+        <div class="relative glass-card w-full max-w-md p-7 modal-enter max-h-[90vh] overflow-y-auto bg-[#17161c] border border-purple-500/25" id="timeMachineContent">
             <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10 sticky top-0 bg-[#17161c]/95 backdrop-blur-md z-10">
                 <h3 class="text-xl font-bold text-apple-main flex items-center gap-2">
                     <i class="ph-fill ph-sparkle text-purple-400 text-2xl"></i> آلة الزمن المالية
@@ -471,71 +466,56 @@
             </div>
 
             <p class="text-[11px] text-purple-300/80 mb-5 flex items-center gap-1.5">
-                <i class="ph-fill ph-shield-check text-purple-400"></i> محاكاة افتراضية فقط — لا تغيّر شيئاً في Notion ولا في أرصدتك الحقيقية.
+                <i class="ph-fill ph-shield-check text-purple-400"></i> محاكاة سريعة فقط — لا تغيّر شيئاً في حساباتك.
             </p>
 
-            <!-- شاشة النتيجة المستقبلية -->
-            <div class="bg-gradient-to-br from-purple-500/15 via-black/60 to-sky-500/10 border border-purple-500/30 rounded-2xl p-5 mb-5 text-center">
-                <p class="text-xs font-bold text-purple-300 mb-1" id="tmTargetDateLabel">الرصيد المتوقع بعد 6 أشهر</p>
-                <h4 id="tmProjectedBalance" class="text-4xl font-extrabold tracking-tight my-2 neon-glow-neutral" dir="ltr">0 د.ج</h4>
-                <div class="flex justify-center items-center gap-3 text-[11px] font-bold mt-2 flex-wrap">
-                    <span class="bg-black/40 border border-white/10 px-3 py-1 rounded-full text-apple-muted">
-                        صافي التوفير الشهري: <span id="tmMonthlyNet" class="text-apple-main" dir="ltr">0 د.ج</span>
-                    </span>
+            <!-- 1. المؤشر الوحيد: شحال تقدر تخبّي في الشهر؟ -->
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 mb-4">
+                <div class="flex justify-between items-center mb-3 gap-2">
+                    <label class="text-xs font-bold text-apple-main">شحال تقدر تخبّي في الشهر؟</label>
+                    <span id="tmSavingVal" class="text-sm font-extrabold text-purple-300 bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-full" dir="ltr">20,000 د.ج</span>
+                </div>
+                <input type="range" id="tmSavingSlider" dir="ltr" min="1000" max="100000" value="20000" step="1000" class="apple-slider" oninput="updateTimeMachine()">
+                <div class="flex justify-between text-[10px] text-apple-muted font-mono mt-1.5" dir="ltr">
+                    <span>1,000 د.ج</span>
+                    <span id="tmSliderMaxLabel">100,000 د.ج</span>
                 </div>
             </div>
 
-            <!-- مؤشرات موعد الرجوع للأخضر والهدف -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                <div class="bg-black/40 border border-white/10 rounded-xl p-3.5">
-                    <p class="text-[10px] font-bold text-apple-muted mb-1 flex items-center gap-1"><i class="ph-fill ph-trend-up text-green-400"></i> موعد العودة للأخضر (0 د.ج)</p>
-                    <p id="tmBreakEvenInfo" class="text-xs font-extrabold text-green-400">-</p>
+            <!-- 2. خانة وحدة للهدف المالي -->
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-apple-muted mb-1.5">هدف مالي حاب توصلو (اختياري)</label>
+                <input type="number" id="tmGoalInput" dir="ltr" min="0" step="5000" class="glass-input w-full px-4 py-3 text-base font-bold" placeholder="مثال: 200000" oninput="updateTimeMachine()">
+            </div>
+
+            <!-- 3. الأجوبة المباشرة -->
+            <div class="flex flex-col gap-3 mb-4">
+                <div class="bg-gradient-to-l from-green-500/15 to-black/50 border border-green-500/30 rounded-2xl p-4">
+                    <p class="text-[11px] font-bold text-apple-muted mb-1 flex items-center gap-1.5">
+                        <i class="ph-fill ph-trend-up text-green-400 text-base"></i>
+                        <span id="tmBreakEvenTitle">موعد الرجوع للأخضر (0 د.ج)</span>
+                    </p>
+                    <p id="tmBreakEvenInfo" class="text-sm font-extrabold text-green-400 leading-relaxed">-</p>
                 </div>
-                <div class="bg-black/40 border border-white/10 rounded-xl p-3.5">
-                    <p class="text-[10px] font-bold text-apple-muted mb-1 flex items-center gap-1"><i class="ph-fill ph-flag-checkered text-purple-400"></i> موعد تحقيق هدفك</p>
-                    <p id="tmGoalInfo" class="text-xs font-extrabold text-purple-300">أدخل هدفاً بالأسفل</p>
+
+                <div class="bg-gradient-to-l from-purple-500/15 to-black/50 border border-purple-500/30 rounded-2xl p-4">
+                    <p class="text-[11px] font-bold text-apple-muted mb-1 flex items-center gap-1.5">
+                        <i class="ph-fill ph-flag-checkered text-purple-400 text-base"></i>
+                        <span>موعد تحقيق هدفك</span>
+                    </p>
+                    <p id="tmGoalInfo" class="text-sm font-extrabold text-purple-300 leading-relaxed">اكتب مبلغ الهدف الفوق باش تشوف الموعد</p>
                 </div>
             </div>
 
-            <!-- مؤشرات التحكم (Sliders) -->
-            <div class="flex flex-col gap-5">
-                <!-- 1. الزمن -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-xs font-bold text-apple-main">القفز في المستقبل (عدد الأشهر)</label>
-                        <span id="tmMonthsVal" class="text-xs font-extrabold text-purple-400 bg-purple-500/15 px-2.5 py-0.5 rounded-full">6 أشهر</span>
-                    </div>
-                    <input type="range" id="tmMonthsSlider" min="1" max="24" value="6" step="1" class="apple-slider" oninput="updateTimeMachine()">
+            <!-- 4. لمحة سريعة: بعد 6 أشهر وبعد عام -->
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-white/10">
+                <div class="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold text-apple-muted mb-1">رصيدك بعد 6 أشهر</p>
+                    <p id="tmIn6Months" class="text-sm font-extrabold" dir="ltr">0 د.ج</p>
                 </div>
-
-                <!-- 2. متوسط المصروف الشهري العادي -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-apple-muted mb-1.5">متوسط مصروفك الشهري المعتاد (د.ج)</label>
-                        <input type="number" id="tmBaseExpenseInput" dir="ltr" min="0" step="500" class="glass-input w-full px-3.5 py-2.5 text-sm font-bold" oninput="updateTimeMachine()">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-apple-muted mb-1.5">هدف مالي تطمح إليه (اختياري)</label>
-                        <input type="number" id="tmGoalInput" dir="ltr" min="0" step="5000" class="glass-input w-full px-3.5 py-2.5 text-sm font-bold" placeholder="مثال: 200000" oninput="updateTimeMachine()">
-                    </div>
-                </div>
-
-                <!-- 3. لو نقصت مصروفك اليومي -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-xs font-bold text-apple-main">لو نقصت من مصروفك اليومي</label>
-                        <span id="tmDailyCutVal" class="text-xs font-extrabold text-green-400 bg-green-500/15 px-2.5 py-0.5 rounded-full" dir="ltr">0 د.ج / يوم</span>
-                    </div>
-                    <input type="range" id="tmDailyCutSlider" min="0" max="2000" value="0" step="50" class="apple-slider" oninput="updateTimeMachine()">
-                </div>
-
-                <!-- 4. لو خدمت وقت إضافي أسبوعياً -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-xs font-bold text-apple-main">لو خدمت وقت إضافي أسبوعياً</label>
-                        <span id="tmWeeklyOtVal" class="text-xs font-extrabold text-sky-400 bg-sky-500/15 px-2.5 py-0.5 rounded-full" dir="ltr">0 دقيقة / أسبوع</span>
-                    </div>
-                    <input type="range" id="tmWeeklyOtSlider" min="0" max="600" value="0" step="15" class="apple-slider" oninput="updateTimeMachine()">
+                <div class="bg-black/40 border border-white/5 rounded-xl p-3 text-center">
+                    <p class="text-[10px] font-bold text-apple-muted mb-1">رصيدك بعد عام</p>
+                    <p id="tmIn12Months" class="text-sm font-extrabold" dir="ltr">0 د.ج</p>
                 </div>
             </div>
         </div>
@@ -879,17 +859,14 @@
                     <span id="calculatedPreview" class="text-xl font-bold text-apple-main dir-ltr">0 د.ج</span>
                 </div>
 
-                <!-- ⏳ محوّل قيمة المصروف من وقتك وعمرك (Life-Time Price Converter) -->
                 <div id="lifeTimeCostBox" class="hidden mb-3 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs font-semibold leading-relaxed"></div>
 
-                <!-- تنبيه استباقي عند اقتراب أو تجاوز سقف المصاريف -->
                 <div id="budgetProactiveWarning" class="hidden mb-4 p-3 rounded-xl border text-xs font-bold flex items-start gap-2 leading-relaxed"></div>
 
                 <button type="submit" id="submitBtn" class="w-full btn-apple py-4 text-lg flex justify-center items-center gap-2">
                     <span id="submitBtnText">حفظ العملية</span>
                 </button>
 
-                <!-- ❄️ زر التجميد 48 ساعة في غرفة التبريد (يظهر عند إدخال مصروف شخصي) -->
                 <button type="button" id="freezeExpenseBtn" onclick="handleFreezeExpense(this)" class="hidden w-full mt-3 py-3 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/35 text-cyan-300 text-sm font-bold transition-all flex justify-center items-center gap-2">
                     <i class="ph-fill ph-snowflake text-lg"></i><span>متردد؟ جمّدها 48 ساعة في غرفة التبريد</span>
                 </button>
@@ -912,24 +889,22 @@
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwChYswHwzVM4D3-miS7XbKXtYqw_JMKY1tPnJfVUx4XMZJInYstt4QK0_G05cBvcNSdw/exec"; 
         const LAST_SEEN_STORAGE_KEY = "sliman_finance_last_seen_v1";
 
-        // ⏰ توقيت العمل الرسمي: 07:30 ➔ 12:30 | راحة 12:30 ➔ 14:00 | مساءً 14:00 ➔ 16:30 (450 دقيقة عمل فعلي)
-        const SHIFT_MORNING_START_SEC = 7 * 3600 + 30 * 60;  // 07:30
-        const SHIFT_BREAK_START_SEC   = 12 * 3600 + 30 * 60; // 12:30
-        const SHIFT_BREAK_END_SEC     = 14 * 3600;           // 14:00
-        const SHIFT_END_SEC           = 16 * 3600 + 30 * 60; // 16:30
-        const SHIFT_TOTAL_WORK_SEC    = (SHIFT_BREAK_START_SEC - SHIFT_MORNING_START_SEC) + (SHIFT_END_SEC - SHIFT_BREAK_END_SEC); // 27000s (7.5h)
+        // ⏰ توقيت العمل الرسمي: 07:30 ➔ 12:30 | راحة 12:30 ➔ 14:00 | مساءً 14:00 ➔ 16:30
+        const SHIFT_MORNING_START_SEC = 7 * 3600 + 30 * 60;
+        const SHIFT_BREAK_START_SEC   = 12 * 3600 + 30 * 60;
+        const SHIFT_BREAK_END_SEC     = 14 * 3600;
+        const SHIFT_END_SEC           = 16 * 3600 + 30 * 60;
+        const SHIFT_TOTAL_WORK_SEC    = (SHIFT_BREAK_START_SEC - SHIFT_MORNING_START_SEC) + (SHIFT_END_SEC - SHIFT_BREAK_END_SEC);
 
         let allTransactions = []; 
         let currentFilterMonth = ""; 
         let sessionPin = null; 
         let isPrivacyRevealed = false;
 
-        // 🌟 محرك الذاكرة والعدّاد التدريجي (Rolling Counter Engine) مع حفظ الفاصلة العشرية
         let displayedValues = {};
         let activeCounters = {};
         let editPreservedMeta = { prefix: "", hasAttachment: false };
 
-        // 🌟 متغيرات حالة الإيصال وسقف المصاريف وآلة الزمن ونبض اليومية
         let isReceiptAmountRevealed = false;
         let currentActiveSalaryCache = 0;
         let realCurrentMonthExpensesCache = 0;
@@ -971,7 +946,6 @@
             return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         }
 
-        // 🌟 عزل السجلات الخاصة (سقف المصاريف + غرفة التبريد 48 ساعة) عن الحسابات والجدول تلقائياً
         function normalizeSpecialTransactions(list) {
             list.forEach(t => {
                 if (t.wallet === 'إعدادات' || (t.note && t.note.startsWith('LIMIT_MODE:'))) {
@@ -1006,7 +980,6 @@
             return { ...config, limitDzd: config.value };
         }
 
-        // 🌟 حساب تكلفة أي مبلغ بالوقت والتعب (ساعات وأيام عمل + دقائق إضافي)
         function formatLifeTimeCostText(amountDzd) {
             if (!amountDzd || amountDzd <= 0) return '';
             const today = new Date();
@@ -1019,7 +992,7 @@
             }
 
             const dailyRate = sal / daysInMonth;
-            const hourlyRate = dailyRate / 7.5; // 7.5 ساعات عمل فعلي يومياً
+            const hourlyRate = dailyRate / 7.5;
             const totalHours = amountDzd / hourlyRate;
             const fullDays = Math.floor(totalHours / 7.5);
             const remHours = Math.floor(totalHours % 7.5);
@@ -1034,7 +1007,6 @@
             return `<i class="ph-fill ph-hourglass-medium text-amber-400 ml-1"></i> هذا المصروف يسوى من وقتك: <strong class="text-white">${timeParts.join(' و ')} خدمة</strong> — أو <strong class="text-amber-300">${new Intl.NumberFormat('en-DZ').format(otMins)} دقيقة</strong> إضافي.`;
         }
 
-        // ⚡ محرك نبض اليومية الحي (Live Shift Ticker: 07:30-12:30 | Break 12:30-14:00 | 14:00-16:30)
         function updateLiveShiftTicker() {
             const box = document.getElementById('liveShiftTickerBox');
             if (!box) return;
@@ -1063,7 +1035,7 @@
             const blurCls = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 transition-all duration-300';
 
             let workedSec = 0;
-            let state = 'before'; // before | morning | break | afternoon | done
+            let state = 'before';
 
             if (nowSec < SHIFT_MORNING_START_SEC) {
                 state = 'before';
@@ -1125,7 +1097,6 @@
                 barEl.className = 'h-full rounded-full transition-all duration-700 bg-gradient-to-r from-emerald-500 to-green-300';
                 countdownEl.innerText = `دوام الغد: 07:30 صباحاً`;
 
-                // لو كانت الصفحة مفتوحة ولحقت 16:30 مباشرة، نفعّل العدّاد التدريجي تلقائياً!
                 if (lastShiftCompletedDateKey && lastShiftCompletedDateKey !== todayKey) {
                     lastShiftCompletedDateKey = todayKey;
                     renderDashboard(true);
@@ -1444,7 +1415,7 @@
                 if (fabDot) fabDot.classList.remove('hidden');
             } else {
                 if (navB) { navB.classList.add('hidden'); navB.classList.remove('flex'); }
-                if (fabB) fabB.classList.add('hidden');
+                if (fabB) { fabB.classList.add('hidden'); }
                 if (fabDot) fabDot.classList.add('hidden');
             }
         }
@@ -1633,23 +1604,28 @@
             }
         }
 
-        // --- 🔮 دوال آلة الزمن المالية (What-If Simulator) ---
-        window.openTimeMachineModal = function() {
-            const limitCfg = getSpendingLimitConfig();
-            const effLimit = computeEffectiveLimit(limitCfg, realCurrentMonthSalaryCache);
-            let defaultMonthlyExp = 15000;
-            if (effLimit && effLimit.limitDzd > 0) {
-                defaultMonthlyExp = Math.round(effLimit.limitDzd);
-            } else if (realCurrentMonthSalaryCache > 0) {
-                defaultMonthlyExp = Math.round(realCurrentMonthSalaryCache * 0.5);
-            } else if (realCurrentMonthExpensesCache > 0) {
-                defaultMonthlyExp = Math.round(realCurrentMonthExpensesCache);
+        // --- 🔮 دوال آلة الزمن المبسّطة (مؤشر واحد + هدف) ---
+        function formatMonthsArabic(monthsFloat) {
+            if (monthsFloat < 1) {
+                const days = Math.max(1, Math.ceil(monthsFloat * 30));
+                return `${days} ${days === 1 ? 'يوم' : (days === 2 ? 'يومين' : (days <= 10 ? 'أيام' : 'يوماً'))}`;
             }
+            const rounded = Math.round(monthsFloat * 10) / 10;
+            if (rounded === 1) return 'شهر واحد';
+            if (rounded === 2) return 'شهران';
+            return `${rounded} شهر`;
+        }
 
-            document.getElementById('tmBaseExpenseInput').value = defaultMonthlyExp;
-            document.getElementById('tmMonthsSlider').value = 6;
-            document.getElementById('tmDailyCutSlider').value = 0;
-            document.getElementById('tmWeeklyOtSlider').value = 0;
+        window.openTimeMachineModal = function() {
+            const slider = document.getElementById('tmSavingSlider');
+            const sal = realCurrentMonthSalaryCache || currentActiveSalaryCache || 60000;
+            const maxSlider = Math.max(100000, Math.ceil(sal / 10000) * 10000);
+            const defaultSaving = Math.max(1000, Math.min(maxSlider, Math.round((sal * 0.4) / 1000) * 1000));
+
+            slider.max = maxSlider;
+            slider.value = defaultSaving;
+            document.getElementById('tmSliderMaxLabel').innerText = `${formatExactDzd(maxSlider)} د.ج`;
+
             updateTimeMachine();
 
             const modal = document.getElementById('timeMachineModal');
@@ -1664,78 +1640,62 @@
         }
 
         window.updateTimeMachine = function() {
-            const months = parseInt(document.getElementById('tmMonthsSlider').value) || 1;
-            const baseMonthlyExp = Math.max(0, parseFloat(document.getElementById('tmBaseExpenseInput').value) || 0);
-            const dailyCut = parseFloat(document.getElementById('tmDailyCutSlider').value) || 0;
-            const weeklyOtMins = parseFloat(document.getElementById('tmWeeklyOtSlider').value) || 0;
+            const monthlySaving = parseFloat(document.getElementById('tmSavingSlider').value) || 1000;
             const goalTarget = parseFloat(document.getElementById('tmGoalInput').value) || 0;
+            const currentBal = realCurrentBalanceCache;
 
-            document.getElementById('tmMonthsVal').innerText = months === 1 ? 'شهر واحد' : (months === 2 ? 'شهران' : `${months} أشهر`);
-            document.getElementById('tmDailyCutVal').innerText = `${formatExactDzd(dailyCut)} د.ج / يوم`;
-            document.getElementById('tmWeeklyOtVal').innerText = `${weeklyOtMins} دقيقة / أسبوع`;
+            document.getElementById('tmSavingVal').innerText = `${formatExactDzd(monthlySaving)} د.ج`;
 
             const arMonths = ['جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
             const now = new Date();
-            const futureDate = new Date(now.getFullYear(), now.getMonth() + months, 1);
-            const targetMonthName = `${arMonths[futureDate.getMonth()]} ${futureDate.getFullYear()}`;
-            document.getElementById('tmTargetDateLabel').innerText = `الرصيد المتوقع في ${targetMonthName}`;
-
-            const monthlySal = realCurrentMonthSalaryCache || currentActiveSalaryCache || 0;
-            const monthlyOtIncome = weeklyOtMins * 4.33 * 6.5;
-            const effectiveMonthlyExp = Math.max(0, baseMonthlyExp - (dailyCut * 30));
-            const monthlyNet = cleanDecimal(monthlySal + monthlyOtIncome - effectiveMonthlyExp);
-            const projectedBalance = cleanDecimal(realCurrentBalanceCache + (monthlyNet * months));
-
             const blurCls = isPrivacyRevealed ? '' : 'blur-md select-none opacity-90 cursor-pointer';
 
-            const projEl = document.getElementById('tmProjectedBalance');
-            const projSign = projectedBalance < 0 ? '-' : (projectedBalance > 0 ? '+' : '');
-            const projGlow = projectedBalance > 0 ? 'neon-glow-green' : (projectedBalance < 0 ? 'neon-glow-red' : 'neon-glow-neutral');
-            projEl.className = `text-4xl font-extrabold tracking-tight my-2 ${projGlow} ${blurCls}`;
-            projEl.onclick = isPrivacyRevealed ? null : togglePrivacy;
-            projEl.innerHTML = `${projSign}${formatExactDzd(Math.abs(projectedBalance))} <span class="text-base font-semibold opacity-70">د.ج</span>`;
-
-            const netEl = document.getElementById('tmMonthlyNet');
-            const netSign = monthlyNet > 0 ? '+' : (monthlyNet < 0 ? '-' : '');
-            netEl.className = `${monthlyNet >= 0 ? 'text-green-400' : 'text-red-400'} ${blurCls}`;
-            netEl.innerText = `${netSign}${formatExactDzd(Math.abs(monthlyNet))} د.ج`;
-
-            // 1. موعد العودة للأخضر (0 د.ج)
-            const breakEvenEl = document.getElementById('tmBreakEvenInfo');
-            if (realCurrentBalanceCache >= 0) {
-                breakEvenEl.className = 'text-xs font-extrabold text-green-400';
-                breakEvenEl.innerText = '✅ رصيدك حالياً في المنطقة الخضراء!';
-            } else if (monthlyNet <= 0) {
-                breakEvenEl.className = 'text-xs font-extrabold text-red-400';
-                breakEvenEl.innerText = '⚠️ بهذا النسق لن يعود للأخضر — قلّل المصروف أو زد الإضافي';
+            // 1. موعد الرجوع للأخضر (0 د.ج)
+            const breakTitleEl = document.getElementById('tmBreakEvenTitle');
+            const breakEl = document.getElementById('tmBreakEvenInfo');
+            if (currentBal >= 0) {
+                breakTitleEl.innerText = 'وضع رصيدك الحالي';
+                breakEl.className = 'text-sm font-extrabold text-green-400 leading-relaxed';
+                breakEl.innerText = '✅ رصيدك راهو في الأخضر أصلاً — كل دينار تخبّيه راهو ربح صافي!';
             } else {
-                const monthsToZero = Math.abs(realCurrentBalanceCache) / monthlyNet;
-                const daysToZero = Math.ceil(monthsToZero * 30);
+                breakTitleEl.innerText = 'موعد الرجوع للأخضر (0 د.ج)';
+                const monthsToZero = Math.abs(currentBal) / monthlySaving;
+                const daysToZero = Math.ceil(monthsToZero * 30.4375);
                 const zeroDate = new Date(now.getTime() + daysToZero * 86400000);
                 const zeroDateStr = `${zeroDate.getDate()} ${arMonths[zeroDate.getMonth()]} ${zeroDate.getFullYear()}`;
-                breakEvenEl.className = 'text-xs font-extrabold text-green-400';
-                breakEvenEl.innerText = `حوالي ${zeroDateStr} (بعد ${monthsToZero.toFixed(1)} شهر)`;
+                breakEl.className = 'text-sm font-extrabold text-green-400 leading-relaxed';
+                breakEl.innerText = `ترجع للأخضر بعد ${formatMonthsArabic(monthsToZero)} (حوالي ${zeroDateStr})`;
             }
 
             // 2. موعد تحقيق الهدف
             const goalEl = document.getElementById('tmGoalInfo');
             if (!goalTarget || goalTarget <= 0) {
-                goalEl.className = 'text-xs font-bold text-apple-muted';
-                goalEl.innerText = 'أدخل هدفاً بالأسفل لحساب الموعد';
-            } else if (realCurrentBalanceCache >= goalTarget) {
-                goalEl.className = 'text-xs font-extrabold text-green-400';
-                goalEl.innerText = '🎉 لقد حققت هذا الهدف بالفعل!';
-            } else if (monthlyNet <= 0) {
-                goalEl.className = 'text-xs font-extrabold text-red-400';
-                goalEl.innerText = '⚠️ صافي التوفير سالب — عدّل المؤشرات';
+                goalEl.className = 'text-xs font-bold text-apple-muted leading-relaxed';
+                goalEl.innerText = 'اكتب مبلغ الهدف الفوق باش تشوف بالضبط وقتاش تلحقو';
+            } else if (currentBal >= goalTarget) {
+                goalEl.className = 'text-sm font-extrabold text-green-400 leading-relaxed';
+                goalEl.innerText = '🎉 راك لاحق لهذا الهدف بالفعل!';
             } else {
-                const monthsToGoal = (goalTarget - realCurrentBalanceCache) / monthlyNet;
-                const daysToGoal = Math.ceil(monthsToGoal * 30);
+                const monthsToGoal = (goalTarget - currentBal) / monthlySaving;
+                const daysToGoal = Math.ceil(monthsToGoal * 30.4375);
                 const goalDate = new Date(now.getTime() + daysToGoal * 86400000);
                 const goalDateStr = `${arMonths[goalDate.getMonth()]} ${goalDate.getFullYear()}`;
-                goalEl.className = 'text-xs font-extrabold text-purple-300';
-                goalEl.innerText = `في ${goalDateStr} (بعد ${monthsToGoal.toFixed(1)} شهر)`;
+                goalEl.className = 'text-sm font-extrabold text-purple-300 leading-relaxed';
+                goalEl.innerText = `تلحق لـ ${formatExactDzd(goalTarget)} د.ج بعد ${formatMonthsArabic(monthsToGoal)} (في ${goalDateStr})`;
             }
+
+            // 3. رصيدك بعد 6 أشهر وبعد عام
+            const renderHorizon = (elId, bal) => {
+                const el = document.getElementById(elId);
+                const sign = bal > 0 ? '+' : (bal < 0 ? '-' : '');
+                const col = bal > 0 ? 'text-green-400' : (bal < 0 ? 'text-red-400' : 'text-white');
+                el.className = `text-sm font-extrabold ${col} ${blurCls}`;
+                el.onclick = isPrivacyRevealed ? null : togglePrivacy;
+                el.innerText = `${sign}${formatExactDzd(Math.abs(bal))} د.ج`;
+            };
+
+            renderHorizon('tmIn6Months', cleanDecimal(currentBal + monthlySaving * 6));
+            renderHorizon('tmIn12Months', cleanDecimal(currentBal + monthlySaving * 12));
         }
 
         // --- دوال بطاقة الإيصال الرقمي (Digital Receipt Modal) ---
@@ -2456,7 +2416,6 @@
             }
 
             allTransactions.forEach(t => {
-                // إقصاء كناش الدقائق وسقف المصاريف وغرفة التبريد تماماً عن الحسابات والجدول
                 if (t.type === 'time_tracker' || t.type === 'spending_limit' || t.type === 'cooling_item') return;
                 const tDate = new Date(t.exactTimestamp); const tMonthStr = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
                 const safeNote = t.note || '';
@@ -2854,7 +2813,6 @@
             const isSpendingAction = (type === 'personal') && (subType === 'expense' || (subType === 'debt' && status === 'مكتمل'));
             const amt = Math.abs(getParsedAmount('amountInput'));
 
-            // ⏳ تحديث محوّل قيمة المصروف من وقتك + زر التجميد 48 ساعة
             if (lifeBox && freezeBtn) {
                 if (isPersonalExpense && amt > 0) {
                     lifeBox.innerHTML = formatLifeTimeCostText(amt);
